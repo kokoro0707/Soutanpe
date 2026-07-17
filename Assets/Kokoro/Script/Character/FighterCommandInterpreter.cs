@@ -1,32 +1,36 @@
 using UnityEngine;
 
 /// <summary>
-/// 生入力を格ゲー用コマンドへ変換する。
-/// フレーム数を使用するため、オンライン同期にも対応させやすい。
+/// 生の方向入力から、ガード・ステップ・ダッシュなどの
+/// 格闘ゲーム用コマンドを生成する。
 /// </summary>
 public sealed class FighterCommandInterpreter : MonoBehaviour
 {
-    [Header("2回入力設定")]
-    [Tooltip("1回目から2回目までに許されるフレーム数")]
+    [Header("2回入力")]
+    [Tooltip("1回目と2回目の入力を受け付ける最大フレーム")]
     [SerializeField, Min(1)]
-    private int doubleTapWindowFrames = 12;
+    private int doubleTapWindowFrames = 18;
 
-    [Tooltip("2回目を何フレーム押し続けたらダッシュにするか")]
+    [Tooltip("2回目の前入力を何フレーム保持したらダッシュにするか")]
     [SerializeField, Min(1)]
-    private int dashHoldFrames = 6;
+    private int dashHoldFrames = 4;
 
     private const int InvalidFrame = -1000000;
-
-    private int previousHorizontal;
 
     private int lastForwardTapFrame = InvalidFrame;
     private int lastBackTapFrame = InvalidFrame;
 
-    private bool isSecondForwardPressHeld;
+    // 前・後ろへ変換した、前フレームの相対方向
+    private int previousRelativeDirection;
+
+    // 前入力の2回目を現在も押しているか
+    private bool isHoldingSecondForwardInput;
+
+    // 前入力の2回目を開始したフレーム
     private int secondForwardPressFrame = InvalidFrame;
 
     private bool hasFacingDirection;
-    private int previousFacingDirection;
+    private int previousFacingDirection = 1;
 
     /// <summary>
     /// 1フレーム分の入力を格ゲー用コマンドへ変換する。
@@ -45,45 +49,77 @@ public sealed class FighterCommandInterpreter : MonoBehaviour
             facingDirection
         );
 
-        // 右向きで右入力なら前、左向きで左入力なら前。
+        // 1：前、0：ニュートラル、-1：後ろ
         int relativeDirection =
-            input.horizontal * facingDirection;
+            Mathf.Clamp(
+                input.horizontal * facingDirection,
+                -1,
+                1
+            );
 
-        bool horizontalPressedThisFrame =
-            input.horizontal != 0 &&
-            previousHorizontal == 0;
+        // 方向が前へ切り替わった瞬間
+        bool forwardPressedThisFrame =
+            relativeDirection == 1 &&
+            previousRelativeDirection != 1;
+
+        // 方向が後ろへ切り替わった瞬間
+        bool backPressedThisFrame =
+            relativeDirection == -1 &&
+            previousRelativeDirection != -1;
 
         bool forwardStepPressed = false;
         bool backStepPressed = false;
 
-        if (horizontalPressedThisFrame)
+        if (forwardPressedThisFrame)
         {
-            if (relativeDirection > 0)
+            int elapsedFrames =
+                currentFrame - lastForwardTapFrame;
+
+            if (elapsedFrames <= doubleTapWindowFrames)
             {
-                forwardStepPressed =
-                    CheckForwardDoubleTap(currentFrame);
+                // 前入力の2回目
+                forwardStepPressed = true;
+
+                isHoldingSecondForwardInput = true;
+                secondForwardPressFrame = currentFrame;
+
+                lastForwardTapFrame = InvalidFrame;
             }
-            else if (relativeDirection < 0)
+            else
             {
-                backStepPressed =
-                    CheckBackDoubleTap(currentFrame);
+                // 前入力の1回目
+                lastForwardTapFrame = currentFrame;
             }
         }
 
-        bool forwardHeld =
-            relativeDirection > 0;
+        if (backPressedThisFrame)
+        {
+            int elapsedFrames =
+                currentFrame - lastBackTapFrame;
+
+            if (elapsedFrames <= doubleTapWindowFrames)
+            {
+                backStepPressed = true;
+                lastBackTapFrame = InvalidFrame;
+            }
+            else
+            {
+                lastBackTapFrame = currentFrame;
+            }
+        }
+
+        // 前入力を離したら、ダッシュ長押し判定を終了
+        if (relativeDirection != 1)
+        {
+            isHoldingSecondForwardInput = false;
+            secondForwardPressFrame = InvalidFrame;
+        }
 
         bool dashHeld =
-            isSecondForwardPressHeld &&
-            forwardHeld &&
+            isHoldingSecondForwardInput &&
+            relativeDirection == 1 &&
             currentFrame - secondForwardPressFrame
                 >= dashHoldFrames;
-
-        // 2回目の前入力を離したらダッシュ判定を終了する
-        if (!forwardHeld)
-        {
-            isSecondForwardPressHeld = false;
-        }
 
         FighterCommandData command =
             new FighterCommandData
@@ -92,14 +128,16 @@ public sealed class FighterCommandInterpreter : MonoBehaviour
                 vertical = input.vertical,
 
                 jumpPressed = input.jumpPressed,
+
                 lightAttackPressed =
                     input.lightAttackPressed,
+
                 heavyAttackPressed =
                     input.heavyAttackPressed,
 
-                // 相手と反対方向を入力している
+                // 相手と反対方向でガード
                 guardHeld =
-                    relativeDirection < 0,
+                    relativeDirection == -1,
 
                 forwardStepPressed =
                     forwardStepPressed,
@@ -111,58 +149,18 @@ public sealed class FighterCommandInterpreter : MonoBehaviour
                     dashHeld
             };
 
-        previousHorizontal = input.horizontal;
+        previousRelativeDirection =
+            relativeDirection;
 
         return command;
     }
 
-    private bool CheckForwardDoubleTap(
-        int currentFrame
-    )
-    {
-        bool isDoubleTap =
-            currentFrame - lastForwardTapFrame
-                <= doubleTapWindowFrames;
-
-        if (!isDoubleTap)
-        {
-            lastForwardTapFrame = currentFrame;
-            return false;
-        }
-
-        lastForwardTapFrame = InvalidFrame;
-
-        isSecondForwardPressHeld = true;
-        secondForwardPressFrame = currentFrame;
-
-        return true;
-    }
-
-    private bool CheckBackDoubleTap(
-        int currentFrame
-    )
-    {
-        bool isDoubleTap =
-            currentFrame - lastBackTapFrame
-                <= doubleTapWindowFrames;
-
-        if (!isDoubleTap)
-        {
-            lastBackTapFrame = currentFrame;
-            return false;
-        }
-
-        lastBackTapFrame = InvalidFrame;
-
-        return true;
-    }
-
     /// <summary>
-    /// 自動振り向きが発生したときに、
-    /// 古い向きを基準にした2回入力をリセットする。
+    /// 自動振り向きが起きたとき、古い向きを基準にした
+    /// 2回入力情報をリセットする。
     /// </summary>
     private void HandleFacingChange(
-        int currentHorizontal,
+        int horizontal,
         int facingDirection
     )
     {
@@ -170,10 +168,15 @@ public sealed class FighterCommandInterpreter : MonoBehaviour
         {
             hasFacingDirection = true;
             previousFacingDirection = facingDirection;
+
+            previousRelativeDirection =
+                horizontal * facingDirection;
+
             return;
         }
 
-        if (previousFacingDirection == facingDirection)
+        if (previousFacingDirection ==
+            facingDirection)
         {
             return;
         }
@@ -181,13 +184,13 @@ public sealed class FighterCommandInterpreter : MonoBehaviour
         lastForwardTapFrame = InvalidFrame;
         lastBackTapFrame = InvalidFrame;
 
-        isSecondForwardPressHeld = false;
+        isHoldingSecondForwardInput = false;
         secondForwardPressFrame = InvalidFrame;
 
-        // 振り向いた瞬間の入力を新しい1回目として
-        // 誤認識しないようにする
-        previousHorizontal = currentHorizontal;
+        previousRelativeDirection =
+            horizontal * facingDirection;
 
-        previousFacingDirection = facingDirection;
+        previousFacingDirection =
+            facingDirection;
     }
 }

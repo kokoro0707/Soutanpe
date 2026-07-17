@@ -140,6 +140,7 @@ GameObject:
   - component: {fileID: 351946272}
   - component: {fileID: 351946275}
   - component: {fileID: 351946274}
+  - component: {fileID: 351946276}
   m_Layer: 0
   m_Name: Player1
   m_TagString: Untagged
@@ -194,6 +195,7 @@ MonoBehaviour:
   commandInterpreter: {fileID: 351946272}
   motor: {fileID: 351946265}
   moveController: {fileID: 351946274}
+  hitReceiver: {fileID: 0}
   facingController: {fileID: 351946273}
   stateMachine: {fileID: 351946266}
 --- !u!114 &351946265
@@ -211,7 +213,7 @@ MonoBehaviour:
   rigidBody2D: {fileID: 351946268}
   groundCheck: {fileID: 487425367}
   forwardWalkSpeed: 5
-  backwardWalkSpeed: 3.5
+  backwardWalkSpeed: 2
   jumpPower: 8
   jumpHorizontalSpeed: 4
   forwardStepSpeed: 9
@@ -253,8 +255,8 @@ MonoBehaviour:
   jumpActionName: Jump
   lightAttackActionName: LightAttack
   heavyAttackActionName: HeavyAttack
-  guardActionName: Guard
-  directionThreshold: 0.5
+  directionPressThreshold: 0.55
+  directionReleaseThreshold: 0.25
 --- !u!50 &351946268
 Rigidbody2D:
   serializedVersion: 5
@@ -438,7 +440,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea903dee7dabff34094170cfd1c84e8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FighterMoveController
-  lightAttack: {fileID: 11400000, guid: a180074cee564b94a9dbf2772a6e7c82, type: 2}
+  moveSet: {fileID: 11400000, guid: b239a39c040a34c47a277ea093d7cf91, type: 2}
   attackHitbox: {fileID: 1457659157}
   ownerHealth: {fileID: 351946275}
   stateMachine: {fileID: 351946266}
@@ -456,6 +458,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FighterHealth
   maxHP: 1000
   stateMachine: {fileID: 351946266}
+--- !u!114 &351946276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 351946262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9f57dcbf6c03a54fa6aa6254443818c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FighterHitReceiver
+  health: {fileID: 351946275}
+  stateMachine: {fileID: 351946266}
+  motor: {fileID: 351946265}
+  moveController: {fileID: 351946274}
+  facingController: {fileID: 351946273}
+  rigidBody2D: {fileID: 351946268}
+  horizontalDamping: 0.88
+  stopVelocityThreshold: 0.05
 --- !u!1 &487425366
 GameObject:
   m_ObjectHideFlags: 0
@@ -625,7 +647,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eba7ccfc44e3044498221b3bd44e1c3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Hurtbox
-  ownerHealth: {fileID: 351946275}
+  ownerReceiver: {fileID: 0}
 --- !u!1 &666065519
 GameObject:
   m_ObjectHideFlags: 0
@@ -909,7 +931,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eba7ccfc44e3044498221b3bd44e1c3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Hurtbox
-  ownerHealth: {fileID: 1320457830}
+  ownerReceiver: {fileID: 0}
 --- !u!61 &1298071374
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -977,6 +999,7 @@ GameObject:
   - component: {fileID: 1320457831}
   - component: {fileID: 1320457830}
   - component: {fileID: 1320457829}
+  - component: {fileID: 1320457842}
   m_Layer: 0
   m_Name: Player2
   m_TagString: Untagged
@@ -996,7 +1019,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea903dee7dabff34094170cfd1c84e8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FighterMoveController
-  lightAttack: {fileID: 11400000, guid: a180074cee564b94a9dbf2772a6e7c82, type: 2}
+  moveSet: {fileID: 11400000, guid: b239a39c040a34c47a277ea093d7cf91, type: 2}
   attackHitbox: {fileID: 1901747040}
   ownerHealth: {fileID: 1320457830}
   stateMachine: {fileID: 1320457836}
@@ -1090,6 +1113,7 @@ MonoBehaviour:
   commandInterpreter: {fileID: 1320457831}
   motor: {fileID: 1320457835}
   moveController: {fileID: 1320457829}
+  hitReceiver: {fileID: 0}
   facingController: {fileID: 1320457832}
   stateMachine: {fileID: 1320457836}
 --- !u!114 &1320457835
@@ -1107,7 +1131,7 @@ MonoBehaviour:
   rigidBody2D: {fileID: 1320457838}
   groundCheck: {fileID: 666065520}
   forwardWalkSpeed: 5
-  backwardWalkSpeed: 3.5
+  backwardWalkSpeed: 2
   jumpPower: 8
   jumpHorizontalSpeed: 4
   forwardStepSpeed: 9
@@ -1149,8 +1173,8 @@ MonoBehaviour:
   jumpActionName: Jump
   lightAttackActionName: LightAttack
   heavyAttackActionName: HeavyAttack
-  guardActionName: Guard
-  directionThreshold: 0.5
+  directionPressThreshold: 0.55
+  directionReleaseThreshold: 0.25
 --- !u!50 &1320457838
 Rigidbody2D:
   serializedVersion: 5
@@ -1293,6 +1317,26 @@ Transform:
   - {fileID: 1901747042}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1320457842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320457828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9f57dcbf6c03a54fa6aa6254443818c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FighterHitReceiver
+  health: {fileID: 1320457830}
+  stateMachine: {fileID: 1320457836}
+  motor: {fileID: 1320457835}
+  moveController: {fileID: 1320457829}
+  facingController: {fileID: 1320457832}
+  rigidBody2D: {fileID: 1320457838}
+  horizontalDamping: 0.88
+  stopVelocityThreshold: 0.05
 --- !u!1 &1457659156
 GameObject:
   m_ObjectHideFlags: 0
@@ -1831,8 +1875,8 @@ Transform:
   m_GameObject: {fileID: 2008221950}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -5.08, z: 0}
-  m_LocalScale: {x: 20.340435, y: 1, z: 1}
+  m_LocalPosition: {x: 0.1909, y: -5.08, z: 0}
+  m_LocalScale: {x: 32.73094, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}

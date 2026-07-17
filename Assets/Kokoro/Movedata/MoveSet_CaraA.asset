@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac23ae645826ddb41b9af4950898c3e4, type: 3}
+  m_Name: MoveSet_CaraA
+  m_EditorClassIdentifier: Assembly-CSharp::FighterMoveSet
+  lightAttack: {fileID: 11400000, guid: 2ca6c06e72cbeef41aec4cf393159d4b, type: 2}
+  heavyAttack: {fileID: 0}
+  specialAttack1: {fileID: 0}
+  specialAttack2: {fileID: 0}
+  assistCombo: {fileID: 11400000, guid: 067147ca0b2293b468c1ab375268ccdc, type: 2}

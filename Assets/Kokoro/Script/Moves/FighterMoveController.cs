@@ -1,15 +1,14 @@
 using UnityEngine;
 
 /// <summary>
-/// 技の開始、フレーム進行、攻撃判定のON・OFFを管理する。
-/// アニメーションがなくても動作する。
+/// 通常技とアシストコンボの開始、
+/// フレーム進行、攻撃判定を管理する。
 /// </summary>
-public sealed class FighterMoveController :
-    MonoBehaviour
+public sealed class FighterMoveController : MonoBehaviour
 {
-    [Header("技データ")]
+    [Header("使用する技")]
     [SerializeField]
-    private MoveData lightAttack;
+    private FighterMoveSet moveSet;
 
     [Header("参照")]
     [SerializeField]
@@ -23,7 +22,15 @@ public sealed class FighterMoveController :
 
     private MoveData currentMove;
     private int currentMoveFrame;
-    private int attackFacingDirection;
+
+    // 攻撃開始時の向き
+    private int attackFacingDirection = 1;
+
+    // -1ならアシストコンボを使用していない
+    private int assistComboIndex = -1;
+
+    // 次のコンボ段が入力予約されているか
+    private bool assistNextQueued;
 
     public bool IsAttacking =>
         currentMove != null;
@@ -34,6 +41,9 @@ public sealed class FighterMoveController :
     public int CurrentMoveFrame =>
         currentMoveFrame;
 
+    public bool IsAssistComboActive =>
+        assistComboIndex >= 0;
+
     private void Reset()
     {
         ownerHealth =
@@ -43,15 +53,40 @@ public sealed class FighterMoveController :
             GetComponent<FighterStateMachine>();
 
         attackHitbox =
-            GetComponentInChildren<AttackHitbox>();
+            GetComponentInChildren<AttackHitbox>(true);
     }
 
     private void Awake()
     {
-        if (attackHitbox != null)
+        if (ownerHealth == null)
         {
-            attackHitbox.Deactivate();
+            ownerHealth =
+                GetComponent<FighterHealth>();
         }
+
+        if (stateMachine == null)
+        {
+            stateMachine =
+                GetComponent<FighterStateMachine>();
+        }
+
+        if (attackHitbox == null)
+        {
+            attackHitbox =
+                GetComponentInChildren<AttackHitbox>(true);
+        }
+
+        if (attackHitbox == null)
+        {
+            Debug.LogError(
+                $"{name}にAttackHitboxがありません。",
+                this
+            );
+
+            return;
+        }
+
+        attackHitbox.Deactivate();
     }
 
     /// <summary>
@@ -71,6 +106,10 @@ public sealed class FighterMoveController :
                 isGrounded
             );
         }
+        else
+        {
+            ReadAssistComboInput(command);
+        }
 
         if (currentMove == null)
         {
@@ -80,17 +119,15 @@ public sealed class FighterMoveController :
         UpdateCurrentMove();
     }
 
+    /// <summary>
+    /// 新しい攻撃を開始する。
+    /// </summary>
     private void TryStartAttack(
         FighterCommandData command,
         int facingDirection,
         bool isGrounded
     )
     {
-        if (!command.lightAttackPressed)
-        {
-            return;
-        }
-
         if (!isGrounded)
         {
             return;
@@ -102,13 +139,147 @@ public sealed class FighterMoveController :
             return;
         }
 
-        StartMove(
-            lightAttack,
+        if (moveSet == null)
+        {
+            Debug.LogWarning(
+                $"{name}にMove Setが設定されていません。",
+                this
+            );
+
+            return;
+        }
+
+        // 弱攻撃ボタンをアシストコンボボタンとして使用
+        if (command.lightAttackPressed)
+        {
+            if (moveSet.AssistCombo != null &&
+                moveSet.AssistCombo.IsValid)
+            {
+                StartAssistCombo(
+                    facingDirection
+                );
+            }
+            else
+            {
+                StartNormalMove(
+                    moveSet.LightAttack,
+                    facingDirection
+                );
+            }
+
+            return;
+        }
+
+        if (command.heavyAttackPressed)
+        {
+            StartNormalMove(
+                moveSet.HeavyAttack,
+                facingDirection
+            );
+        }
+    }
+
+    /// <summary>
+    /// コンボ中の追加入力を確認する。
+    /// </summary>
+    private void ReadAssistComboInput(
+        FighterCommandData command
+    )
+    {
+        if (!IsAssistComboActive ||
+            moveSet == null ||
+            moveSet.AssistCombo == null)
+        {
+            return;
+        }
+
+        AssistComboData combo =
+            moveSet.AssistCombo;
+
+        if (assistComboIndex >=
+            combo.StepCount - 1)
+        {
+            return;
+        }
+
+        // 連打式の場合は、同じ弱攻撃ボタンで次の段を予約
+        if (combo.AdvanceMode ==
+                AssistComboAdvanceMode.PressEachStep &&
+            command.lightAttackPressed)
+        {
+            assistNextQueued = true;
+
+            Debug.Log(
+                $"{name}：アシストコンボ" +
+                $"{assistComboIndex + 2}段目を予約",
+                this
+            );
+        }
+    }
+
+    /// <summary>
+    /// アシストコンボの1段目を開始する。
+    /// </summary>
+    private void StartAssistCombo(
+        int facingDirection
+    )
+    {
+        AssistComboData combo =
+            moveSet.AssistCombo;
+
+        AssistComboStep firstStep =
+            combo.GetStep(0);
+
+        if (firstStep == null ||
+            firstStep.Move == null)
+        {
+            Debug.LogWarning(
+                $"{name}のアシストコンボ1段目が未設定です。",
+                this
+            );
+
+            return;
+        }
+
+        assistComboIndex = 0;
+
+        // 自動式なら次の段を自動予約
+        assistNextQueued =
+            combo.AdvanceMode ==
+                AssistComboAdvanceMode.OnePressAuto &&
+            combo.StepCount > 1;
+
+        StartMoveInternal(
+            firstStep.Move,
+            facingDirection
+        );
+
+        Debug.Log(
+            $"{name}：アシストコンボ開始",
+            this
+        );
+    }
+
+    /// <summary>
+    /// 通常技を開始する。
+    /// </summary>
+    private void StartNormalMove(
+        MoveData move,
+        int facingDirection
+    )
+    {
+        ResetAssistCombo();
+
+        StartMoveInternal(
+            move,
             facingDirection
         );
     }
 
-    private void StartMove(
+    /// <summary>
+    /// 技を実際に開始する共通処理。
+    /// </summary>
+    private void StartMoveInternal(
         MoveData move,
         int facingDirection
     )
@@ -116,10 +287,11 @@ public sealed class FighterMoveController :
         if (move == null)
         {
             Debug.LogWarning(
-                $"{name}のLight AttackにMoveDataが設定されていません。",
+                $"{name}が出そうとしたMoveDataが未設定です。",
                 this
             );
 
+            ResetAssistCombo();
             return;
         }
 
@@ -129,19 +301,57 @@ public sealed class FighterMoveController :
         attackFacingDirection =
             facingDirection >= 0 ? 1 : -1;
 
-        stateMachine.TryChangeState(
-            FighterState.Attack
-        );
+        if (stateMachine != null)
+        {
+            stateMachine.TryChangeState(
+                FighterState.Attack
+            );
+        }
 
-        attackHitbox.Deactivate();
+        if (attackHitbox != null)
+        {
+            attackHitbox.Deactivate();
+        }
 
         Debug.Log(
-            $"{name}：{move.MoveName}開始",
+            $"{name}：{move.MoveName}開始 " +
+            $"方向：{attackFacingDirection}",
             this
         );
     }
 
+    /// <summary>
+    /// 現在の技を1フレーム進める。
+    /// </summary>
     private void UpdateCurrentMove()
+    {
+        if (currentMove == null ||
+            attackHitbox == null)
+        {
+            return;
+        }
+
+        UpdateHitbox();
+
+        // 次のコンボ段へ移行できるか確認
+        if (TryAdvanceAssistCombo())
+        {
+            return;
+        }
+
+        currentMoveFrame++;
+
+        if (currentMoveFrame >=
+            currentMove.TotalFrames)
+        {
+            EndMove();
+        }
+    }
+
+    /// <summary>
+    /// 攻撃判定のON・OFFを更新する。
+    /// </summary>
+    private void UpdateHitbox()
     {
         bool shouldEnableHitbox =
             currentMove.IsActiveFrame(
@@ -163,43 +373,135 @@ public sealed class FighterMoveController :
         {
             attackHitbox.Deactivate();
         }
-
-        currentMoveFrame++;
-
-        if (currentMoveFrame >=
-            currentMove.TotalFrames)
-        {
-            EndMove();
-        }
     }
 
-    private void EndMove()
+    /// <summary>
+    /// 予約された次のコンボ段へ移行する。
+    /// </summary>
+    private bool TryAdvanceAssistCombo()
     {
-        attackHitbox.Deactivate();
+        if (!IsAssistComboActive ||
+            !assistNextQueued ||
+            moveSet == null ||
+            moveSet.AssistCombo == null)
+        {
+            return false;
+        }
+
+        AssistComboData combo =
+            moveSet.AssistCombo;
+
+        AssistComboStep currentStep =
+            combo.GetStep(assistComboIndex);
+
+        if (currentStep == null ||
+            !currentStep.IsCancelWindow(
+                currentMoveFrame))
+        {
+            return false;
+        }
+
+        int nextIndex =
+            assistComboIndex + 1;
+
+        AssistComboStep nextStep =
+            combo.GetStep(nextIndex);
+
+        if (nextStep == null ||
+            nextStep.Move == null)
+        {
+            Debug.LogWarning(
+                $"{name}のアシストコンボ" +
+                $"{nextIndex + 1}段目が未設定です。",
+                this
+            );
+
+            assistNextQueued = false;
+            return false;
+        }
+
+        assistComboIndex = nextIndex;
+
+        // 自動式なら、さらに次の段も予約する
+        assistNextQueued =
+            combo.AdvanceMode ==
+                AssistComboAdvanceMode.OnePressAuto &&
+            assistComboIndex <
+                combo.StepCount - 1;
+
+        StartMoveInternal(
+            nextStep.Move,
+            attackFacingDirection
+        );
 
         Debug.Log(
-            $"{name}：{currentMove.MoveName}終了",
+            $"{name}：アシストコンボ" +
+            $"{assistComboIndex + 1}段目",
             this
         );
 
-        currentMove = null;
-        currentMoveFrame = 0;
-
-        stateMachine.TryChangeState(
-            FighterState.Idle
-        );
+        return true;
     }
 
-    public void CancelCurrentMove()
+    /// <summary>
+    /// 現在の技を終了する。
+    /// </summary>
+    private void EndMove()
     {
-        if (currentMove == null)
+        if (attackHitbox != null)
         {
-            return;
+            attackHitbox.Deactivate();
         }
 
-        attackHitbox.Deactivate();
+        if (currentMove != null)
+        {
+            Debug.Log(
+                $"{name}：{currentMove.MoveName}終了",
+                this
+            );
+        }
 
         currentMove = null;
         currentMoveFrame = 0;
+
+        ResetAssistCombo();
+
+        if (stateMachine != null &&
+            stateMachine.CurrentState != FighterState.KO)
+        {
+            stateMachine.TryChangeState(
+                FighterState.Idle
+            );
+        }
+    }
+
+    /// <summary>
+    /// 被弾などで攻撃を中断する。
+    /// </summary>
+    public void CancelCurrentMove()
+    {
+        if (attackHitbox != null)
+        {
+            attackHitbox.Deactivate();
+        }
+
+        currentMove = null;
+        currentMoveFrame = 0;
+
+        ResetAssistCombo();
+    }
+
+    private void ResetAssistCombo()
+    {
+        assistComboIndex = -1;
+        assistNextQueued = false;
+    }
+
+    public void SetMoveSet(
+        FighterMoveSet newMoveSet
+    )
+    {
+        CancelCurrentMove();
+        moveSet = newMoveSet;
     }
 }
