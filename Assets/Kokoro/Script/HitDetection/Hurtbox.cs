@@ -1,21 +1,22 @@
 using UnityEngine;
 
 /// <summary>
-/// キャラクターが攻撃を受けるための判定。
+/// 攻撃を受ける側の判定。
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public sealed class Hurtbox : MonoBehaviour
 {
     [Header("所有者")]
     [SerializeField]
-    private FighterHealth ownerHealth;
+    private FighterHitReceiver ownerReceiver;
 
-    public FighterHealth OwnerHealth => ownerHealth;
+    public FighterHitReceiver OwnerReceiver =>
+        ownerReceiver;
 
     private void Reset()
     {
-        ownerHealth =
-            GetComponentInParent<FighterHealth>();
+        ownerReceiver =
+            GetComponentInParent<FighterHitReceiver>();
 
         Collider2D hurtboxCollider =
             GetComponent<Collider2D>();
@@ -28,20 +29,22 @@ public sealed class Hurtbox : MonoBehaviour
 
     private void Awake()
     {
-        if (ownerHealth == null)
+        if (ownerReceiver == null)
         {
-            ownerHealth =
-                GetComponentInParent<FighterHealth>();
+            ownerReceiver =
+                GetComponentInParent<FighterHitReceiver>();
         }
 
-        if (ownerHealth == null)
+        if (ownerReceiver == null)
         {
             Debug.LogError(
-                $"{name}の親にFighterHealthがありません。",
+                $"{name}の親に" +
+                "FighterHitReceiverがありません。",
                 this
             );
         }
     }
+
     private void OnDrawGizmos()
     {
         BoxCollider2D box =
@@ -69,5 +72,4 @@ public sealed class Hurtbox : MonoBehaviour
         Gizmos.matrix =
             previousMatrix;
     }
-
 }

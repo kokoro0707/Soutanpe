@@ -10,12 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b59ad2c635d79c94db287e898f47b1cd, type: 3}
-  m_Name: Move_LightAttack
+  m_Name: Move_Lhiat
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
   moveName: "\u5F31\u653B\u6483"
   startupFrames: 5
   activeFrames: 3
   recoveryFrames: 10
   damage: 100
+  hitStunFrames: 18
+  blockStunFrames: 10
+  hitKnockback: {x: 6, y: 2}
+  blockKnockback: {x: 3, y: 0}
   hitboxOffset: {x: 1, y: 0}
   hitboxSize: {x: 1.2, y: 1}

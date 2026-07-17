@@ -1,10 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// 入力、コマンド判定、移動、攻撃、状態管理をつなぐ窓口。
+/// 入力、コマンド、移動、攻撃、被弾処理をつなぐ窓口。
 /// </summary>
-public sealed class FighterController :
-    MonoBehaviour
+public sealed class FighterController : MonoBehaviour
 {
     [Header("入力")]
     [SerializeField]
@@ -23,6 +22,9 @@ public sealed class FighterController :
 
     [SerializeField]
     private FighterMoveController moveController;
+
+    [SerializeField]
+    private FighterHitReceiver hitReceiver;
 
     [SerializeField]
     private FighterFacingController
@@ -55,6 +57,12 @@ public sealed class FighterController :
                 $"{name}のInput Source Componentが不正です。",
                 this
             );
+        }
+
+        if (hitReceiver == null)
+        {
+            hitReceiver =
+                GetComponent<FighterHitReceiver>();
         }
     }
 
@@ -93,8 +101,34 @@ public sealed class FighterController :
                 facingController.FacingDirection
             );
 
-        // 攻撃を先に処理する。
-        // 攻撃開始フレームでは移動を停止できる。
+        // 後ろ入力の状態を被弾処理へ渡す
+        if (hitReceiver != null)
+        {
+            hitReceiver.SetGuardInput(
+                command.guardHeld
+            );
+        }
+
+        // KO後は操作させない
+        if (stateMachine.CurrentState ==
+            FighterState.KO)
+        {
+            FinishSimulationFrame();
+            return;
+        }
+
+        // ヒット硬直・ガード硬直を進める
+        if (hitReceiver != null)
+        {
+            hitReceiver.SimulateFrame();
+
+            if (hitReceiver.IsInReaction)
+            {
+                FinishSimulationFrame();
+                return;
+            }
+        }
+
         moveController.SimulateCommand(
             command,
             facingController.FacingDirection,
@@ -109,9 +143,7 @@ public sealed class FighterController :
 
         UpdateMovementState(command);
 
-        ClearQueuedInputs();
-
-        simulationFrame++;
+        FinishSimulationFrame();
     }
 
     public void SetInput(
@@ -158,11 +190,13 @@ public sealed class FighterController :
         return input;
     }
 
-    private void ClearQueuedInputs()
+    private void FinishSimulationFrame()
     {
         jumpQueued = false;
         lightAttackQueued = false;
         heavyAttackQueued = false;
+
+        simulationFrame++;
     }
 
     private void UpdateMovementState(
@@ -224,9 +258,7 @@ public sealed class FighterController :
         }
     }
 
-    public void SetUseLocalInput(
-        bool value
-    )
+    public void SetUseLocalInput(bool value)
     {
         useLocalInput = value;
     }

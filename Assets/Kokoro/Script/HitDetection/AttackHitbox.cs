@@ -12,13 +12,13 @@ public sealed class AttackHitbox : MonoBehaviour
     private FighterHealth ownerHealth;
     private MoveData currentMove;
 
-    // 1‰ñ‚Ì‹Z‚Å“¯‚¶‘Šè‚É•¡”‰ñ“–‚½‚é‚Ì‚ğ–h‚®
-    private readonly HashSet<FighterHealth> hitTargets =
-        new HashSet<FighterHealth>();
+    private int currentAttackDirection = 1;
 
-    /// <summary>
-    /// Œ»İAUŒ‚”»’è‚ª—LŒø‚©B
-    /// </summary>
+    // “¯‚¶‹Z‚Å“¯‚¶‘Šè‚Ö•¡”‰ñ“–‚½‚é‚Ì‚ğ–h‚®
+    private readonly HashSet<FighterHitReceiver>
+        hitTargets =
+            new HashSet<FighterHitReceiver>();
+
     public bool IsActive =>
         hitboxCollider != null &&
         hitboxCollider.enabled;
@@ -34,7 +34,6 @@ public sealed class AttackHitbox : MonoBehaviour
 
     /// <summary>
     /// UŒ‚”»’è‚ğ—LŒø‰»‚·‚éB
-    /// ƒLƒƒƒ‰ƒNƒ^[‚ÌŒü‚«‚É‡‚í‚¹‚ÄXÀ•W‚ğ”½“]‚·‚éB
     /// </summary>
     public void Activate(
         MoveData move,
@@ -51,38 +50,25 @@ public sealed class AttackHitbox : MonoBehaviour
         currentMove = move;
         ownerHealth = attackOwner;
 
-        hitTargets.Clear();
-
-        // ‰EŒü‚«‚È‚ç1A¶Œü‚«‚È‚ç-1
-        int direction =
+        currentAttackDirection =
             facingDirection >= 0 ? 1 : -1;
+
+        hitTargets.Clear();
 
         Vector2 offset =
             move.HitboxOffset;
 
-        // UŒ‚”»’è‚Ì‰¡ˆÊ’u‚¾‚¯”½“]‚·‚é
         offset.x =
-            Mathf.Abs(offset.x) * direction;
+            Mathf.Abs(offset.x) *
+            currentAttackDirection;
 
         hitboxCollider.offset = offset;
-        hitboxCollider.size = move.HitboxSize;
+        hitboxCollider.size =
+            move.HitboxSize;
+
         hitboxCollider.enabled = true;
-
-        string ownerName =
-            ownerHealth != null
-                ? ownerHealth.name
-                : name;
-
-        Debug.Log(
-            $"{ownerName} UŒ‚•ûŒüF{direction} " +
-            $"Hitbox XF{offset.x}",
-            this
-        );
     }
 
-    /// <summary>
-    /// UŒ‚”»’è‚ğ–³Œø‰»‚·‚éB
-    /// </summary>
     public void Deactivate()
     {
         if (hitboxCollider != null)
@@ -92,6 +78,7 @@ public sealed class AttackHitbox : MonoBehaviour
 
         currentMove = null;
         ownerHealth = null;
+        currentAttackDirection = 1;
 
         hitTargets.Clear();
     }
@@ -114,34 +101,48 @@ public sealed class AttackHitbox : MonoBehaviour
             return;
         }
 
+        FighterHitReceiver targetReceiver =
+            hurtbox.OwnerReceiver;
+
+        if (targetReceiver == null)
+        {
+            return;
+        }
+
         FighterHealth targetHealth =
-            hurtbox.OwnerHealth;
+            targetReceiver.OwnerHealth;
 
-        if (targetHealth == null)
+        if (targetHealth == null ||
+            targetHealth == ownerHealth)
         {
             return;
         }
 
-        // ©•ª©g‚É‚Í“–‚Ä‚È‚¢
-        if (targetHealth == ownerHealth)
+        if (!hitTargets.Add(targetReceiver))
         {
             return;
         }
 
-        // “¯‚¶UŒ‚‚Å“¯‚¶‘Šè‚É•¡”‰ñ“–‚Ä‚È‚¢
-        if (!hitTargets.Add(targetHealth))
-        {
-            return;
-        }
+        Transform attackerTransform =
+            ownerHealth != null
+                ? ownerHealth.transform
+                : transform.root;
 
-        targetHealth.TakeDamage(
-            currentMove.Damage
+        targetReceiver.ReceiveAttack(
+            currentMove,
+            currentAttackDirection,
+            attackerTransform
         );
 
+        string attackerName =
+            ownerHealth != null
+                ? ownerHealth.name
+                : name;
+
         Debug.Log(
-            $"{ownerHealth.name}‚Ì" +
+            $"{attackerName}‚Ì" +
             $"{currentMove.MoveName}‚ª" +
-            $"{targetHealth.name}‚Éƒqƒbƒg",
+            $"{targetHealth.name}‚ÉÚG",
             this
         );
     }
@@ -159,9 +160,6 @@ public sealed class AttackHitbox : MonoBehaviour
         hitTargets.Clear();
     }
 
-    /// <summary>
-    /// UŒ‚”»’è‚ª—LŒø‚ÈŠÔ‚¾‚¯Ô˜g‚ğ•\¦‚·‚éB
-    /// </summary>
     private void OnDrawGizmos()
     {
         BoxCollider2D box =

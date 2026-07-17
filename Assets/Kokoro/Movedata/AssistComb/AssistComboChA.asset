@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b9cc45a8e57a5d4dbc9e6608e6d067a, type: 3}
+  m_Name: AssistComboChA
+  m_EditorClassIdentifier: Assembly-CSharp::AssistComboData
+  advanceMode: 0
+  steps:
+  - move: {fileID: 11400000, guid: 2ca6c06e72cbeef41aec4cf393159d4b, type: 2}
+    cancelStartFrame: 7
+    cancelEndFrame: 15
+  - move: {fileID: 11400000, guid: 2ca6c06e72cbeef41aec4cf393159d4b, type: 2}
+    cancelStartFrame: 8
+    cancelEndFrame: 40
+  - move: {fileID: 11400000, guid: 2ca6c06e72cbeef41aec4cf393159d4b, type: 2}
+    cancelStartFrame: 7
+    cancelEndFrame: 15
