@@ -47,6 +47,20 @@ public sealed class FighterStateMachine : MonoBehaviour
     }
 
     /// <summary>
+    /// 新しい攻撃を開始できる状態。
+    /// </summary>
+    public bool CanStartAttack
+    {
+        get
+        {
+            return CurrentState == FighterState.Idle ||
+                   CurrentState == FighterState.Walk ||
+                   CurrentState == FighterState.Guard;
+        }
+    }
+
+
+    /// <summary>
     /// 相手の方向へ自動で振り向ける状態。
     /// </summary>
     public bool CanAutoTurn
