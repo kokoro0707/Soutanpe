@@ -1,10 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// 入力、コマンド判定、移動、状態管理をつなぐ窓口。
-/// 個別の処理内容は担当クラスへ分離する。
+/// 入力、コマンド判定、移動、攻撃、状態管理をつなぐ窓口。
 /// </summary>
-public sealed class FighterController : MonoBehaviour
+public sealed class FighterController :
+    MonoBehaviour
 {
     [Header("入力")]
     [SerializeField]
@@ -15,16 +15,22 @@ public sealed class FighterController : MonoBehaviour
 
     [Header("キャラクター機能")]
     [SerializeField]
-    private FighterCommandInterpreter commandInterpreter;
+    private FighterCommandInterpreter
+        commandInterpreter;
 
     [SerializeField]
     private FighterMotor motor;
 
     [SerializeField]
-    private FighterFacingController facingController;
+    private FighterMoveController moveController;
 
     [SerializeField]
-    private FighterStateMachine stateMachine;
+    private FighterFacingController
+        facingController;
+
+    [SerializeField]
+    private FighterStateMachine
+        stateMachine;
 
     private IFighterInputSource inputSource;
 
@@ -39,9 +45,11 @@ public sealed class FighterController : MonoBehaviour
     private void Awake()
     {
         inputSource =
-            inputSourceComponent as IFighterInputSource;
+            inputSourceComponent as
+                IFighterInputSource;
 
-        if (useLocalInput && inputSource == null)
+        if (useLocalInput &&
+            inputSource == null)
         {
             Debug.LogError(
                 $"{name}のInput Source Componentが不正です。",
@@ -71,7 +79,9 @@ public sealed class FighterController : MonoBehaviour
             stateMachine.CanAutoTurn &&
             motor.IsGrounded;
 
-        facingController.RefreshFacing(canTurn);
+        facingController.RefreshFacing(
+            canTurn
+        );
 
         FighterInputData simulationInput =
             CreateSimulationInput();
@@ -82,6 +92,14 @@ public sealed class FighterController : MonoBehaviour
                 simulationFrame,
                 facingController.FacingDirection
             );
+
+        // 攻撃を先に処理する。
+        // 攻撃開始フレームでは移動を停止できる。
+        moveController.SimulateCommand(
+            command,
+            facingController.FacingDirection,
+            motor.IsGrounded
+        );
 
         motor.SimulateCommand(
             command,
@@ -96,9 +114,6 @@ public sealed class FighterController : MonoBehaviour
         simulationFrame++;
     }
 
-    /// <summary>
-    /// ローカル、オンライン、CPUの共通入力入口。
-    /// </summary>
     public void SetInput(
         FighterInputData input
     )
@@ -125,7 +140,8 @@ public sealed class FighterController : MonoBehaviour
         }
     }
 
-    private FighterInputData CreateSimulationInput()
+    private FighterInputData
+        CreateSimulationInput()
     {
         FighterInputData input =
             latestInput;
@@ -208,7 +224,9 @@ public sealed class FighterController : MonoBehaviour
         }
     }
 
-    public void SetUseLocalInput(bool value)
+    public void SetUseLocalInput(
+        bool value
+    )
     {
         useLocalInput = value;
     }
