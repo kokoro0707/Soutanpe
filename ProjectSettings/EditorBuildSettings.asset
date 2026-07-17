@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Konno/Title.unity
     guid: 9855ab94c1bf5574fa798dec80445220
   - enabled: 1
-    path: Assets/Kokoro/Main.unity
+    path: Assets/Kokoro/Scene/Main.unity
     guid: 20c99f8c61f4ceb46b3de04b78ad631b
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
