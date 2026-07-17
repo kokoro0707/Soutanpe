@@ -1,8 +1,17 @@
 using UnityEngine;
 
+public enum FighterLocomotionMode
+{
+    Ground,
+    Air,
+    ForwardStep,
+    BackStep,
+    Dash
+}
+
 /// <summary>
-/// キャラクターの地上移動・ジャンプ・接地判定を管理する。
-/// 空中では、ジャンプ開始時の横方向を維持する。
+/// キャラクターの移動処理を担当する。
+/// 入力取得や2回入力判定は行わない。
 /// </summary>
 public sealed class FighterMotor : MonoBehaviour
 {
@@ -13,17 +22,36 @@ public sealed class FighterMotor : MonoBehaviour
     [SerializeField]
     private Transform groundCheck;
 
-    [Header("地上移動")]
+    [Header("歩行")]
     [SerializeField, Min(0f)]
-    private float moveSpeed = 5f;
+    private float forwardWalkSpeed = 5f;
+    [SerializeField, Min(0f)]
+    private float backwardWalkSpeed = 3.5f;
 
     [Header("ジャンプ")]
     [SerializeField, Min(0f)]
     private float jumpPower = 12f;
 
-    [Tooltip("前・後ろジャンプ時の横移動速度")]
     [SerializeField, Min(0f)]
     private float jumpHorizontalSpeed = 4f;
+
+    [Header("前ステップ")]
+    [SerializeField, Min(0f)]
+    private float forwardStepSpeed = 9f;
+
+    [SerializeField, Min(1)]
+    private int forwardStepFrames = 10;
+
+    [Header("バックステップ")]
+    [SerializeField, Min(0f)]
+    private float backStepSpeed = 8f;
+
+    [SerializeField, Min(1)]
+    private int backStepFrames = 12;
+
+    [Header("ダッシュ")]
+    [SerializeField, Min(0f)]
+    private float dashSpeed = 7f;
 
     [Header("接地判定")]
     [SerializeField]
@@ -32,18 +60,15 @@ public sealed class FighterMotor : MonoBehaviour
     [SerializeField, Min(0.01f)]
     private float groundCheckRadius = 0.2f;
 
-    // ジャンプ開始時に決定した横速度
     private float lockedAirVelocityX;
+    private int movementFrame;
 
-    // 空中の横移動が固定されているか
-    private bool isAirMovementLocked;
+    public FighterLocomotionMode CurrentMode
+    {
+        get;
+        private set;
+    } = FighterLocomotionMode.Ground;
 
-    // 前回の接地状態
-    private bool wasGrounded;
-
-    /// <summary>
-    /// 現在地面に接触しているか。
-    /// </summary>
     public bool IsGrounded
     {
         get
@@ -61,6 +86,9 @@ public sealed class FighterMotor : MonoBehaviour
         }
     }
 
+    public bool CanAutoTurn =>
+        CurrentMode == FighterLocomotionMode.Ground;
+
     private void Reset()
     {
         rigidBody2D = GetComponent<Rigidbody2D>();
@@ -70,7 +98,8 @@ public sealed class FighterMotor : MonoBehaviour
     {
         if (rigidBody2D == null)
         {
-            rigidBody2D = GetComponent<Rigidbody2D>();
+            rigidBody2D =
+                GetComponent<Rigidbody2D>();
         }
 
         if (rigidBody2D == null)
@@ -84,21 +113,16 @@ public sealed class FighterMotor : MonoBehaviour
         if (groundCheck == null)
         {
             Debug.LogError(
-                $"{name}のGround Checkが設定されていません。",
+                $"{name}のGround Checkが未設定です。",
                 this
             );
         }
-
-        wasGrounded = IsGrounded;
     }
 
-    /// <summary>
-    /// 1回分の移動処理を実行する。
-    /// FighterControllerのFixedUpdateから呼び出す。
-    /// </summary>
-    public void SimulateInput(
-        FighterInputData input,
-        bool canMove
+    public void SimulateCommand(
+        FighterCommandData command,
+        bool canStartMovement,
+        int facingDirection
     )
     {
         if (rigidBody2D == null)
@@ -106,81 +130,312 @@ public sealed class FighterMotor : MonoBehaviour
             return;
         }
 
-        bool groundedNow = IsGrounded;
+        facingDirection =
+            facingDirection >= 0 ? 1 : -1;
 
         Vector2 velocity =
             rigidBody2D.linearVelocity;
 
-        int horizontal =
-            Mathf.Clamp(input.horizontal, -1, 1);
+        bool groundedNow = IsGrounded;
 
-        // 地面から落ちた場合も、
-        // 落下開始時の横速度を空中で維持する
-        if (wasGrounded &&
-            !groundedNow &&
-            !isAirMovementLocked)
+        // ステージ端などから落下した場合
+        if (!groundedNow &&
+            CurrentMode != FighterLocomotionMode.Air)
         {
             lockedAirVelocityX = velocity.x;
-            isAirMovementLocked = true;
+            CurrentMode = FighterLocomotionMode.Air;
         }
 
-        // 着地したら空中移動の固定を解除する
-        // 上昇開始直後に接地判定が残る場合があるため、
-        // Y速度が下向きかほぼ停止中のときだけ着地と判定する
-        if (groundedNow &&
+        // 着地判定
+        if (CurrentMode ==
+                FighterLocomotionMode.Air &&
+            groundedNow &&
             velocity.y <= 0.05f)
         {
-            isAirMovementLocked = false;
+            CurrentMode =
+                FighterLocomotionMode.Ground;
+
             lockedAirVelocityX = 0f;
         }
 
-        bool canJump =
-            canMove &&
-            input.jumpPressed &&
-            groundedNow;
+        switch (CurrentMode)
+        {
+            case FighterLocomotionMode.Ground:
+                UpdateGroundMovement(
+                    command,
+                    canStartMovement,
+                    facingDirection,
+                    ref velocity
+                );
+                break;
 
-        if (canJump)
-        {
-            StartJump(
-                horizontal,
-                ref velocity
-            );
-        }
-        else if (isAirMovementLocked || !groundedNow)
-        {
-            // 空中では左右入力を無視して、
-            // ジャンプ開始時の横速度を維持する
-            velocity.x = lockedAirVelocityX;
-        }
-        else
-        {
-            // 地上だけ左右入力を反映する
-            velocity.x = canMove
-                ? horizontal * moveSpeed
-                : 0f;
+            case FighterLocomotionMode.Air:
+                UpdateAirMovement(
+                    ref velocity
+                );
+                break;
+
+            case FighterLocomotionMode.ForwardStep:
+                UpdateForwardStep(
+                    command,
+                    facingDirection,
+                    ref velocity
+                );
+                break;
+
+            case FighterLocomotionMode.BackStep:
+                UpdateBackStep(
+                    facingDirection,
+                    ref velocity
+                );
+                break;
+
+            case FighterLocomotionMode.Dash:
+                UpdateDash(
+                    command,
+                    facingDirection,
+                    ref velocity
+                );
+                break;
         }
 
         rigidBody2D.linearVelocity = velocity;
-
-        wasGrounded = groundedNow;
     }
 
-    /// <summary>
-    /// ジャンプ開始時に縦速度と横速度を決定する。
-    /// </summary>
+    private void UpdateGroundMovement(
+    FighterCommandData command,
+    bool canStartMovement,
+    int facingDirection,
+    ref Vector2 velocity
+)
+    {
+        if (!canStartMovement)
+        {
+            velocity.x = 0f;
+            return;
+        }
+
+        // ジャンプを優先
+        if (command.jumpPressed)
+        {
+            StartJump(
+                command.horizontal,
+                ref velocity
+            );
+
+            return;
+        }
+
+        // 後ろ2回入力
+        if (command.backStepPressed)
+        {
+            StartBackStep(
+                facingDirection,
+                ref velocity
+            );
+
+            return;
+        }
+
+        // 前2回入力
+        if (command.forwardStepPressed)
+        {
+            StartForwardStep(
+                facingDirection,
+                ref velocity
+            );
+
+            return;
+        }
+
+        // キャラクターの向きを基準に、
+        // 前入力か後ろ入力かを判定する
+        int relativeDirection =
+            command.horizontal * facingDirection;
+
+        if (relativeDirection < 0)
+        {
+            // 後ろへ歩きながらガード可能
+            velocity.x =
+                command.horizontal * backwardWalkSpeed;
+
+            return;
+        }
+
+        if (relativeDirection > 0)
+        {
+            // 前歩き
+            velocity.x =
+                command.horizontal * forwardWalkSpeed;
+
+            return;
+        }
+
+        // 横入力なし
+        velocity.x = 0f;
+    }
+
+
     private void StartJump(
         int horizontal,
         ref Vector2 velocity
     )
     {
-        // ジャンプした瞬間の入力方向を保存する
         lockedAirVelocityX =
-            horizontal * jumpHorizontalSpeed;
-
-        isAirMovementLocked = true;
+            Mathf.Clamp(horizontal, -1, 1) *
+            jumpHorizontalSpeed;
 
         velocity.x = lockedAirVelocityX;
         velocity.y = jumpPower;
+
+        CurrentMode =
+            FighterLocomotionMode.Air;
+    }
+
+    private void UpdateAirMovement(
+        ref Vector2 velocity
+    )
+    {
+        // ジャンプ開始時の方向を着地まで維持する
+        velocity.x = lockedAirVelocityX;
+    }
+
+    private void StartForwardStep(
+        int facingDirection,
+        ref Vector2 velocity
+    )
+    {
+        movementFrame = 0;
+
+        CurrentMode =
+            FighterLocomotionMode.ForwardStep;
+
+        velocity.x =
+            facingDirection * forwardStepSpeed;
+    }
+
+    private void UpdateForwardStep(
+        FighterCommandData command,
+        int facingDirection,
+        ref Vector2 velocity
+    )
+    {
+        movementFrame++;
+
+        velocity.x =
+            facingDirection * forwardStepSpeed;
+
+        // 2回目を長押ししていたらダッシュへ移行
+        if (command.dashHeld)
+        {
+            CurrentMode =
+                FighterLocomotionMode.Dash;
+
+            velocity.x =
+                facingDirection * dashSpeed;
+
+            return;
+        }
+
+        if (movementFrame >= forwardStepFrames)
+        {
+            EndSpecialMovement(
+                ref velocity
+            );
+        }
+    }
+
+    private void StartBackStep(
+        int facingDirection,
+        ref Vector2 velocity
+    )
+    {
+        movementFrame = 0;
+
+        CurrentMode =
+            FighterLocomotionMode.BackStep;
+
+        velocity.x =
+            -facingDirection * backStepSpeed;
+    }
+
+    private void UpdateBackStep(
+        int facingDirection,
+        ref Vector2 velocity
+    )
+    {
+        movementFrame++;
+
+        velocity.x =
+            -facingDirection * backStepSpeed;
+
+        if (movementFrame >= backStepFrames)
+        {
+            EndSpecialMovement(
+                ref velocity
+            );
+        }
+    }
+
+    private void UpdateDash(
+        FighterCommandData command,
+        int facingDirection,
+        ref Vector2 velocity
+    )
+    {
+        bool holdingForward =
+            command.horizontal *
+            facingDirection > 0;
+
+        // 2回目の前入力を離したらダッシュ終了
+        if (!command.dashHeld ||
+            !holdingForward)
+        {
+            EndSpecialMovement(
+                ref velocity
+            );
+
+            return;
+        }
+
+        velocity.x =
+            facingDirection * dashSpeed;
+    }
+
+    private void EndSpecialMovement(
+        ref Vector2 velocity
+    )
+    {
+        movementFrame = 0;
+
+        CurrentMode =
+            FighterLocomotionMode.Ground;
+
+        velocity.x = 0f;
+    }
+
+    /// <summary>
+    /// 被弾や攻撃開始時にステップ・ダッシュを中断する。
+    /// </summary>
+    public void CancelSpecialMovement()
+    {
+        movementFrame = 0;
+        lockedAirVelocityX = 0f;
+
+        if (rigidBody2D != null)
+        {
+            Vector2 velocity =
+                rigidBody2D.linearVelocity;
+
+            velocity.x = 0f;
+
+            rigidBody2D.linearVelocity = velocity;
+        }
+
+        CurrentMode =
+            IsGrounded
+                ? FighterLocomotionMode.Ground
+                : FighterLocomotionMode.Air;
     }
 
     private void OnDrawGizmosSelected()

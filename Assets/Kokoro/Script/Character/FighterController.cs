@@ -1,9 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// 入力データをキャラクターの各機能へ渡す窓口。
-/// 入力元がキーボード、ゲームパッド、通信のどれでも
-/// 同じFighterInputDataとして処理する。
+/// 入力、コマンド判定、移動、状態管理をつなぐ窓口。
+/// 個別の処理内容は担当クラスへ分離する。
 /// </summary>
 public sealed class FighterController : MonoBehaviour
 {
@@ -11,26 +10,31 @@ public sealed class FighterController : MonoBehaviour
     [SerializeField]
     private MonoBehaviour inputSourceComponent;
 
-    [Tooltip("オンライン入力へ切り替える場合はOFF")]
     [SerializeField]
     private bool useLocalInput = true;
 
     [Header("キャラクター機能")]
     [SerializeField]
+    private FighterCommandInterpreter commandInterpreter;
+
+    [SerializeField]
     private FighterMotor motor;
+
+    [SerializeField]
+    private FighterFacingController facingController;
 
     [SerializeField]
     private FighterStateMachine stateMachine;
 
     private IFighterInputSource inputSource;
 
-    // 継続入力
     private FighterInputData latestInput;
 
-    // 1回だけ発生する入力をFixedUpdateまで保持する
     private bool jumpQueued;
     private bool lightAttackQueued;
     private bool heavyAttackQueued;
+
+    private int simulationFrame;
 
     private void Awake()
     {
@@ -40,8 +44,7 @@ public sealed class FighterController : MonoBehaviour
         if (useLocalInput && inputSource == null)
         {
             Debug.LogError(
-                $"{name}のInput Source Componentに、" +
-                "IFighterInputSourceを実装したスクリプトを設定してください。",
+                $"{name}のInput Source Componentが不正です。",
                 this
             );
         }
@@ -49,7 +52,8 @@ public sealed class FighterController : MonoBehaviour
 
     private void Update()
     {
-        if (!useLocalInput || inputSource == null)
+        if (!useLocalInput ||
+            inputSource == null)
         {
             return;
         }
@@ -62,31 +66,49 @@ public sealed class FighterController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        bool canTurn =
+            motor.CanAutoTurn &&
+            stateMachine.CanAutoTurn &&
+            motor.IsGrounded;
+
+        facingController.RefreshFacing(canTurn);
+
         FighterInputData simulationInput =
             CreateSimulationInput();
 
-        motor.SimulateInput(
-            simulationInput,
-            stateMachine.CanMove
+        FighterCommandData command =
+            commandInterpreter.BuildCommand(
+                simulationInput,
+                simulationFrame,
+                facingController.FacingDirection
+            );
+
+        motor.SimulateCommand(
+            command,
+            stateMachine.CanStartMovement,
+            facingController.FacingDirection
         );
 
-        UpdateMovementState(simulationInput);
+        UpdateMovementState(command);
 
-        // このFixedUpdateで消費した単発入力を解除する
         ClearQueuedInputs();
+
+        simulationFrame++;
     }
 
     /// <summary>
-    /// ローカル・オンライン・CPU入力の共通入口。
+    /// ローカル、オンライン、CPUの共通入力入口。
     /// </summary>
-    public void SetInput(FighterInputData input)
+    public void SetInput(
+        FighterInputData input
+    )
     {
-        // 方向とガードは押している間継続する
-        latestInput.horizontal = input.horizontal;
-        latestInput.vertical = input.vertical;
-        latestInput.guardHeld = input.guardHeld;
+        latestInput.horizontal =
+            input.horizontal;
 
-        // ボタン入力はFixedUpdateまで保持する
+        latestInput.vertical =
+            input.vertical;
+
         if (input.jumpPressed)
         {
             jumpQueued = true;
@@ -103,16 +125,19 @@ public sealed class FighterController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 今回のゲーム処理で使う入力を作成する。
-    /// </summary>
     private FighterInputData CreateSimulationInput()
     {
-        FighterInputData input = latestInput;
+        FighterInputData input =
+            latestInput;
 
-        input.jumpPressed = jumpQueued;
-        input.lightAttackPressed = lightAttackQueued;
-        input.heavyAttackPressed = heavyAttackQueued;
+        input.jumpPressed =
+            jumpQueued;
+
+        input.lightAttackPressed =
+            lightAttackQueued;
+
+        input.heavyAttackPressed =
+            heavyAttackQueued;
 
         return input;
     }
@@ -125,31 +150,51 @@ public sealed class FighterController : MonoBehaviour
     }
 
     private void UpdateMovementState(
-        FighterInputData input
+        FighterCommandData command
     )
     {
-        FighterState currentState =
-            stateMachine.CurrentState;
-
-        if (currentState == FighterState.KO ||
-            currentState == FighterState.Attack ||
-            currentState == FighterState.HitStun ||
-            currentState == FighterState.BlockStun ||
-            currentState == FighterState.KnockDown)
+        if (stateMachine.IsCombatLocked)
         {
             return;
         }
 
-        if (!motor.IsGrounded)
+        switch (motor.CurrentMode)
+        {
+            case FighterLocomotionMode.Air:
+                stateMachine.TryChangeState(
+                    FighterState.Jump
+                );
+                return;
+
+            case FighterLocomotionMode.ForwardStep:
+                stateMachine.TryChangeState(
+                    FighterState.ForwardStep
+                );
+                return;
+
+            case FighterLocomotionMode.BackStep:
+                stateMachine.TryChangeState(
+                    FighterState.BackStep
+                );
+                return;
+
+            case FighterLocomotionMode.Dash:
+                stateMachine.TryChangeState(
+                    FighterState.Dash
+                );
+                return;
+        }
+
+        if (command.guardHeld)
         {
             stateMachine.TryChangeState(
-                FighterState.Jump
+                FighterState.Guard
             );
 
             return;
         }
 
-        if (input.horizontal != 0)
+        if (command.horizontal != 0)
         {
             stateMachine.TryChangeState(
                 FighterState.Walk
@@ -163,9 +208,6 @@ public sealed class FighterController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// オンライン側から入力を渡す場合に切り替える。
-    /// </summary>
     public void SetUseLocalInput(bool value)
     {
         useLocalInput = value;

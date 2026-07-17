@@ -40,7 +40,6 @@ public sealed class LocalFighterInputSource
     private InputAction jumpAction;
     private InputAction lightAttackAction;
     private InputAction heavyAttackAction;
-    private InputAction guardAction;
 
     private bool isInitialized;
 
@@ -118,17 +117,11 @@ public sealed class LocalFighterInputSource
             heavyAttackActionName
         );
 
-        guardAction = FindAction(
-            actionMap,
-            guardActionName
-        );
-
         isInitialized =
             moveAction != null &&
             jumpAction != null &&
             lightAttackAction != null &&
-            heavyAttackAction != null &&
-            guardAction != null;
+            heavyAttackAction != null;
 
         if (isInitialized)
         {
@@ -208,9 +201,6 @@ public sealed class LocalFighterInputSource
 
                 heavyAttackPressed =
                     heavyAttackAction.WasPressedThisFrame(),
-
-                guardHeld =
-                    guardAction.IsPressed()
             };
 
         // éüÇÃÉtÉåÅ[ÉÄÇ≈î‰ärÇ∑ÇÈÇΩÇﬂï€ë∂Ç∑ÇÈ

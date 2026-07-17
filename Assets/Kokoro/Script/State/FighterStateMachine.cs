@@ -1,13 +1,16 @@
 using UnityEngine;
 
-/// <summary>
-/// キャラクターが現在どの状態かを表す。
-/// </summary>
 public enum FighterState
 {
     Idle,
     Walk,
     Jump,
+
+    Guard,
+    ForwardStep,
+    BackStep,
+    Dash,
+
     Attack,
     HitStun,
     BlockStun,
@@ -16,32 +19,58 @@ public enum FighterState
 }
 
 /// <summary>
-/// キャラクターの状態を管理する。
+/// キャラクターの現在状態を管理する。
 /// </summary>
-public class FighterStateMachine : MonoBehaviour
+public sealed class FighterStateMachine : MonoBehaviour
 {
     [SerializeField]
-    private FighterState initialState = FighterState.Idle;
+    private FighterState initialState =
+        FighterState.Idle;
 
-    public FighterState CurrentState { get; private set; }
+    public FighterState CurrentState
+    {
+        get;
+        private set;
+    }
 
-    public bool CanMove
+    /// <summary>
+    /// 歩行、ジャンプ、ステップを新しく開始できる状態。
+    /// </summary>
+    public bool CanStartMovement
     {
         get
         {
             return CurrentState == FighterState.Idle ||
                    CurrentState == FighterState.Walk ||
-                   CurrentState == FighterState.Jump;
+                   CurrentState == FighterState.Guard;
         }
     }
 
-    public bool CanAttack
+    /// <summary>
+    /// 相手の方向へ自動で振り向ける状態。
+    /// </summary>
+    public bool CanAutoTurn
     {
         get
         {
             return CurrentState == FighterState.Idle ||
                    CurrentState == FighterState.Walk ||
-                   CurrentState == FighterState.Jump;
+                   CurrentState == FighterState.Guard;
+        }
+    }
+
+    /// <summary>
+    /// 攻撃や被弾など、移動状態で上書きしてはいけない状態。
+    /// </summary>
+    public bool IsCombatLocked
+    {
+        get
+        {
+            return CurrentState == FighterState.Attack ||
+                   CurrentState == FighterState.HitStun ||
+                   CurrentState == FighterState.BlockStun ||
+                   CurrentState == FighterState.KnockDown ||
+                   CurrentState == FighterState.KO;
         }
     }
 
@@ -50,9 +79,10 @@ public class FighterStateMachine : MonoBehaviour
         CurrentState = initialState;
     }
 
-    public bool TryChangeState(FighterState nextState)
+    public bool TryChangeState(
+        FighterState nextState
+    )
     {
-        // KO後に通常状態へ戻る事故を防ぐ
         if (CurrentState == FighterState.KO)
         {
             return false;
@@ -62,9 +92,10 @@ public class FighterStateMachine : MonoBehaviour
         return true;
     }
 
-    public void ForceChangeState(FighterState nextState)
+    public void ForceChangeState(
+        FighterState nextState
+    )
     {
         CurrentState = nextState;
     }
 }
-
