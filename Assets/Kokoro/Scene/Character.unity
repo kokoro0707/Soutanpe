@@ -136,6 +136,8 @@ GameObject:
   - component: {fileID: 351946265}
   - component: {fileID: 351946264}
   - component: {fileID: 351946263}
+  - component: {fileID: 351946273}
+  - component: {fileID: 351946272}
   m_Layer: 0
   m_Name: Player1
   m_TagString: Untagged
@@ -187,7 +189,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FighterController
   inputSourceComponent: {fileID: 351946267}
   useLocalInput: 1
+  commandInterpreter: {fileID: 351946272}
   motor: {fileID: 351946265}
+  facingController: {fileID: 351946273}
   stateMachine: {fileID: 351946266}
 --- !u!114 &351946265
 MonoBehaviour:
@@ -203,9 +207,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FighterMotor
   rigidBody2D: {fileID: 351946268}
   groundCheck: {fileID: 487425367}
-  moveSpeed: 5
+  forwardWalkSpeed: 5
+  backwardWalkSpeed: 3.5
   jumpPower: 8
   jumpHorizontalSpeed: 4
+  forwardStepSpeed: 9
+  forwardStepFrames: 10
+  backStepSpeed: 8
+  backStepFrames: 12
+  dashSpeed: 7
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -374,7 +384,7 @@ Transform:
   m_GameObject: {fileID: 351946262}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.59, y: -3.458, z: 0}
+  m_LocalPosition: {x: -6.81, y: -3.458, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -382,6 +392,35 @@ Transform:
   - {fileID: 1008845134}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &351946272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 351946262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75b837b025cb24540b71affd056d2ea1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FighterCommandInterpreter
+  doubleTapWindowFrames: 12
+  dashHoldFrames: 6
+--- !u!114 &351946273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 351946262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e56d64d7eb0cdf84e9a40b0d383af42f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FighterFacingController
+  opponent: {fileID: 612745059}
+  visualRoot: {fileID: 1008845134}
+  visualFacesRightByDefault: 1
 --- !u!1 &487425366
 GameObject:
   m_ObjectHideFlags: 0

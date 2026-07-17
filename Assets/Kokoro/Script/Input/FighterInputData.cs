@@ -20,5 +20,4 @@ public struct FighterInputData
     public bool jumpPressed;
     public bool lightAttackPressed;
     public bool heavyAttackPressed;
-    public bool guardHeld;
 }
