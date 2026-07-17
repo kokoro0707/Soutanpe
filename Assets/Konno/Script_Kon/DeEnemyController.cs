@@ -3,7 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class DeEnemyController : MonoBehaviour
 {
-    public Transform player;
+    public Transform Deplayer;
 
     public float moveSpeed = 3f;
 
@@ -20,11 +20,11 @@ public class DeEnemyController : MonoBehaviour
     {
         float distance = Vector2.Distance(
             transform.position,
-            player.position);
+            Deplayer.position);
 
         if (distance > stopDistance)
         {
-            float dir = Mathf.Sign(player.position.x - transform.position.x);
+            float dir = Mathf.Sign(Deplayer.position.x - transform.position.x);
 
             rb.linearVelocity = new Vector2(
                 dir * moveSpeed,
