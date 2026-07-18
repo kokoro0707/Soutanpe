@@ -1409,10 +1409,18 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 404890666117730453, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_Transition
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 836094819260213007, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 260
       objectReference: {fileID: 0}
+    - target: {fileID: 1241110356970340343, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
     - target: {fileID: 2843947660617306966, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -1433,9 +1441,25 @@ PrefabInstance:
       propertyPath: m_Value
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4253110459417071440, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_Transition
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4806234015979074923, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
     - target: {fileID: 5430796005669743423, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: m_Name
       value: HPCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 5442979224355753344, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 5442979224355753344, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_Color.r
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5733271041786559218, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: m_AnchorMax.x
@@ -1464,6 +1488,18 @@ PrefabInstance:
     - target: {fileID: 6238538922979085392, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: m_Value
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6238538922979085392, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_Transition
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6372172990713831844, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 6372172990713831844, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_Color.b
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6632210943560677757, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: m_Pivot.x
@@ -1549,14 +1585,34 @@ PrefabInstance:
       propertyPath: m_Value
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6703799352760922553, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_Transition
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7046959465950059949, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
     - target: {fileID: 7062701907607101955, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: hpFillImage
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 7062701907607101955, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: normalColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7062701907607101955, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: normalColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7062701907607101955, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: normalColor.r
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8557111714317903905, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+      objectReference: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
     - target: {fileID: 8557111714317903905, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: m_Color.b
       value: 0
