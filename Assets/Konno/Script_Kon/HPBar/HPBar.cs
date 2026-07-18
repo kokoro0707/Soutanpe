@@ -33,7 +33,7 @@ public class HPBar : MonoBehaviour
     [Header("演出設定")]
     [Tooltip("被ダメージ後、ダメージバーが減り始めるまでの待ち時間(秒)")]
     [SerializeField] private float delay = 0.4f;
-    [Tooltip("ダメージバーが1秒間に減る割合(01のうちどれだけ進むか)")]
+    [Tooltip("ダメージバーが1秒間に減る割合(0から1のうちどれだけ進むか)")]
     [SerializeField] private float speed = 0.6f;
 
     [Header("ピンチ時の色変化(任意)")]
@@ -41,7 +41,7 @@ public class HPBar : MonoBehaviour
     [SerializeField] private Image hpFillImage;
     [SerializeField] private bool changeColorWhenLow = true;
     [SerializeField, Range(0f, 1f)] private float lowHpThreshold = 0.25f;
-    [SerializeField] private Color normalColor = new Color(0.25f, 0.95f, 0.2f); // 明るい緑
+    [SerializeField] private Color normalColor = new Color(0.35f, 1f, 0.15f); // より明るい鮮やかな緑
     [SerializeField] private Color lowHpColor = new Color(1f, 0.2f, 0.15f);     // 明るい赤
 
     private float timer;
@@ -56,6 +56,10 @@ public class HPBar : MonoBehaviour
             slider.maxValue = 1f;
             slider.wholeNumbers = false;
             slider.interactable = false; // マウス操作で動かせないようにする
+
+            // InteractableをOFFにすると、Transitionが Color Tint のままだと
+            // Unity側が自動でFillを薄暗く(無効化色に)してしまうため、Transitionを切る
+            slider.transition = Selectable.Transition.None;
         }
 
         // hpSlider自身が「本当に描画に使っているFill」を必ず正として採用する。
