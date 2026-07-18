@@ -27,24 +27,20 @@ public class HPBarSlider : MonoBehaviour
 
     private void Update()
     {
-        if (hpSlider.value != target.currentHP)
-        {
-            // HPが変化した(=被弾 or 回復)瞬間にタイマーをリセット
-            timer = 0;
-        }
-        hpSlider.value = target.currentHP;
+        hpSlider.SetValueWithoutNotify(target.currentHP);
 
         if (damageSlider.value > hpSlider.value)
         {
             timer += Time.deltaTime;
             if (timer >= delay)
             {
-                damageSlider.value = Mathf.MoveTowards(damageSlider.value, hpSlider.value, speed * Time.deltaTime);
+                damageSlider.SetValueWithoutNotify(
+                    Mathf.MoveTowards(damageSlider.value, hpSlider.value, speed * Time.deltaTime));
             }
         }
         else
         {
-            damageSlider.value = hpSlider.value;
+            damageSlider.SetValueWithoutNotify(hpSlider.value);
             timer = 0;
         }
     }
