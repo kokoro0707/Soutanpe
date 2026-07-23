@@ -9,6 +9,12 @@ EditorBuildSettings:
     path: Assets/Konno/Title.unity
     guid: 9855ab94c1bf5574fa798dec80445220
   - enabled: 1
+    path: Assets/Konno/MainMenu.unity
+    guid: 64ab7d7097368e24c828232177f007ef
+  - enabled: 1
+    path: Assets/Konno/CharacterSelection.unity
+    guid: 4ff673284ac6d0043ae3301fd737aa08
+  - enabled: 1
     path: Assets/Kokoro/Scene/Main.unity
     guid: 20c99f8c61f4ceb46b3de04b78ad631b
   m_configObjects:
