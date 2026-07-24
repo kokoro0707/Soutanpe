@@ -11,17 +11,26 @@ public class TitleManager : MonoBehaviour
 
     private void Update()
     {
+        // F1キーを押した時だけ表示
+        if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
+        {
+            Debug.Log("===== Gamepad Check =====");
+            Debug.Log("Gamepad Count : " + Gamepad.all.Count);
+
+            for (int i = 0; i < Gamepad.all.Count; i++)
+            {
+                Gamepad pad = Gamepad.all[i];
+
+                Debug.Log(
+                    $"[{i}] Name:{pad.displayName}  ID:{pad.deviceId}  Interface:{pad.description.interfaceName}"
+                );
+            }
+        }
+
+        // 以下は今までの処理
         if (started)
             return;
 
-        // キーボード A
-        if (Keyboard.current != null &&
-            Keyboard.current.aKey.wasPressedThisFrame)
-        {
-            StartGame();
-        }
-
-        // コントローラー A（Xbox:A / PS:×）
         if (Gamepad.current != null &&
             Gamepad.current.buttonSouth.wasPressedThisFrame)
         {
