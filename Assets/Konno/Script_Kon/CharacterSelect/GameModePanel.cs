@@ -15,6 +15,8 @@ public class GameModePanel : MonoBehaviour
     [SerializeField] private GameObject characterRoot;
     private int currentIndex = 0;
     private bool decided = false;
+    private Gamepad player1Pad;
+    [SerializeField] private CharacterSelectManager characterManager;
 
     private void Start()
     {
@@ -26,26 +28,21 @@ public class GameModePanel : MonoBehaviour
         if (decided)
             return;
 
-        Gamepad pad = Gamepad.current;
+        if (Gamepad.all.Count > 0)
+            player1Pad = Gamepad.all[0];
+        else
+            player1Pad = null;
 
         bool up = false;
         bool down = false;
         bool submit = false;
 
-        // キーボード（デバッグ）
-        if (Keyboard.current != null)
-        {
-            up |= Keyboard.current.upArrowKey.wasPressedThisFrame;
-            down |= Keyboard.current.downArrowKey.wasPressedThisFrame;
-            submit |= Keyboard.current.aKey.wasPressedThisFrame;
-        }
-
         // コントローラー
-        if (pad != null)
+        if (player1Pad != null)
         {
-            up |= pad.dpad.up.wasPressedThisFrame;
-            down |= pad.dpad.down.wasPressedThisFrame;
-            submit |= pad.buttonSouth.wasPressedThisFrame;
+            up = player1Pad.dpad.up.wasPressedThisFrame;
+            down = player1Pad.dpad.down.wasPressedThisFrame;
+            submit = player1Pad.buttonSouth.wasPressedThisFrame;
         }
 
         if (up)
@@ -87,26 +84,23 @@ public class GameModePanel : MonoBehaviour
     {
         decided = true;
 
-        Debug.Log("GameModeManager = " + GameModeManager.Instance);
-        Debug.Log("CharacterRoot = " + characterRoot);
-        if (currentIndex == 0)
-        {
-            GameModeManager.Instance.CurrentMode =
-                GameModeManager.Mode.PlayerVsPlayer;
+        GameModeManager.Instance.CurrentMode =
+            (currentIndex == 0) ? GameModeManager.Mode.PlayerVsPlayer
+                                 : GameModeManager.Mode.PlayerVsCPU;
 
-            Debug.Log("PLAYER2モード");
-        }
-        else
-        {
-            GameModeManager.Instance.CurrentMode =
-                GameModeManager.Mode.PlayerVsCPU;
+        characterRoot.SetActive(true);
+        characterManager.Initialize();   // OnEnableと重複するならOnEnable側を削除するか統一する
+        gameObject.SetActive(false);
+    }
 
-            Debug.Log("CPUモード");
+    private IEnumerator OpenCharacterRoot()
+    {
+        while (player1Pad != null && player1Pad.buttonSouth.isPressed)
+        {
+            yield return null;
         }
 
         characterRoot.SetActive(true);
         gameObject.SetActive(false);
-
-        
     }
 }
