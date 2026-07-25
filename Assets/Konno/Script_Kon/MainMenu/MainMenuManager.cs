@@ -1,7 +1,7 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -11,7 +11,6 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private string nextScene = "CharacterSelection";
 
     private int currentIndex = 0;
-
     private bool inputLock;
 
     private void Start()
@@ -88,20 +87,26 @@ public class MainMenuManager : MonoBehaviour
         switch (currentIndex)
         {
             case 0:
-
-                SceneManager.LoadScene(nextScene);
-
+                inputLock = true;
+                StartCoroutine(StartGameRoutine());
                 break;
 
             case 1:
-
 #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
 #else
                 Application.Quit();
 #endif
-
                 break;
         }
+    }
+
+    private IEnumerator StartGameRoutine()
+    {
+        // タイトルと同じフェードアウト
+        yield return FadeManager.Instance.StartFadeOut();
+
+        // シーン切替
+        UnityEngine.SceneManagement.SceneManager.LoadScene(nextScene);
     }
 }
