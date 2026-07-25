@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using System.Collections;
+using TMPro;
 
 public class CharacterSelectManager : MonoBehaviour
 {
@@ -13,6 +14,9 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private Color player1Color = Color.red;
     [SerializeField] private Color player2Color = Color.blue;
     [SerializeField] private Color decidedColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+    [Header("ラベル")]
+    [SerializeField] private TMP_Text player1Label;
+    [SerializeField] private TMP_Text player2Label;
 
     private int player1Index = 0;
     private int player2Index = 1;
@@ -25,44 +29,63 @@ public class CharacterSelectManager : MonoBehaviour
     private Gamepad player1Pad;
     private Gamepad player2Pad;
     private bool cpuMode;
-    private bool selectingCPU;
+    //private bool selectingCPU;
     private bool canInput = false;
+    private bool previousCpuMode;
+    private enum SelectState
+    {
+        Player1,
+        Player2,
+        CPU
+    }
 
+    private SelectState selectState = SelectState.Player1;
     private void OnEnable()
     {
-        cpuMode = GameModeManager.Instance.CurrentMode ==
-                  GameModeManager.Mode.PlayerVsCPU;
-
         UpdateGamepads();
         UpdateSelectionColor();
 
-        StartCoroutine(EnableInputNextFrame());
+        Debug.Log("Current = " + Gamepad.current);
+        Debug.Log("All0 = " + Gamepad.all[0]);
+
+        StartCoroutine(WaitReleaseButton());
     }
     private void Update()
     {
-        //Debug.Log("CharacterSelectManager Update");
+        cpuMode = GameModeManager.Instance.CurrentMode ==
+             GameModeManager.Mode.PlayerVsCPU;
+
+        if (cpuMode != previousCpuMode)
+        {
+            //selectingCPU = false;
+            player2Decided = false;
+            previousCpuMode = cpuMode;
+
+            UpdateSelectionColor();
+        }
+
         if (!canInput)
             return;
-        //Debug.Log("Gamepad Count : " + Gamepad.all.Count);
-
-        //for (int i = 0; i < Gamepad.all.Count; i++)
-        //{
-        //    Debug.Log($"[{i}] {Gamepad.all[i].displayName}");
-        //}
 
         UpdateGamepads();
 
         //Debug.Log(player1Pad);
-        if (player1Pad != null)
-            Player1Input();
+        switch (selectState)
+        {
+            case SelectState.Player1:
+                if (player1Pad != null)
+                    Player1Input();
+                break;
 
-        if (cpuMode)
-        {
-            CPUInput();
-        }
-        else if (player2Active)
-        {
-            Player2Input();
+            case SelectState.Player2:
+                if (player2Pad != null)
+                    Player2Input();
+                break;
+
+            case SelectState.CPU:
+                if (player1Pad != null)
+                    CPUInput();
+                break;
         }
     }
 
@@ -94,37 +117,48 @@ public class CharacterSelectManager : MonoBehaviour
 
     private void Player1Input()
     {
-        Debug.Log(player1Pad.dpad.ReadValue());
- 
         if (player1Decided)
-            return;
-
-        if (player1Pad.dpad.left.isPressed)
         {
-            Debug.Log("P1 LEFT");
-            player1Index--;
+            // 決定済みでも、相手不在（対人戦でP2なし、かつCPUモードでもない）なら
+            // ここでBボタンによる取消だけは受け付ける
+            if (!cpuMode && !player2Active)
+            {
+                if (player1Pad.buttonEast.wasPressedThisFrame)
+                {
+                    player1Decided = false;
+                    UpdateSelectionColor();
 
+                    Debug.Log("P1 決定取消");
+                }
+            }
+            return;
+        }
+
+        if (player1Pad.dpad.left.wasPressedThisFrame)
+        {
+            player1Index--;
             if (player1Index < 0)
                 player1Index = characterIcons.Length - 1;
-
             UpdateSelectionColor();
         }
 
-        if (player1Pad.dpad.right.isPressed)
+        if (player1Pad.dpad.right.wasPressedThisFrame)
         {
-            Debug.Log("P1 RIGHT");
             player1Index++;
-
             if (player1Index >= characterIcons.Length)
                 player1Index = 0;
-
             UpdateSelectionColor();
         }
 
         if (player1Pad.buttonSouth.wasPressedThisFrame)
         {
-            Debug.Log("P1 A");
             player1Decided = true;
+
+            if (cpuMode)
+                selectState = SelectState.CPU;
+            else if (player2Active)
+                selectState = SelectState.Player2;
+
             UpdateSelectionColor();
         }
     }
@@ -132,25 +166,32 @@ public class CharacterSelectManager : MonoBehaviour
     private void Player2Input()
     {
         if (player2Decided)
+        {
+            // 決定済みなら取消のみ受け付ける
+            if (player2Pad.buttonEast.wasPressedThisFrame)
+            {
+                player2Decided = false;
+                selectState = SelectState.Player2;
+                UpdateSelectionColor();
+
+                Debug.Log("P2 決定取消");
+            }
             return;
+        }
 
         if (player2Pad.dpad.left.wasPressedThisFrame)
         {
             player2Index--;
-
             if (player2Index < 0)
                 player2Index = characterIcons.Length - 1;
-
             UpdateSelectionColor();
         }
 
         if (player2Pad.dpad.right.wasPressedThisFrame)
         {
             player2Index++;
-
             if (player2Index >= characterIcons.Length)
                 player2Index = 0;
-
             UpdateSelectionColor();
         }
 
@@ -158,6 +199,16 @@ public class CharacterSelectManager : MonoBehaviour
         {
             player2Decided = true;
             UpdateSelectionColor();
+        }
+
+        // 追加: P2未決定中にBを押したらP1選択へ戻る
+        if (player2Pad.buttonEast.wasPressedThisFrame)
+        {
+            player1Decided = false;
+            selectState = SelectState.Player1;
+            UpdateSelectionColor();
+
+            Debug.Log("P1選択へ戻る");
         }
     }
     private void CPUInput()
@@ -167,7 +218,7 @@ public class CharacterSelectManager : MonoBehaviour
             return;
 
         // 1P決定後にCPU選択開始
-        selectingCPU = true;
+        //selectingCPU = true;
 
         if (player1Pad.dpad.left.wasPressedThisFrame)
         {
@@ -199,6 +250,28 @@ public class CharacterSelectManager : MonoBehaviour
 
             // TODO : バトルシーンへ
         }
+        // Bボタン（取消）
+        if (player1Pad.buttonEast.wasPressedThisFrame)
+        {
+            if (player2Decided)
+            {
+                // CPU決定取消
+                player2Decided = false;
+                UpdateSelectionColor();
+
+                Debug.Log("CPU決定取消");
+            }
+            else if (selectState == SelectState.CPU)
+            {
+                // CPU選択をやめてP1選択へ戻る
+                //selectingCPU = false;
+                player1Decided = false;
+                selectState = SelectState.Player1;
+                UpdateSelectionColor();
+
+                Debug.Log("P1選択へ戻る");
+            }
+        }
     }
     private void UpdateSelectionColor()
     {
@@ -208,37 +281,107 @@ public class CharacterSelectManager : MonoBehaviour
             icon.color = normalColor;
         }
 
-        // 1P
+        // ===== PLAYER1 =====
+        player1Label.gameObject.SetActive(true);
+        player1Label.text = "PLAYER";
+        player1Label.color = player1Color;
+
+        // 選択中のキャラの上へ移動
+        player1Label.rectTransform.position =
+            characterIcons[player1Index].rectTransform.position + new Vector3(0, 80, 0);
+
         if (player1Decided)
             characterIcons[player1Index].color = decidedColor;
         else
             characterIcons[player1Index].color = player1Color;
 
-        // 2PまたはCPU
+        // ===== PLAYER2 / CPU =====
         if (cpuMode)
         {
-            if (selectingCPU)
+            if (selectState == SelectState.CPU)
             {
+                player2Label.gameObject.SetActive(true);
+                player2Label.text = "CPU";
+                player2Label.color = Color.yellow;
+
+                player2Label.rectTransform.position =
+                    characterIcons[player2Index].rectTransform.position + new Vector3(0, 80, 0);
+
                 if (player2Decided)
                     characterIcons[player2Index].color = decidedColor;
                 else
                     characterIcons[player2Index].color = Color.yellow;
             }
+            else
+            {
+                player2Label.gameObject.SetActive(false);
+            }
         }
         else if (player2Active)
         {
+            player2Label.gameObject.SetActive(true);
+            player2Label.text = "PLAYER";
+            player2Label.color = player2Color;
+
+            player2Label.rectTransform.position =
+                characterIcons[player2Index].rectTransform.position + new Vector3(0, 80, 0);
+
             if (player2Decided)
                 characterIcons[player2Index].color = decidedColor;
             else
                 characterIcons[player2Index].color = player2Color;
         }
+        else
+        {
+            player2Label.gameObject.SetActive(false);
+        }
     }
-    private IEnumerator EnableInputNextFrame()
+    private IEnumerator WaitReleaseButton()
     {
         canInput = false;
 
-        yield return null;   // 1フレーム待つ
+        while (true)
+        {
+            UpdateGamepads();
+
+            // Padが無い場合
+            if (player1Pad == null)
+            {
+                canInput = true;
+                yield break;
+            }
+
+            // Aボタンを離したら入力開始
+            if (!player1Pad.buttonSouth.isPressed)
+            {
+                break;
+            }
+
+            yield return null;
+        }
 
         canInput = true;
+    }
+    public void Initialize()
+    {
+        cpuMode = GameModeManager.Instance.CurrentMode ==
+                  GameModeManager.Mode.PlayerVsCPU;
+
+        Debug.Log("cpuMode = " + cpuMode);
+
+        // 選択状態を完全リセット
+        selectState = SelectState.Player1;
+        player1Decided = false;
+        player2Decided = false;
+        player1Index = 0;
+        player2Index = 1;
+        previousCpuMode = cpuMode; // これが無いと次フレームのUpdate()で
+                                   // cpuMode != previousCpuMode の判定が
+                                   // 意図せず発火してしまう
+
+        UpdateGamepads();
+        UpdateSelectionColor();
+
+        StartCoroutine(WaitReleaseButton());
     }
 }
