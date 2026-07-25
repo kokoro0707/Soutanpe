@@ -59,10 +59,10 @@ public class FadeManager : MonoBehaviour
     }
 
     // MainMenu‚©‚çŒÄ‚Ô
-    public void StartFadeIn()
+    public Coroutine StartFadeIn()
     {
         StopAllCoroutines();
-        StartCoroutine(FadeIn());
+        return StartCoroutine(FadeIn());
     }
 
     private IEnumerator FadeIn()
@@ -83,5 +83,31 @@ public class FadeManager : MonoBehaviour
         Color clear = fadeImage.color;
         clear.a = 0f;
         fadeImage.color = clear;
+    }
+    public Coroutine StartFadeOut()
+    {
+        StopAllCoroutines();
+        return StartCoroutine(FadeOut());
+    }
+
+    private IEnumerator FadeOut()
+    {
+        float t = 0;
+
+        while (t < fadeOutTime)
+        {
+            t += Time.deltaTime;
+
+            Color c = fadeImage.color;
+            c.a = Mathf.Lerp(0f, 1f, t / fadeOutTime);
+            fadeImage.color = c;
+
+            yield return null;
+        }
+
+        // Š®‘S‚É•
+        Color black = fadeImage.color;
+        black.a = 1f;
+        fadeImage.color = black;
     }
 }

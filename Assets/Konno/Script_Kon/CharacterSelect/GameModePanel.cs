@@ -25,6 +25,8 @@ public class GameModePanel : MonoBehaviour
 
     private void Update()
     {
+        if (!enabled)
+            return;
         if (decided)
             return;
 
