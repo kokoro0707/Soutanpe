@@ -122,11 +122,23 @@ public class CharacterSelectManager : MonoBehaviour
     }
     private void BackToGameMode()
     {
-        characterRoot.SetActive(false);
+        StartCoroutine(BackToGameModeRoutine());
+    }
 
+    private IEnumerator BackToGameModeRoutine()
+    {
+        // フェードアウト
+        yield return FadeManager.Instance.StartFadeOut(0.2f);
+
+        // パネル切り替え
+        characterRoot.SetActive(false);
         gameModePanel.SetActive(true);
 
+        // 初期化
         gameModeManagerPanel.Initialize();
+
+        // フェードイン
+        FadeManager.Instance.StartFadeIn(0.2f);
     }
     private void UpdateGamepads()
     {

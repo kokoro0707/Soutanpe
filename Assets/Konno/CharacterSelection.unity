@@ -636,7 +636,7 @@ GameObject:
   - component: {fileID: 261360554}
   - component: {fileID: 261360553}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: Character Selection
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -990,6 +990,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FadeManager
   fadeImage: {fileID: 1685003941}
+  sceneFadeOutTime: 0.5
+  sceneFadeInTime: 0.5
   fadeOutTime: 1
   fadeInTime: 2
 --- !u!224 &1129984031
@@ -1758,6 +1760,7 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   selectColor: {r: 1, g: 0, b: 0, a: 1}
   characterRoot: {fileID: 1830194861}
+  panelFadeDuration: 0.6
   characterManager: {fileID: 1204676512}
   menuSceneName: MainMenu
 --- !u!1 &1595493115
@@ -2003,7 +2006,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1763836682
 MonoBehaviour:
   m_ObjectHideFlags: 0
