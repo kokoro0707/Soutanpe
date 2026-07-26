@@ -7,16 +7,27 @@ using TMPro;
 public class CharacterSelectManager : MonoBehaviour
 {
     [Header("キャラクターアイコン")]
-    [SerializeField] private Image[] characterIcons;
+    [SerializeField] private Image[] characterIcons; // キャラクターアイコンのImageコンポーネントを配列で設定する
 
     [Header("カラー設定")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color player1Color = Color.red;
     [SerializeField] private Color player2Color = Color.blue;
     [SerializeField] private Color decidedColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+   
     [Header("ラベル")]
     [SerializeField] private TMP_Text player1Label;
     [SerializeField] private TMP_Text player2Label;
+
+    [Header("立ち絵")]
+    [SerializeField] private Image player1Preview;
+    [SerializeField] private Image player2Preview;
+        
+    [SerializeField] private GameObject gameModePanel;  // ゲームモード選択パネル（Player vs Player / Player vs CPU）
+    [SerializeField] private GameObject characterRoot;  // キャラクター選択パネルのルートオブジェクト
+    [SerializeField] private GameModePanel gameModeManagerPanel;
+
+    //[SerializeField] private Sprite[] characterSprites; 画像を使う場合はここに設定する
 
     private int player1Index = 0;
     private int player2Index = 1;
@@ -32,6 +43,16 @@ public class CharacterSelectManager : MonoBehaviour
     //private bool selectingCPU;
     private bool canInput = false;
     private bool previousCpuMode;
+
+
+    [SerializeField]
+    private Color[] characterColors =
+{
+    Color.red,
+    Color.blue,
+    Color.yellow,
+    Color.green
+};
     private enum SelectState
     {
         Player1,
@@ -42,16 +63,27 @@ public class CharacterSelectManager : MonoBehaviour
     private SelectState selectState = SelectState.Player1;
     private void OnEnable()
     {
-        UpdateGamepads();
-        UpdateSelectionColor();
+        //UpdateGamepads();
+        //UpdateSelectionColor();
 
         Debug.Log("Current = " + Gamepad.current);
         Debug.Log("All0 = " + Gamepad.all[0]);
 
-        StartCoroutine(WaitReleaseButton());
+        Initialize();
+        //StartCoroutine(WaitReleaseButton());
     }
     private void Update()
     {
+        UpdateGamepads();
+        if (Keyboard.current.escapeKey.wasPressedThisFrame ||
+             (player1Pad != null &&
+                player1Pad.buttonEast.wasPressedThisFrame &&
+                selectState == SelectState.Player1 &&
+                !player1Decided))
+        {
+            BackToGameMode();
+            return;
+        }
         cpuMode = GameModeManager.Instance.CurrentMode ==
              GameModeManager.Mode.PlayerVsCPU;
 
@@ -88,7 +120,14 @@ public class CharacterSelectManager : MonoBehaviour
                 break;
         }
     }
+    private void BackToGameMode()
+    {
+        characterRoot.SetActive(false);
 
+        gameModePanel.SetActive(true);
+
+        gameModeManagerPanel.Initialize();
+    }
     private void UpdateGamepads()
     {
         player1Pad = null;
@@ -335,6 +374,8 @@ public class CharacterSelectManager : MonoBehaviour
         {
             player2Label.gameObject.SetActive(false);
         }
+        //UpdateSelectionColor();
+        UpdatePreview();
     }
     private IEnumerator WaitReleaseButton()
     {
@@ -364,24 +405,45 @@ public class CharacterSelectManager : MonoBehaviour
     }
     public void Initialize()
     {
-        cpuMode = GameModeManager.Instance.CurrentMode ==
-                  GameModeManager.Mode.PlayerVsCPU;
+        cpuMode =
+            GameModeManager.Instance.CurrentMode ==
+            GameModeManager.Mode.PlayerVsCPU;
 
-        Debug.Log("cpuMode = " + cpuMode);
-
-        // 選択状態を完全リセット
         selectState = SelectState.Player1;
+
         player1Decided = false;
         player2Decided = false;
+
         player1Index = 0;
         player2Index = 1;
-        previousCpuMode = cpuMode; // これが無いと次フレームのUpdate()で
-                                   // cpuMode != previousCpuMode の判定が
-                                   // 意図せず発火してしまう
 
+        previousCpuMode = cpuMode;
+        canInput = true;
         UpdateGamepads();
         UpdateSelectionColor();
+    }
+    private void UpdatePreview()
+    {
+        // ===== PLAYER =====
+        if (player1Decided)
+        {
+            player1Preview.gameObject.SetActive(true);
+            player1Preview.color = characterColors[player1Index];
+        }
+        else
+        {
+            player1Preview.gameObject.SetActive(false);
+        }
 
-        StartCoroutine(WaitReleaseButton());
+        // ===== PLAYER2 / CPU =====
+        if (player2Decided)
+        {
+            player2Preview.gameObject.SetActive(true);
+            player2Preview.color = characterColors[player2Index];
+        }
+        else
+        {
+            player2Preview.gameObject.SetActive(false);
+        }
     }
 }
