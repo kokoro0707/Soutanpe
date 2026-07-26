@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class GameModePanel : MonoBehaviour
 {
@@ -17,6 +18,8 @@ public class GameModePanel : MonoBehaviour
     private bool decided = false;
     private Gamepad player1Pad;
     [SerializeField] private CharacterSelectManager characterManager;
+    [SerializeField]
+    private string menuSceneName = "MainMenu";
 
     private void Start()
     {
@@ -25,6 +28,7 @@ public class GameModePanel : MonoBehaviour
 
     private void Update()
     {
+        Debug.Log("GameMode Update");
         if (!enabled)
             return;
         if (decided)
@@ -71,8 +75,18 @@ public class GameModePanel : MonoBehaviour
         {
             Decide();
         }
+        // –ß‚é
+        if (Keyboard.current.escapeKey.wasPressedThisFrame ||
+            (Gamepad.current != null &&
+             Gamepad.current.buttonEast.wasPressedThisFrame))
+        {
+            BackToMainMenu();
+        }
     }
-
+    public void BackToMainMenu()
+    {
+        FadeManager.Instance.FadeToScene(menuSceneName);
+    }
     private void UpdateSelection()
     {
         for (int i = 0; i < menuTexts.Length; i++)
@@ -87,22 +101,22 @@ public class GameModePanel : MonoBehaviour
         decided = true;
 
         GameModeManager.Instance.CurrentMode =
-            (currentIndex == 0) ? GameModeManager.Mode.PlayerVsPlayer
-                                 : GameModeManager.Mode.PlayerVsCPU;
+            (currentIndex == 0)
+            ? GameModeManager.Mode.PlayerVsPlayer
+            : GameModeManager.Mode.PlayerVsCPU;
+
+        characterManager.Initialize();
 
         characterRoot.SetActive(true);
-        characterManager.Initialize();   // OnEnable‚Æd•¡‚·‚é‚È‚çOnEnable‘¤‚ðíœ‚·‚é‚©“ˆê‚·‚é
+
         gameObject.SetActive(false);
     }
-
-    private IEnumerator OpenCharacterRoot()
+    public void Initialize()
     {
-        while (player1Pad != null && player1Pad.buttonSouth.isPressed)
-        {
-            yield return null;
-        }
+        decided = false;
+        currentIndex = 0;
 
-        characterRoot.SetActive(true);
-        gameObject.SetActive(false);
+        UpdateSelection();
+        Debug.Log("Initialize");
     }
 }
