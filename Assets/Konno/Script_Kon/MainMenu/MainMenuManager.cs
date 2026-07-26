@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 public class MainMenuManager : MonoBehaviour
 {
-    [Header("Menu")]
+    [Header("ƒƒCƒ“ƒƒjƒ…[")]
     [SerializeField] private TMP_Text[] menuTexts;
 
     [SerializeField] private string nextScene = "CharacterSelection";

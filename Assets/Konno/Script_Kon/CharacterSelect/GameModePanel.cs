@@ -12,8 +12,10 @@ public class GameModePanel : MonoBehaviour
     [Header("カラー")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color selectColor = Color.red;
-
     [SerializeField] private GameObject characterRoot;
+    [Header("遷移時間")]
+    [SerializeField] private float panelFadeDuration = 0.2f; // ← キャラ選択⇔モード変更（今のまま変更しなくてよい想定だが手動調整可能に）
+
     private int currentIndex = 0;
     private bool decided = false;
     private Gamepad player1Pad;
@@ -98,6 +100,10 @@ public class GameModePanel : MonoBehaviour
 
     private void Decide()
     {
+        StartCoroutine(DecideRoutine());
+    }
+    private IEnumerator DecideRoutine()
+    {
         decided = true;
 
         GameModeManager.Instance.CurrentMode =
@@ -105,11 +111,18 @@ public class GameModePanel : MonoBehaviour
             ? GameModeManager.Mode.PlayerVsPlayer
             : GameModeManager.Mode.PlayerVsCPU;
 
+        // フェードアウト
+        yield return FadeManager.Instance.StartFadeOut(panelFadeDuration);
+
+        // 初期化
         characterManager.Initialize();
 
+        // パネル切り替え
         characterRoot.SetActive(true);
-
         gameObject.SetActive(false);
+
+        // フェードイン
+        FadeManager.Instance.StartFadeIn(panelFadeDuration);
     }
     public void Initialize()
     {

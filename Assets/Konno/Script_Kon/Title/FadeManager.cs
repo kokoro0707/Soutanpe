@@ -7,9 +7,14 @@ public class FadeManager : MonoBehaviour
 {
     public static FadeManager Instance;
 
+    [Header("Fade Image")]
     [SerializeField] private Image fadeImage;
-    [SerializeField] private float fadeOutTime = 2f;
-    [SerializeField] private float fadeInTime = 5f;
+
+    [Header("Fade Time")]
+    [SerializeField] private float sceneFadeOutTime = 0.5f; // シーン遷移専用
+    [SerializeField] private float sceneFadeInTime = 0.5f;
+    [SerializeField] private float fadeOutTime = 0.2f;       // パネル切替など汎用
+    [SerializeField] private float fadeInTime = 0.2f;
 
     private void Awake()
     {
@@ -24,90 +29,95 @@ public class FadeManager : MonoBehaviour
         }
     }
 
-    // タイトルなどから呼ぶ
+    //----------------------------------------------------
+    // シーン切替
+    //----------------------------------------------------
+
     public void FadeToScene(string sceneName)
     {
-        StartCoroutine(Fade(sceneName));
+        StartCoroutine(FadeScene(sceneName));
     }
 
-    // フェードアウトしてシーン切替
-    private IEnumerator Fade(string sceneName)
+    private IEnumerator FadeScene(string sceneName)
     {
-        float t = 0;
-
-        while (t < fadeOutTime)
-        {
-            t += Time.deltaTime;
-
-            Color c = fadeImage.color;
-            c.a = Mathf.Lerp(0f, 1f, t / fadeOutTime);
-            fadeImage.color = c;
-
-            yield return null;
-        }
-
-        // 完全に黒にする
-        Color black = fadeImage.color;
-        black.a = 1f;
-        fadeImage.color = black;
+        // フェードアウト
+        yield return FadeOut(sceneFadeOutTime);
 
         // シーン切替
         yield return SceneManager.LoadSceneAsync(sceneName);
 
-        // ここではフェードインしない
-        // MainMenuInitializerから StartFadeIn() を呼ぶ
+        // 次のシーン側(Startなど)でフェードインする
     }
 
-    // MainMenuから呼ぶ
-    public Coroutine StartFadeIn()
-    {
-        StopAllCoroutines();
-        return StartCoroutine(FadeIn());
-    }
+    //----------------------------------------------------
+    // フェードアウト
+    //----------------------------------------------------
 
-    private IEnumerator FadeIn()
-    {
-        float t = 0;
-
-        while (t < fadeInTime)
-        {
-            t += Time.deltaTime;
-
-            Color c = fadeImage.color;
-            c.a = Mathf.Lerp(1f, 0f, t / fadeInTime);
-            fadeImage.color = c;
-
-            yield return null;
-        }
-
-        Color clear = fadeImage.color;
-        clear.a = 0f;
-        fadeImage.color = clear;
-    }
     public Coroutine StartFadeOut()
     {
         StopAllCoroutines();
-        return StartCoroutine(FadeOut());
+        return StartCoroutine(FadeOut(fadeOutTime));
     }
 
-    private IEnumerator FadeOut()
+    public Coroutine StartFadeOut(float time)
     {
-        float t = 0;
+        StopAllCoroutines();
+        return StartCoroutine(FadeOut(time));
+    }
 
-        while (t < fadeOutTime)
+    private IEnumerator FadeOut(float time)
+    {
+        float t = 0f;
+
+        while (t < time)
         {
             t += Time.deltaTime;
 
             Color c = fadeImage.color;
-            c.a = Mathf.Lerp(0f, 1f, t / fadeOutTime);
+            c.a = Mathf.Lerp(0f, 1f, t / time);
             fadeImage.color = c;
 
             yield return null;
         }
 
-        // 完全に黒
-        Color black = fadeImage.color;
-        black.a = 1f;
-        fadeImage.color = black;
+        Color c2 = fadeImage.color;
+        c2.a = 1f;
+        fadeImage.color = c2;
+    }
+
+    //----------------------------------------------------
+    // フェードイン
+    //----------------------------------------------------
+
+    public Coroutine StartFadeIn()
+    {
+        StopAllCoroutines();
+        return StartCoroutine(FadeIn(fadeInTime));
+    }
+
+    public Coroutine StartFadeIn(float time)
+    {
+        StopAllCoroutines();
+        return StartCoroutine(FadeIn(time));
+    }
+
+    private IEnumerator FadeIn(float time)
+    {
+        float t = 0f;
+
+        while (t < time)
+        {
+            t += Time.deltaTime;
+
+            Color c = fadeImage.color;
+            c.a = Mathf.Lerp(1f, 0f, t / time);
+            fadeImage.color = c;
+
+            yield return null;
+        }
+
+        Color c2 = fadeImage.color;
+        c2.a = 0f;
+        fadeImage.color = c2;
     }
 }
