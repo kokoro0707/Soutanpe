@@ -13,8 +13,10 @@ public class FadeManager : MonoBehaviour
     [Header("Fade Time")]
     [SerializeField] private float sceneFadeOutTime = 0.5f; // シーン遷移専用
     [SerializeField] private float sceneFadeInTime = 0.5f;
-    [SerializeField] private float fadeOutTime = 0.2f;       // パネル切替など汎用
-    [SerializeField] private float fadeInTime = 0.2f;
+    [SerializeField] private float fadeOutTime = 1f;       // パネル切替など汎用
+    [SerializeField] private float fadeInTime = 2f;
+
+    private bool isFading = false;
 
     private void Awake()
     {
@@ -40,18 +42,22 @@ public class FadeManager : MonoBehaviour
 
     public void FadeToScene(string sceneName)
     {
+        if (isFading)
+            return;
+
         StartCoroutine(FadeScene(sceneName));
     }
 
     private IEnumerator FadeScene(string sceneName)
     {
-        // フェードアウト
+        
+        isFading = true;
+        Debug.Log("FadeScene Start");
         yield return FadeOut(sceneFadeOutTime);
-
-        // シーン切替
+        Debug.Log("LoadScene");
         yield return SceneManager.LoadSceneAsync(sceneName);
-
-        // 次のシーン側(Startなど)でフェードインする
+        Debug.Log("Scene Loaded");
+        isFading = false;
     }
 
     //----------------------------------------------------

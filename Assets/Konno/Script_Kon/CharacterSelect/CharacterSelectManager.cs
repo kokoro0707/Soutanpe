@@ -66,15 +66,12 @@ public class CharacterSelectManager : MonoBehaviour
         //UpdateGamepads();
         //UpdateSelectionColor();
 
-        Debug.Log("Current = " + Gamepad.current);
-        Debug.Log("All0 = " + Gamepad.all[0]);
-
         Initialize();
         //StartCoroutine(WaitReleaseButton());
     }
     private void Update()
     {
-        UpdateGamepads();
+        //UpdateGamepads();
         if (Keyboard.current.escapeKey.wasPressedThisFrame ||
              (player1Pad != null &&
                 player1Pad.buttonEast.wasPressedThisFrame &&
@@ -199,21 +196,20 @@ public class CharacterSelectManager : MonoBehaviour
 
         if (player1Pad.buttonSouth.wasPressedThisFrame)
         {
+            Debug.Log("Aボタン");
+
             player1Decided = true;
 
-            //if (cpuMode)
-            //    selectState = SelectState.CPU;
-            //else if (player2Active)
-            //    selectState = SelectState.Player2;
-            if (!cpuMode && !player2Active)
-            {
+            if (cpuMode)
                 selectState = SelectState.CPU;
+            else if (player2Active)
                 selectState = SelectState.Player2;
-                Debug.Log("P2コントローラーを接続してください");
-                return;
-            }
+
+            Debug.Log("UpdateSelectionColor前");
 
             UpdateSelectionColor();
+
+            Debug.Log("UpdateSelectionColor後");
         }
     }
 

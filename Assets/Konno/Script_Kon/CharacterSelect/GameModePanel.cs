@@ -22,36 +22,58 @@ public class GameModePanel : MonoBehaviour
     [SerializeField] private CharacterSelectManager characterManager;
     [SerializeField]
     private string menuSceneName = "MainMenu";
+    private bool changingScene = false;
+
+    public void BackToMainMenu()
+    {
+        if (changingScene)
+            return;
+
+        changingScene = true;
+        decided = true;
+
+        Debug.Log("BackToMainMenu");
+
+        FadeManager.Instance.FadeToScene(menuSceneName);
+    }
 
     private void OnEnable()
     {
+        changingScene = false;
         Initialize();
     }
 
     private void Update()
     {
-        //Debug.Log("GameMode Update");
-        if (!enabled)
+        //if (player1Pad != null)
+        //{
+        //    Debug.Log(player1Pad.buttonEast.wasPressedThisFrame);
+        //}
+        if (!enabled || changingScene)
             return;
+
+        player1Pad = Gamepad.current;
+
+        // 戻る
+        if (Keyboard.current.escapeKey.wasPressedThisFrame ||
+            (player1Pad != null &&
+             player1Pad.buttonEast.wasPressedThisFrame))
+        {
+            BackToMainMenu();
+            return;
+        }
+
         if (decided)
             return;
 
-        if (Gamepad.all.Count > 0)
-            player1Pad = Gamepad.all[0];
-        else
-            player1Pad = null;
+        bool up = player1Pad != null &&
+                  player1Pad.dpad.up.wasPressedThisFrame;
 
-        bool up = false;
-        bool down = false;
-        bool submit = false;
+        bool down = player1Pad != null &&
+                    player1Pad.dpad.down.wasPressedThisFrame;
 
-        // コントローラー
-        if (player1Pad != null)
-        {
-             up = player1Pad.dpad.up.wasPressedThisFrame;
-             down = player1Pad.dpad.down.wasPressedThisFrame;
-             submit = player1Pad.buttonSouth.wasPressedThisFrame;
-        }
+        bool submit = player1Pad != null &&
+                      player1Pad.buttonSouth.wasPressedThisFrame;
 
         if (up)
         {
@@ -77,18 +99,8 @@ public class GameModePanel : MonoBehaviour
         {
             Decide();
         }
-        // 戻る
-        if (Keyboard.current.escapeKey.wasPressedThisFrame ||
-            (Gamepad.current != null &&
-             Gamepad.current.buttonEast.wasPressedThisFrame))
-        {
-            BackToMainMenu();
-        }
     }
-    public void BackToMainMenu()
-    {
-        FadeManager.Instance.FadeToScene(menuSceneName);
-    }
+   
     private void UpdateSelection()
     {
         for (int i = 0; i < menuTexts.Length; i++)
@@ -124,12 +136,17 @@ public class GameModePanel : MonoBehaviour
         // フェードイン
         FadeManager.Instance.StartFadeIn(panelFadeDuration);
     }
+
     public void Initialize()
     {
         decided = false;
+        changingScene = false;
         currentIndex = 0;
 
         UpdateSelection();
-        Debug.Log("Initialize");
+
+#if UNITY_EDITOR
+        Debug.Log("GameModePanel Initialize");
+#endif
     }
 }
