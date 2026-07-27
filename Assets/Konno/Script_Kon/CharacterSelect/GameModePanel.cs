@@ -23,14 +23,14 @@ public class GameModePanel : MonoBehaviour
     [SerializeField]
     private string menuSceneName = "MainMenu";
 
-    private void Start()
+    private void OnEnable()
     {
-        UpdateSelection();
+        Initialize();
     }
 
     private void Update()
     {
-        Debug.Log("GameMode Update");
+        //Debug.Log("GameMode Update");
         if (!enabled)
             return;
         if (decided)
@@ -48,9 +48,9 @@ public class GameModePanel : MonoBehaviour
         // コントローラー
         if (player1Pad != null)
         {
-            up = player1Pad.dpad.up.wasPressedThisFrame;
-            down = player1Pad.dpad.down.wasPressedThisFrame;
-            submit = player1Pad.buttonSouth.wasPressedThisFrame;
+             up = player1Pad.dpad.up.wasPressedThisFrame;
+             down = player1Pad.dpad.down.wasPressedThisFrame;
+             submit = player1Pad.buttonSouth.wasPressedThisFrame;
         }
 
         if (up)

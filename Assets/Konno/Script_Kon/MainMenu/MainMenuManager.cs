@@ -18,31 +18,23 @@ public class MainMenuManager : MonoBehaviour
         UpdateSelection();
     }
 
-    private void Update()
-    {
-        Move();
-
-        if (Keyboard.current.aKey.wasPressedThisFrame ||
-            (Gamepad.current != null &&
-             Gamepad.current.buttonSouth.wasPressedThisFrame))
-        {
-            Execute();
-        }
+    private void Update() 
+    { 
+        Move(); 
+        if (Keyboard.current.aKey.wasPressedThisFrame || 
+            (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)) 
+        { 
+            Execute(); 
+        } 
     }
 
     void Move()
     {
         if (inputLock) return;
-
-        bool left =
-            Keyboard.current.leftArrowKey.wasPressedThisFrame ||
-            (Gamepad.current != null &&
-             Gamepad.current.dpad.left.wasPressedThisFrame);
-
-        bool right =
-            Keyboard.current.rightArrowKey.wasPressedThisFrame ||
-            (Gamepad.current != null &&
-             Gamepad.current.dpad.right.wasPressedThisFrame);
+            bool left = Keyboard.current.leftArrowKey.wasPressedThisFrame || 
+            (Gamepad.current != null && Gamepad.current.dpad.left.wasPressedThisFrame); 
+            bool right = Keyboard.current.rightArrowKey.wasPressedThisFrame || 
+            (Gamepad.current != null && Gamepad.current.dpad.right.wasPressedThisFrame);
 
         if (left)
         {

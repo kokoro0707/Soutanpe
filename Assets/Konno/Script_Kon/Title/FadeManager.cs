@@ -22,6 +22,11 @@ public class FadeManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            // Å‰‚Í“§–¾‚É‚µ‚Ä‚¨‚­
+            Color c = fadeImage.color;
+            c.a = 0f;
+            fadeImage.color = c;
         }
         else
         {

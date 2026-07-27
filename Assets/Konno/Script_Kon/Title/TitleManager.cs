@@ -26,8 +26,6 @@ public class TitleManager : MonoBehaviour
                 );
             }
         }
-
-        // ˆÈ‰º‚Í¡‚Ü‚Å‚Ìˆ—
         if (started)
             return;
 

@@ -145,24 +145,20 @@ public class CharacterSelectManager : MonoBehaviour
         player1Pad = null;
         player2Pad = null;
 
+        // P1は常に1台目
         if (Gamepad.all.Count >= 1)
             player1Pad = Gamepad.all[0];
-
         if (Gamepad.all.Count >= 2)
             player2Pad = Gamepad.all[1];
 
-        bool active = player2Pad != null;
-
-        if (active != player2Active)
-        {
-            player2Active = active;
-
-            if (!player2Active)
-            {
-                player2Decided = false;
-            }
-
-            UpdateSelectionColor();
+        bool active = player2Pad != null; 
+        if (active != player2Active) 
+        { player2Active = active; 
+            if (!player2Active) 
+            { 
+                player2Decided = false; 
+            } 
+            UpdateSelectionColor(); 
         }
     }
 
@@ -205,10 +201,17 @@ public class CharacterSelectManager : MonoBehaviour
         {
             player1Decided = true;
 
-            if (cpuMode)
+            //if (cpuMode)
+            //    selectState = SelectState.CPU;
+            //else if (player2Active)
+            //    selectState = SelectState.Player2;
+            if (!cpuMode && !player2Active)
+            {
                 selectState = SelectState.CPU;
-            else if (player2Active)
                 selectState = SelectState.Player2;
+                Debug.Log("P2コントローラーを接続してください");
+                return;
+            }
 
             UpdateSelectionColor();
         }
