@@ -18,14 +18,18 @@ public class MainMenuManager : MonoBehaviour
         UpdateSelection();
     }
 
-    private void Update() 
-    { 
-        Move(); 
-        if (Keyboard.current.aKey.wasPressedThisFrame || 
-            (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)) 
-        { 
-            Execute(); 
-        } 
+    private void Update()
+    {
+        Move();
+
+        bool submit =
+            (Keyboard.current != null && Keyboard.current.aKey.wasPressedThisFrame) ||
+            (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame);
+
+        if (submit)
+        {
+            Execute();
+        }
     }
 
     void Move()
