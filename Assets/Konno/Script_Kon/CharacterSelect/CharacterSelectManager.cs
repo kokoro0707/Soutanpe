@@ -78,6 +78,7 @@ public class CharacterSelectManager : MonoBehaviour
                 selectState == SelectState.Player1 &&
                 !player1Decided))
         {
+            Debug.Log("CharacterSelectManager : B");
             BackToGameMode();
             return;
         }
@@ -132,7 +133,7 @@ public class CharacterSelectManager : MonoBehaviour
         gameModePanel.SetActive(true);
 
         // 初期化
-        gameModeManagerPanel.Initialize();
+        //gameModeManagerPanel.Initialize();
 
         // フェードイン
         FadeManager.Instance.StartFadeIn(0.2f);

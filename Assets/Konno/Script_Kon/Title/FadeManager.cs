@@ -17,6 +17,7 @@ public class FadeManager : MonoBehaviour
     [SerializeField] private float fadeInTime = 2f;
 
     private bool isFading = false;
+    private bool firstScene = true;
 
     private void Awake()
     {
@@ -25,10 +26,11 @@ public class FadeManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // 最初は透明にしておく
             Color c = fadeImage.color;
-            c.a = 0f;
-            fadeImage.color = c;
+            if (gameObject.scene.name == "Title")
+                c.a = 0f;   // タイトルは最初から表示
+            else
+                c.a = 1f;   // それ以外は黒
         }
         else
         {
@@ -36,6 +38,10 @@ public class FadeManager : MonoBehaviour
         }
     }
 
+    private void LateUpdate()
+    {
+        transform.SetAsLastSibling();
+    }
     //----------------------------------------------------
     // シーン切替
     //----------------------------------------------------
@@ -50,14 +56,29 @@ public class FadeManager : MonoBehaviour
 
     private IEnumerator FadeScene(string sceneName)
     {
-        
         isFading = true;
-        Debug.Log("FadeScene Start");
-        yield return FadeOut(sceneFadeOutTime);
-        Debug.Log("LoadScene");
-        yield return SceneManager.LoadSceneAsync(sceneName);
-        Debug.Log("Scene Loaded");
+
+        // フェードアウト
+        yield return StartCoroutine(FadeOut(sceneFadeOutTime));
+
+        // 黒を維持
+        Color c = fadeImage.color;
+        c.a = 1f;
+        fadeImage.color = c;
+
+        // シーン切替
+        SceneManager.LoadScene(sceneName);
+
+        // MainMenuのStart()やAwake()が終わるまで待つ
+        yield return null;
+        yield return null;
+
+        // 強制的にフェードイン
+        yield return StartCoroutine(FadeIn(sceneFadeInTime));
+
         isFading = false;
+        // 最初のシーンではない
+        firstScene = false;
     }
 
     //----------------------------------------------------
