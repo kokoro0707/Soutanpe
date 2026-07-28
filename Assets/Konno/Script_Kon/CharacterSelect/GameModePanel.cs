@@ -34,7 +34,7 @@ public class GameModePanel : MonoBehaviour
 
         Debug.Log("BackToMainMenu");
 
-        FadeManager.Instance.FadeToScene(menuSceneName);
+        StartCoroutine(BackRoutine());
     }
 
     private void OnEnable()
@@ -57,8 +57,9 @@ public class GameModePanel : MonoBehaviour
         // 戻る
         if (Keyboard.current.escapeKey.wasPressedThisFrame ||
             (player1Pad != null &&
-             player1Pad.buttonEast.wasPressedThisFrame))
+                player1Pad.buttonEast.wasPressedThisFrame))
         {
+            Debug.Log("GameModePanel : B");
             BackToMainMenu();
             return;
         }
@@ -136,7 +137,14 @@ public class GameModePanel : MonoBehaviour
         // フェードイン
         FadeManager.Instance.StartFadeIn(panelFadeDuration);
     }
+    private IEnumerator BackRoutine()
+    {
+        // フェードアウト
+        yield return FadeManager.Instance.StartFadeOut(0.5f);
 
+        // メインメニューへ
+        SceneManager.LoadScene(menuSceneName);
+    }
     public void Initialize()
     {
         decided = false;

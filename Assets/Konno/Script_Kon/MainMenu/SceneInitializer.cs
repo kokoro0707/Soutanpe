@@ -10,18 +10,15 @@ public class SceneInitializer : MonoBehaviour
     [SerializeField] private float waitTime = 0.5f;
 
     private IEnumerator Start()
-    {
-        if (sceneRoot != null)
-            sceneRoot.SetActive(false);
+{
+    // まず表示
+    if (sceneRoot != null)
+        sceneRoot.SetActive(true);
 
-        // 黒画面のまま待機
-        yield return new WaitForSeconds(waitTime);
+    // 1フレーム待ってUIを描画させる
+    yield return null;
 
-        if (sceneRoot != null)
-            sceneRoot.SetActive(true);
-
-        // フェードイン
-        if (FadeManager.Instance != null)
-            FadeManager.Instance.StartFadeIn();
+    // その後フェードイン
+    FadeManager.Instance.StartFadeIn();
     }
 }

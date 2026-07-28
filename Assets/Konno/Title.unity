@@ -443,6 +443,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FadeManager
   fadeImage: {fileID: 956283316}
+  sceneFadeOutTime: 0.5
+  sceneFadeInTime: 0.5
   fadeOutTime: 1
   fadeInTime: 2
 --- !u!1 &921598441
