@@ -16,6 +16,7 @@ public class FadeManager : MonoBehaviour
     [SerializeField] private float fadeOutTime = 1f;       // ƒpƒlƒ‹Ø‘Ö‚È‚Ç”Ä—p
     [SerializeField] private float fadeInTime = 2f;
 
+
     private bool isFading = false;
     private bool firstScene = true;
 

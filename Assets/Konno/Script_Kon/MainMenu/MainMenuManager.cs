@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Security.Cryptography;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -7,6 +8,8 @@ public class MainMenuManager : MonoBehaviour
 {
     [Header("ÉÅÉCÉìÉÅÉjÉÖÅ[")]
     [SerializeField] private TMP_Text[] menuTexts;
+
+    [SerializeField] private GameObject settingsPanel;
 
     [SerializeField] private string nextScene = "CharacterSelection";
 
@@ -31,7 +34,16 @@ public class MainMenuManager : MonoBehaviour
             Execute();
         }
     }
+    private void OpenSettings()
+    {
+        inputLock = true;
 
+        settingsPanel.SetActive(true);
+    }
+    public void CloseSettings()
+    {
+        inputLock = false;
+    }
     void Move()
     {
         if (inputLock) return;
@@ -88,10 +100,14 @@ public class MainMenuManager : MonoBehaviour
                 break;
 
             case 1:
+                OpenSettings();
+                break;
+
+            case 2:
 #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
 #else
-                Application.Quit();
+            Application.Quit();
 #endif
                 break;
         }
