@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Security.Cryptography;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,9 +7,7 @@ public class MainMenuManager : MonoBehaviour
 {
     [Header("メインメニュー")]
     [SerializeField] private TMP_Text[] menuTexts;
-
     [SerializeField] private GameObject settingsPanel;
-
     [SerializeField] private string nextScene = "CharacterSelection";
 
     private int currentIndex = 0;
@@ -25,6 +22,10 @@ public class MainMenuManager : MonoBehaviour
     {
         Move();
 
+        // 設定パネルが開いている間(inputLock中)は、
+        // メインメニュー側の決定操作を一切受け付けない
+        if (inputLock) return;
+
         bool submit =
             (Keyboard.current != null && Keyboard.current.aKey.wasPressedThisFrame) ||
             (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame);
@@ -34,46 +35,50 @@ public class MainMenuManager : MonoBehaviour
             Execute();
         }
     }
+
     private void OpenSettings()
     {
         inputLock = true;
-
         settingsPanel.SetActive(true);
     }
+
+    /// <summary>
+    /// 設定パネル側(SettingsNavigatorのOn Closedイベント)から呼ばれる。
+    /// メインメニューの操作を再開する。
+    /// パネル自体の非表示化はSettingsNavigator.ClosePanel()側で行っている。
+    /// </summary>
     public void CloseSettings()
     {
         inputLock = false;
     }
-    void Move()
+
+    private void Move()
     {
         if (inputLock) return;
-            bool left = Keyboard.current.leftArrowKey.wasPressedThisFrame || 
-            (Gamepad.current != null && Gamepad.current.dpad.left.wasPressedThisFrame); 
-            bool right = Keyboard.current.rightArrowKey.wasPressedThisFrame || 
+
+        bool left = Keyboard.current.leftArrowKey.wasPressedThisFrame ||
+            (Gamepad.current != null && Gamepad.current.dpad.left.wasPressedThisFrame);
+        bool right = Keyboard.current.rightArrowKey.wasPressedThisFrame ||
             (Gamepad.current != null && Gamepad.current.dpad.right.wasPressedThisFrame);
 
         if (left)
         {
             currentIndex--;
-
             if (currentIndex < 0)
                 currentIndex = menuTexts.Length - 1;
-
             UpdateSelection();
         }
 
         if (right)
         {
             currentIndex++;
-
             if (currentIndex >= menuTexts.Length)
                 currentIndex = 0;
-
             UpdateSelection();
         }
     }
 
-    void UpdateSelection()
+    private void UpdateSelection()
     {
         for (int i = 0; i < menuTexts.Length; i++)
         {
@@ -90,7 +95,7 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    void Execute()
+    private void Execute()
     {
         switch (currentIndex)
         {
@@ -107,7 +112,7 @@ public class MainMenuManager : MonoBehaviour
 #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
 #else
-            Application.Quit();
+                Application.Quit();
 #endif
                 break;
         }
