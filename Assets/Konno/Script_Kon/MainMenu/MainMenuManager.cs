@@ -10,6 +10,10 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private GameObject settingsPanel;
     [SerializeField] private string nextScene = "CharacterSelection";
 
+    [Header("SE")]
+    [SerializeField] private AudioClip moveSe;
+    [SerializeField] private AudioClip decideSe;
+
     private int currentIndex = 0;
     private bool inputLock;
 
@@ -32,6 +36,7 @@ public class MainMenuManager : MonoBehaviour
 
         if (submit)
         {
+            PlaySe(decideSe);
             Execute();
         }
     }
@@ -66,6 +71,7 @@ public class MainMenuManager : MonoBehaviour
             currentIndex--;
             if (currentIndex < 0)
                 currentIndex = menuTexts.Length - 1;
+            PlaySe(moveSe);
             UpdateSelection();
         }
 
@@ -74,8 +80,14 @@ public class MainMenuManager : MonoBehaviour
             currentIndex++;
             if (currentIndex >= menuTexts.Length)
                 currentIndex = 0;
+            PlaySe(moveSe);
             UpdateSelection();
         }
+    }
+
+    private void PlaySe(AudioClip clip)
+    {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(clip);
     }
 
     private void UpdateSelection()
