@@ -28,6 +28,12 @@ public class SettingsNavigator : MonoBehaviour
     [Tooltip("この設定パネルが閉じられた時に呼ばれる(メインメニュー側の操作再開などに使う)")]
     [SerializeField] private UnityEvent onClosed;
 
+    [Header("SE")]
+    [SerializeField] private AudioClip moveSe;      // 行移動
+    [SerializeField] private AudioClip adjustSe;    // 音量増減
+    [SerializeField] private AudioClip toggleSe;    // ミュートON/OFF
+    [SerializeField] private AudioClip closeSe;     // パネルを閉じる
+
     private int selectedIndex;
     private float verticalTimer;
     private float horizontalTimer;
@@ -62,6 +68,7 @@ public class SettingsNavigator : MonoBehaviour
 
         if (togglePressed && rows.Length > 0 && rows[selectedIndex] != null)
         {
+            PlaySe(toggleSe);
             rows[selectedIndex].ToggleMute();
         }
     }
@@ -72,8 +79,14 @@ public class SettingsNavigator : MonoBehaviour
     /// </summary>
     public void ClosePanel()
     {
+        PlaySe(closeSe);
         gameObject.SetActive(false);
         onClosed?.Invoke();
+    }
+
+    private void PlaySe(AudioClip clip)
+    {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(clip);
     }
 
     private void HandleVertical(float y)
@@ -139,6 +152,7 @@ public class SettingsNavigator : MonoBehaviour
         if (rows.Length == 0) return;
 
         selectedIndex = (selectedIndex + direction + rows.Length) % rows.Length;
+        PlaySe(moveSe);
         UpdateFocusVisual();
     }
 
@@ -146,6 +160,7 @@ public class SettingsNavigator : MonoBehaviour
     {
         if (rows.Length == 0 || rows[selectedIndex] == null) return;
 
+        PlaySe(adjustSe);
         if (direction > 0) rows[selectedIndex].Increase();
         else rows[selectedIndex].Decrease();
     }

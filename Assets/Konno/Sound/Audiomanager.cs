@@ -19,6 +19,12 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource sfxSource;
     [SerializeField] private AudioSource voiceSource;
 
+    [Header("初期音量(まだ一度も設定を保存していない状態でのデフォルト値, 0から1)")]
+    [Tooltip("10段階ゲージでの初期表示に合わせる場合は 0.5 = レベル5")]
+    [SerializeField, Range(0f, 1f)] private float defaultBgmVolume = 0.5f;
+    [SerializeField, Range(0f, 1f)] private float defaultSfxVolume = 0.5f;
+    [SerializeField, Range(0f, 1f)] private float defaultVoiceVolume = 0.5f;
+
     private const string BgmVolumeKey = "BGMVolume";
     private const string SfxVolumeKey = "SEVolume";
     private const string VoiceVolumeKey = "VoiceVolume";
@@ -64,9 +70,9 @@ public class AudioManager : MonoBehaviour
 
     private void LoadSavedSettings()
     {
-        BgmVolume = PlayerPrefs.GetFloat(BgmVolumeKey, 1f);
-        SfxVolume = PlayerPrefs.GetFloat(SfxVolumeKey, 1f);
-        VoiceVolume = PlayerPrefs.GetFloat(VoiceVolumeKey, 1f);
+        BgmVolume = PlayerPrefs.GetFloat(BgmVolumeKey, defaultBgmVolume);
+        SfxVolume = PlayerPrefs.GetFloat(SfxVolumeKey, defaultSfxVolume);
+        VoiceVolume = PlayerPrefs.GetFloat(VoiceVolumeKey, defaultVoiceVolume);
 
         BgmMuted = PlayerPrefs.GetInt(BgmMutedKey, 0) == 1;
         SfxMuted = PlayerPrefs.GetInt(SfxMutedKey, 0) == 1;
