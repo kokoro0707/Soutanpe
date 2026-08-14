@@ -23,6 +23,9 @@ public class SettingsTabController : MonoBehaviour
     [Tooltip("例: 3つ中の真ん中(サウンド設定)を最初に開きたいなら 1 にする")]
     [SerializeField] private int defaultTabIndex = 0;
 
+    [Header("閉じる処理")]
+    [SerializeField] private MainMenuManager menu;
+
     private int currentTabIndex;
 
     private void OnEnable()
@@ -34,14 +37,27 @@ public class SettingsTabController : MonoBehaviour
 
     private void Update()
     {
-        if (ReadLB())
+        if (ReadLB()) MoveTab(-1);
+        else if (ReadRB()) MoveTab(1);
+
+        if (ReadClose())
         {
-            MoveTab(-1);
+            Close();
         }
-        else if (ReadRB())
-        {
-            MoveTab(1);
-        }
+    }
+    private bool ReadClose()
+    {
+        var kb = Keyboard.current;
+        if (kb != null && kb.escapeKey.wasPressedThisFrame) return true;
+        var gp = Gamepad.current;
+        if (gp != null && gp.buttonEast.wasPressedThisFrame) return true;
+        return false;
+    }
+
+    private void Close()
+    {
+        gameObject.SetActive(false); // SettingsRoot自身を非表示に
+        menu.CloseSettings();
     }
 
     private void MoveTab(int direction)
