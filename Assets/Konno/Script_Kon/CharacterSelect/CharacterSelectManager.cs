@@ -27,6 +27,13 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private GameObject characterRoot;  // キャラクター選択パネルのルートオブジェクト
     [SerializeField] private GameModePanel gameModeManagerPanel;
 
+    [Header("キャラクターPrefab")]
+    [SerializeField] private GameObject[] characterPrefabs;
+    [Header("キャラクターアイコン画像")]
+    [SerializeField] private Sprite[] characterIconSprites;
+    [Header("キャラクター表示画像")]
+    [SerializeField] private Sprite[] characterPreviewSprites;
+
     //[SerializeField] private Sprite[] characterSprites; 画像を使う場合はここに設定する
 
     private int player1Index = 0;
@@ -201,6 +208,10 @@ public class CharacterSelectManager : MonoBehaviour
 
             player1Decided = true;
 
+            // Player1が選んだキャラクターを保存
+            CharacterSelectionData.Instance.player1Character =
+    characterPrefabs[player1Index];
+
             if (cpuMode)
                 selectState = SelectState.CPU;
             else if (player2Active)
@@ -249,6 +260,9 @@ public class CharacterSelectManager : MonoBehaviour
         if (player2Pad.buttonSouth.wasPressedThisFrame)
         {
             player2Decided = true;
+            // Player2が選んだキャラクターを保存
+            CharacterSelectionData.Instance.player2Character =
+        characterPrefabs[player2Index];
             UpdateSelectionColor();
         }
 
@@ -294,6 +308,9 @@ public class CharacterSelectManager : MonoBehaviour
         if (player1Pad.buttonSouth.wasPressedThisFrame)
         {
             player2Decided = true;
+            // CPUが選んだキャラクターを保存
+            CharacterSelectionData.Instance.player2Character =
+                characterPrefabs[player2Index];
 
             Debug.Log("CPUキャラクター決定");
 
@@ -431,27 +448,54 @@ public class CharacterSelectManager : MonoBehaviour
 
         previousCpuMode = cpuMode;
         canInput = true;
+        SetupCharacterIcons();
         UpdateGamepads();
         UpdateSelectionColor();
     }
+    private void SetupCharacterIcons()
+    {
+        int count = Mathf.Min(characterIcons.Length, characterIconSprites.Length);
+
+        for (int i = 0; i < count; i++)
+        {
+            characterIcons[i].sprite = characterIconSprites[i];
+        }
+    }
     private void UpdatePreview()
     {
-        // ===== PLAYER =====
-        if (player1Decided)
+        // ===== PLAYER1 =====
+        if (player1Decided &&
+            player1Index >= 0 &&
+            player1Index < characterPreviewSprites.Length)
         {
             player1Preview.gameObject.SetActive(true);
-            player1Preview.color = characterColors[player1Index];
+
+            // 選択キャラクターの画像を設定
+            player1Preview.sprite =
+                characterPreviewSprites[player1Index];
+
+            // 元の色で表示
+            player1Preview.color = Color.white;
         }
         else
         {
             player1Preview.gameObject.SetActive(false);
         }
 
+
         // ===== PLAYER2 / CPU =====
-        if (player2Decided)
+        if (player2Decided &&
+            player2Index >= 0 &&
+            player2Index < characterPreviewSprites.Length)
         {
             player2Preview.gameObject.SetActive(true);
-            player2Preview.color = characterColors[player2Index];
+
+            // 選択キャラクターの画像を設定
+            player2Preview.sprite =
+                characterPreviewSprites[player2Index];
+
+            // 元の色で表示
+            player2Preview.color = Color.white;
         }
         else
         {
