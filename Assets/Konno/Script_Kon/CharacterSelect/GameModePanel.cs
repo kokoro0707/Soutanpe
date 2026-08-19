@@ -32,9 +32,16 @@ public class GameModePanel : MonoBehaviour
         changingScene = true;
         decided = true;
 
-        Debug.Log("BackToMainMenu");
+        Debug.Log("ÉÇÅ[ÉhëIë Å® MainMenu");
 
-        StartCoroutine(BackRoutine());
+        if (FadeManager.Instance != null)
+        {
+            FadeManager.Instance.FadeToScene(menuSceneName);
+        }
+        else
+        {
+            SceneManager.LoadScene(menuSceneName);
+        }
     }
 
     private void OnEnable()
