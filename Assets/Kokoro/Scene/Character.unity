@@ -853,6 +853,7 @@ MonoBehaviour:
   facingController: {fileID: 0}
   rigidBody2D: {fileID: 0}
   movementThreshold: 0.05
+  moveController: {fileID: 0}
 --- !u!95 &1008845136
 Animator:
   serializedVersion: 7

@@ -9,12 +9,17 @@ using UnityEngine;
 )]
 public sealed class FighterMoveSet : ScriptableObject
 {
-    [Header("通常技")]
+    [Header("弱コンボ")]
     [SerializeField]
-    private MoveData lightAttack;
+    private NormalComboData lightCombo;
 
+    [Header("強コンボ")]
     [SerializeField]
-    private MoveData heavyAttack;
+    private NormalComboData heavyCombo;
+
+    [Header("アシストコンボ")]
+    [SerializeField]
+    private AssistComboData assistCombo;
 
     [Header("必殺技")]
     [SerializeField]
@@ -23,19 +28,18 @@ public sealed class FighterMoveSet : ScriptableObject
     [SerializeField]
     private MoveData specialAttack2;
 
-    [Header("アシストコンボ")]
-    [SerializeField]
-    private AssistComboData assistCombo;
+    public NormalComboData LightCombo =>
+        lightCombo;
 
-    public MoveData LightAttack => lightAttack;
-    public MoveData HeavyAttack => heavyAttack;
+    public NormalComboData HeavyCombo =>
+        heavyCombo;
+
+    public AssistComboData AssistCombo =>
+        assistCombo;
 
     public MoveData SpecialAttack1 =>
         specialAttack1;
 
     public MoveData SpecialAttack2 =>
         specialAttack2;
-
-    public AssistComboData AssistCombo =>
-        assistCombo;
 }

@@ -1,8 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// 入力、コマンド、移動、攻撃、被弾処理をつなぐ窓口。
-/// </summary>
 public sealed class FighterController : MonoBehaviour
 {
     [Header("入力")]
@@ -14,8 +11,7 @@ public sealed class FighterController : MonoBehaviour
 
     [Header("キャラクター機能")]
     [SerializeField]
-    private FighterCommandInterpreter
-        commandInterpreter;
+    private FighterCommandInterpreter commandInterpreter;
 
     [SerializeField]
     private FighterMotor motor;
@@ -27,12 +23,10 @@ public sealed class FighterController : MonoBehaviour
     private FighterHitReceiver hitReceiver;
 
     [SerializeField]
-    private FighterFacingController
-        facingController;
+    private FighterFacingController facingController;
 
     [SerializeField]
-    private FighterStateMachine
-        stateMachine;
+    private FighterStateMachine stateMachine;
 
     private IFighterInputSource inputSource;
 
@@ -41,14 +35,14 @@ public sealed class FighterController : MonoBehaviour
     private bool jumpQueued;
     private bool lightAttackQueued;
     private bool heavyAttackQueued;
+    private bool assistComboQueued;
 
     private int simulationFrame;
 
     private void Awake()
     {
         inputSource =
-            inputSourceComponent as
-                IFighterInputSource;
+            inputSourceComponent as IFighterInputSource;
 
         if (useLocalInput &&
             inputSource == null)
@@ -101,7 +95,6 @@ public sealed class FighterController : MonoBehaviour
                 facingController.FacingDirection
             );
 
-        // 後ろ入力の状態を被弾処理へ渡す
         if (hitReceiver != null)
         {
             hitReceiver.SetGuardInput(
@@ -109,7 +102,6 @@ public sealed class FighterController : MonoBehaviour
             );
         }
 
-        // KO後は操作させない
         if (stateMachine.CurrentState ==
             FighterState.KO)
         {
@@ -117,7 +109,6 @@ public sealed class FighterController : MonoBehaviour
             return;
         }
 
-        // ヒット硬直・ガード硬直を進める
         if (hitReceiver != null)
         {
             hitReceiver.SimulateFrame();
@@ -157,19 +148,16 @@ public sealed class FighterController : MonoBehaviour
             input.vertical;
 
         if (input.jumpPressed)
-        {
             jumpQueued = true;
-        }
 
         if (input.lightAttackPressed)
-        {
             lightAttackQueued = true;
-        }
 
         if (input.heavyAttackPressed)
-        {
             heavyAttackQueued = true;
-        }
+
+        if (input.assistComboPressed)
+            assistComboQueued = true;
     }
 
     private FighterInputData
@@ -187,6 +175,9 @@ public sealed class FighterController : MonoBehaviour
         input.heavyAttackPressed =
             heavyAttackQueued;
 
+        input.assistComboPressed =
+            assistComboQueued;
+
         return input;
     }
 
@@ -195,6 +186,7 @@ public sealed class FighterController : MonoBehaviour
         jumpQueued = false;
         lightAttackQueued = false;
         heavyAttackQueued = false;
+        assistComboQueued = false;
 
         simulationFrame++;
     }
@@ -204,34 +196,40 @@ public sealed class FighterController : MonoBehaviour
     )
     {
         if (stateMachine.IsCombatLocked)
-        {
             return;
-        }
 
         switch (motor.CurrentMode)
         {
             case FighterLocomotionMode.Air:
+
                 stateMachine.TryChangeState(
                     FighterState.Jump
                 );
+
                 return;
 
             case FighterLocomotionMode.ForwardStep:
+
                 stateMachine.TryChangeState(
                     FighterState.ForwardStep
                 );
+
                 return;
 
             case FighterLocomotionMode.BackStep:
+
                 stateMachine.TryChangeState(
                     FighterState.BackStep
                 );
+
                 return;
 
             case FighterLocomotionMode.Dash:
+
                 stateMachine.TryChangeState(
                     FighterState.Dash
                 );
+
                 return;
         }
 
@@ -258,7 +256,9 @@ public sealed class FighterController : MonoBehaviour
         }
     }
 
-    public void SetUseLocalInput(bool value)
+    public void SetUseLocalInput(
+        bool value
+    )
     {
         useLocalInput = value;
     }
