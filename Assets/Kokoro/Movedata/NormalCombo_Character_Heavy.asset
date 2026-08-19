@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: NormalCombo_Character_Heavy
+  m_EditorClassIdentifier: Assembly-CSharp::NormalComboData
+  steps:
+  - move: {fileID: 11400000, guid: 2b0ac152bd6da10418c5c02ede553c95, type: 2}
+    cancelStartFrame: 9
+    cancelEndFrame: 19
+  - move: {fileID: 11400000, guid: ddf22b79dfedaa140aaf15130375ee11, type: 2}
+    cancelStartFrame: 9
+    cancelEndFrame: 19
+  - move: {fileID: 11400000, guid: cb6da7d4caf8b9749a5666c89bca5a3d, type: 2}
+    cancelStartFrame: 9
+    cancelEndFrame: 19

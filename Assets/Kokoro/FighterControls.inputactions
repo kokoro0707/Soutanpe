@@ -50,6 +50,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "AssistCombo",
+                    "type": "Button",
+                    "id": "56e1f0fb-da4f-4f46-9a58-5f5c8c2312ae",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -66,7 +75,7 @@
                 },
                 {
                     "name": "",
-                    "id": "81a738d1-06a8-40ed-8456-e9e11eb3da57",
+                    "id": "90947046-1ba6-4d9e-8b08-fde030a93466",
                     "path": "<Gamepad>/buttonWest",
                     "interactions": "",
                     "processors": "",
@@ -209,12 +218,23 @@
                 },
                 {
                     "name": "",
-                    "id": "4d80eb38-f71f-4371-98f2-f7b3f533d0fc",
-                    "path": "<Gamepad>/buttonSouth",
+                    "id": "f9246a1e-6422-4efb-a106-a97b607b9eac",
+                    "path": "<Keyboard>/l",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "AssistCombo",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "54386aaa-df8d-4ec9-85e6-14b9e7c4d143",
+                    "path": "<Gamepad>/leftShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Jump",
+                    "action": "AssistCombo",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

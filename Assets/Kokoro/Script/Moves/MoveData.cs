@@ -56,6 +56,12 @@ public sealed class MoveData : ScriptableObject
     private Vector2 hitboxOffset =
         new Vector2(1f, 0f);
 
+    [Header("アニメーション")]
+    [Tooltip("この技に対応するAnimator上の番号")]
+    [SerializeField, Min(0)]
+    private int animationIndex;
+    
+
     [SerializeField]
     private Vector2 hitboxSize =
         new Vector2(1.2f, 1f);
@@ -80,6 +86,8 @@ public sealed class MoveData : ScriptableObject
         startupFrames +
         activeFrames +
         recoveryFrames;
+
+    public int AnimationIndex => animationIndex;
 
     /// <summary>
     /// 現在フレームが攻撃判定の持続中か。

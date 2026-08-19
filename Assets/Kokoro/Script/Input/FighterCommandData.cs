@@ -1,19 +1,20 @@
-/// <summary>
-/// 生入力を格ゲー用の操作へ変換した結果。
-/// </summary>
 public struct FighterCommandData
 {
     public int horizontal;
     public int vertical;
 
     public bool jumpPressed;
+
+    // 通常コンボ
     public bool lightAttackPressed;
     public bool heavyAttackPressed;
 
-    public bool guardHeld;
+    // アシストコンボ
+    public bool assistComboPressed;
 
+    // 移動系コマンド
+    public bool guardHeld;
     public bool forwardStepPressed;
     public bool backStepPressed;
-
     public bool dashHeld;
 }

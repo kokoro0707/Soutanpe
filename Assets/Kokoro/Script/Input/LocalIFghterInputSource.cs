@@ -2,15 +2,13 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// PlayerInputからキーボード・ゲームパッドの入力を取得し、
-/// ゲーム内部で使用するFighterInputDataへ変換する。
-///
-/// このクラスでは移動や攻撃を実行せず、
-/// 入力情報の取得と変換だけを担当する。
+/// PlayerInputから入力を取得し、
+/// FighterInputDataへ変換する。
 /// </summary>
 [RequireComponent(typeof(PlayerInput))]
-public sealed class LocalFighterInputSource
-    : MonoBehaviour, IFighterInputSource
+public sealed class LocalFighterInputSource :
+    MonoBehaviour,
+    IFighterInputSource
 {
     [Header("Action Map名")]
     [SerializeField]
@@ -24,17 +22,21 @@ public sealed class LocalFighterInputSource
     private string jumpActionName = "Jump";
 
     [SerializeField]
-    private string lightAttackActionName = "LightAttack";
+    private string lightAttackActionName =
+        "LightAttack";
 
     [SerializeField]
-    private string heavyAttackActionName = "HeavyAttack";
+    private string heavyAttackActionName =
+        "HeavyAttack";
+
+    [SerializeField]
+    private string assistComboActionName =
+        "AssistCombo";
 
     [Header("方向入力設定")]
-    [Tooltip("スティックをこの値以上倒すと方向入力になる")]
     [SerializeField, Range(0.1f, 0.95f)]
     private float directionPressThreshold = 0.55f;
 
-    [Tooltip("スティックをこの値未満まで戻すとニュートラルになる")]
     [SerializeField, Range(0.05f, 0.9f)]
     private float directionReleaseThreshold = 0.25f;
 
@@ -44,33 +46,24 @@ public sealed class LocalFighterInputSource
     private InputAction jumpAction;
     private InputAction lightAttackAction;
     private InputAction heavyAttackAction;
+    private InputAction assistComboAction;
 
     private bool isInitialized;
 
-    // 現在確定している横方向
-    // 左：-1、中央：0、右：1
     private int currentHorizontalDirection;
-
-    // 前回の上下方向
-    // 上入力を押した瞬間だけジャンプさせるために使用する
     private int previousVerticalDirection;
 
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
-
         InitializeActions();
     }
 
     private void Start()
     {
         if (!isInitialized)
-        {
             return;
-        }
 
-        // PlayerInputで別のAction Mapが選択されていた場合、
-        // Fighterへ切り替える
         if (playerInput.currentActionMap == null ||
             playerInput.currentActionMap.name != actionMapName)
         {
@@ -80,9 +73,6 @@ public sealed class LocalFighterInputSource
         }
     }
 
-    /// <summary>
-    /// PlayerInputから必要なActionを取得する。
-    /// </summary>
     private void InitializeActions()
     {
         if (playerInput == null)
@@ -98,8 +88,7 @@ public sealed class LocalFighterInputSource
         if (playerInput.actions == null)
         {
             Debug.LogError(
-                $"{name}のPlayer Inputに" +
-                "Input Actionsが設定されていません。",
+                $"{name}のPlayerInputにInput Actionsがありません。",
                 this
             );
 
@@ -114,39 +103,49 @@ public sealed class LocalFighterInputSource
         if (actionMap == null)
         {
             Debug.LogError(
-                $"Action Map「{actionMapName}」が" +
-                "見つかりません。",
+                $"Action Map「{actionMapName}」がありません。",
                 this
             );
 
             return;
         }
 
-        moveAction = FindAction(
-            actionMap,
-            moveActionName
-        );
+        moveAction =
+            FindAction(
+                actionMap,
+                moveActionName
+            );
 
-        jumpAction = FindAction(
-            actionMap,
-            jumpActionName
-        );
+        jumpAction =
+            FindAction(
+                actionMap,
+                jumpActionName
+            );
 
-        lightAttackAction = FindAction(
-            actionMap,
-            lightAttackActionName
-        );
+        lightAttackAction =
+            FindAction(
+                actionMap,
+                lightAttackActionName
+            );
 
-        heavyAttackAction = FindAction(
-            actionMap,
-            heavyAttackActionName
-        );
+        heavyAttackAction =
+            FindAction(
+                actionMap,
+                heavyAttackActionName
+            );
+
+        assistComboAction =
+            FindAction(
+                actionMap,
+                assistComboActionName
+            );
 
         isInitialized =
             moveAction != null &&
             jumpAction != null &&
             lightAttackAction != null &&
-            heavyAttackAction != null;
+            heavyAttackAction != null &&
+            assistComboAction != null;
 
         if (isInitialized)
         {
@@ -157,9 +156,6 @@ public sealed class LocalFighterInputSource
         }
     }
 
-    /// <summary>
-    /// Action Mapから指定された名前のActionを取得する。
-    /// </summary>
     private InputAction FindAction(
         InputActionMap actionMap,
         string actionName
@@ -171,8 +167,7 @@ public sealed class LocalFighterInputSource
         if (action == null)
         {
             Debug.LogError(
-                $"Action「{actionName}」が" +
-                "見つかりません。",
+                $"Action「{actionName}」がありません。",
                 this
             );
         }
@@ -180,15 +175,10 @@ public sealed class LocalFighterInputSource
         return action;
     }
 
-    /// <summary>
-    /// 現在の入力を1フレーム分のデータとして返す。
-    /// </summary>
     public FighterInputData ReadInput()
     {
         if (!isInitialized)
-        {
             return default;
-        }
 
         Vector2 moveInput =
             moveAction.ReadValue<Vector2>();
@@ -203,13 +193,10 @@ public sealed class LocalFighterInputSource
                 moveInput.y
             );
 
-        // 上方向へ入力が切り替わった瞬間だけTrue
-        // 上を押し続けても連続ジャンプしない
         bool upPressedThisFrame =
             vertical == 1 &&
             previousVerticalDirection != 1;
 
-        // SpaceまたはゲームパッドのButton South
         bool jumpButtonPressed =
             jumpAction.WasPressedThisFrame();
 
@@ -219,7 +206,6 @@ public sealed class LocalFighterInputSource
                 horizontal = horizontal,
                 vertical = vertical,
 
-                // 上入力とジャンプボタンの両方に対応
                 jumpPressed =
                     upPressedThisFrame ||
                     jumpButtonPressed,
@@ -230,34 +216,31 @@ public sealed class LocalFighterInputSource
 
                 heavyAttackPressed =
                     heavyAttackAction
+                        .WasPressedThisFrame(),
+
+                assistComboPressed =
+                    assistComboAction
                         .WasPressedThisFrame()
             };
 
-        // 次のフレームで上入力の変化を比較する
-        previousVerticalDirection = vertical;
+        previousVerticalDirection =
+            vertical;
 
         return inputData;
     }
 
-    /// <summary>
-    /// 横方向のアナログ入力を-1、0、1へ変換する。
-    ///
-    /// 入力開始と解除に別々のしきい値を使用し、
-    /// スティックの微妙なブレでニュートラル判定が
-    /// 消える問題を防ぐ。
-    /// </summary>
     private int ConvertHorizontalWithHysteresis(
         float value
     )
     {
-        // 現在ニュートラル
         if (currentHorizontalDirection == 0)
         {
             if (value >= directionPressThreshold)
             {
                 currentHorizontalDirection = 1;
             }
-            else if (value <= -directionPressThreshold)
+            else if (value <=
+                     -directionPressThreshold)
             {
                 currentHorizontalDirection = -1;
             }
@@ -265,7 +248,6 @@ public sealed class LocalFighterInputSource
             return currentHorizontalDirection;
         }
 
-        // 現在右入力
         if (currentHorizontalDirection == 1)
         {
             if (value <= directionReleaseThreshold)
@@ -276,7 +258,6 @@ public sealed class LocalFighterInputSource
             return currentHorizontalDirection;
         }
 
-        // 現在左入力
         if (value >= -directionReleaseThreshold)
         {
             currentHorizontalDirection = 0;
@@ -285,38 +266,27 @@ public sealed class LocalFighterInputSource
         return currentHorizontalDirection;
     }
 
-    /// <summary>
-    /// 上下方向の入力を-1、0、1へ変換する。
-    /// </summary>
     private int ConvertVerticalToDigital(
         float value
     )
     {
         if (value >= directionPressThreshold)
-        {
             return 1;
-        }
 
         if (value <= -directionPressThreshold)
-        {
             return -1;
-        }
 
         return 0;
     }
 
     private void OnDisable()
     {
-        // 再度有効になったときに、
-        // 前回の方向入力が残らないようにする
         currentHorizontalDirection = 0;
         previousVerticalDirection = 0;
     }
 
     private void OnValidate()
     {
-        // 解除しきい値が入力開始しきい値以上になると、
-        // スティック判定が不安定になるため制限する
         directionReleaseThreshold =
             Mathf.Min(
                 directionReleaseThreshold,

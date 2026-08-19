@@ -1,8 +1,19 @@
 using UnityEngine;
 
 /// <summary>
-/// 通常技とアシストコンボの開始、
-/// フレーム進行、攻撃判定を管理する。
+/// 現在実行中のコンボ種類。
+/// </summary>
+public enum FighterComboType
+{
+    None,
+    Light,
+    Heavy,
+    Assist
+}
+
+/// <summary>
+/// 弱コンボ・強コンボ・アシストコンボと
+/// 各MoveDataの進行を管理する。
 /// </summary>
 public sealed class FighterMoveController : MonoBehaviour
 {
@@ -23,14 +34,17 @@ public sealed class FighterMoveController : MonoBehaviour
     private MoveData currentMove;
     private int currentMoveFrame;
 
-    // 攻撃開始時の向き
     private int attackFacingDirection = 1;
 
-    // -1ならアシストコンボを使用していない
-    private int assistComboIndex = -1;
+    // 現在のコンボ種類
+    private FighterComboType currentComboType =
+        FighterComboType.None;
 
-    // 次のコンボ段が入力予約されているか
-    private bool assistNextQueued;
+    // 現在何段目か
+    private int currentComboIndex = -1;
+
+    // 弱・強コンボの次段入力予約
+    private bool nextNormalStepQueued;
 
     public bool IsAttacking =>
         currentMove != null;
@@ -41,8 +55,11 @@ public sealed class FighterMoveController : MonoBehaviour
     public int CurrentMoveFrame =>
         currentMoveFrame;
 
-    public bool IsAssistComboActive =>
-        assistComboIndex >= 0;
+    public FighterComboType CurrentComboType =>
+        currentComboType;
+
+    public int CurrentComboIndex =>
+        currentComboIndex;
 
     private void Reset()
     {
@@ -76,21 +93,14 @@ public sealed class FighterMoveController : MonoBehaviour
                 GetComponentInChildren<AttackHitbox>(true);
         }
 
-        if (attackHitbox == null)
+        if (attackHitbox != null)
         {
-            Debug.LogError(
-                $"{name}にAttackHitboxがありません。",
-                this
-            );
-
-            return;
+            attackHitbox.Deactivate();
         }
-
-        attackHitbox.Deactivate();
     }
 
     /// <summary>
-    /// 1フレーム分の攻撃処理を進める。
+    /// 1フレーム分の攻撃処理。
     /// </summary>
     public void SimulateCommand(
         FighterCommandData command,
@@ -108,7 +118,7 @@ public sealed class FighterMoveController : MonoBehaviour
         }
         else
         {
-            ReadAssistComboInput(command);
+            ReadComboInput(command);
         }
 
         if (currentMove == null)
@@ -149,83 +159,98 @@ public sealed class FighterMoveController : MonoBehaviour
             return;
         }
 
-        // 弱攻撃ボタンをアシストコンボボタンとして使用
-        if (command.lightAttackPressed)
+        // アシスト専用ボタン
+        if (command.assistComboPressed)
         {
-            if (moveSet.AssistCombo != null &&
-                moveSet.AssistCombo.IsValid)
-            {
-                StartAssistCombo(
-                    facingDirection
-                );
-            }
-            else
-            {
-                StartNormalMove(
-                    moveSet.LightAttack,
-                    facingDirection
-                );
-            }
+            StartAssistCombo(
+                moveSet.AssistCombo,
+                facingDirection
+            );
 
             return;
         }
 
+        // 強コンボ
         if (command.heavyAttackPressed)
         {
-            StartNormalMove(
-                moveSet.HeavyAttack,
+            StartNormalCombo(
+                moveSet.HeavyCombo,
+                FighterComboType.Heavy,
+                facingDirection
+            );
+
+            return;
+        }
+
+        // 弱コンボ
+        if (command.lightAttackPressed)
+        {
+            StartNormalCombo(
+                moveSet.LightCombo,
+                FighterComboType.Light,
                 facingDirection
             );
         }
     }
 
     /// <summary>
-    /// コンボ中の追加入力を確認する。
+    /// 弱・強コンボを開始する。
     /// </summary>
-    private void ReadAssistComboInput(
-        FighterCommandData command
-    )
-    {
-        if (!IsAssistComboActive ||
-            moveSet == null ||
-            moveSet.AssistCombo == null)
-        {
-            return;
-        }
-
-        AssistComboData combo =
-            moveSet.AssistCombo;
-
-        if (assistComboIndex >=
-            combo.StepCount - 1)
-        {
-            return;
-        }
-
-        // 連打式の場合は、同じ弱攻撃ボタンで次の段を予約
-        if (combo.AdvanceMode ==
-                AssistComboAdvanceMode.PressEachStep &&
-            command.lightAttackPressed)
-        {
-            assistNextQueued = true;
-
-            Debug.Log(
-                $"{name}：アシストコンボ" +
-                $"{assistComboIndex + 2}段目を予約",
-                this
-            );
-        }
-    }
-
-    /// <summary>
-    /// アシストコンボの1段目を開始する。
-    /// </summary>
-    private void StartAssistCombo(
+    private void StartNormalCombo(
+        NormalComboData combo,
+        FighterComboType comboType,
         int facingDirection
     )
     {
-        AssistComboData combo =
-            moveSet.AssistCombo;
+        if (combo == null ||
+            !combo.IsValid)
+        {
+            Debug.LogWarning(
+                $"{name}の{comboType} Comboが未設定です。",
+                this
+            );
+
+            return;
+        }
+
+        NormalComboStep firstStep =
+            combo.GetStep(0);
+
+        if (firstStep == null ||
+            firstStep.Move == null)
+        {
+            return;
+        }
+
+        currentComboType = comboType;
+        currentComboIndex = 0;
+
+        nextNormalStepQueued = false;
+
+        StartMoveInternal(
+            firstStep.Move,
+            facingDirection
+        );
+    }
+
+    /// <summary>
+    /// アシストコンボ開始。
+    /// </summary>
+    private void StartAssistCombo(
+        AssistComboData combo,
+        int facingDirection
+    )
+    {
+        if (combo == null ||
+            !combo.IsValid)
+        {
+            Debug.LogWarning(
+                $"{name}のAssist Comboが未設定です。",
+                this
+            );
+
+            return;
+        }
 
         AssistComboStep firstStep =
             combo.GetStep(0);
@@ -233,21 +258,15 @@ public sealed class FighterMoveController : MonoBehaviour
         if (firstStep == null ||
             firstStep.Move == null)
         {
-            Debug.LogWarning(
-                $"{name}のアシストコンボ1段目が未設定です。",
-                this
-            );
-
             return;
         }
 
-        assistComboIndex = 0;
+        currentComboType =
+            FighterComboType.Assist;
 
-        // 自動式なら次の段を自動予約
-        assistNextQueued =
-            combo.AdvanceMode ==
-                AssistComboAdvanceMode.OnePressAuto &&
-            combo.StepCount > 1;
+        currentComboIndex = 0;
+
+        nextNormalStepQueued = false;
 
         StartMoveInternal(
             firstStep.Move,
@@ -261,23 +280,61 @@ public sealed class FighterMoveController : MonoBehaviour
     }
 
     /// <summary>
-    /// 通常技を開始する。
+    /// コンボ中の追加入力。
     /// </summary>
-    private void StartNormalMove(
-        MoveData move,
-        int facingDirection
+    private void ReadComboInput(
+        FighterCommandData command
     )
     {
-        ResetAssistCombo();
+        if (currentComboType ==
+            FighterComboType.Light)
+        {
+            if (command.lightAttackPressed)
+            {
+                QueueNextNormalStep();
+            }
+        }
+        else if (currentComboType ==
+                 FighterComboType.Heavy)
+        {
+            if (command.heavyAttackPressed)
+            {
+                QueueNextNormalStep();
+            }
+        }
+    }
 
-        StartMoveInternal(
-            move,
-            facingDirection
+    /// <summary>
+    /// 次段を予約する。
+    /// </summary>
+    private void QueueNextNormalStep()
+    {
+        NormalComboData combo =
+            GetCurrentNormalCombo();
+
+        if (combo == null)
+        {
+            return;
+        }
+
+        if (currentComboIndex >=
+            combo.StepCount - 1)
+        {
+            return;
+        }
+
+        nextNormalStepQueued = true;
+
+        Debug.Log(
+            $"{name}：" +
+            $"{currentComboType}コンボ " +
+            $"{currentComboIndex + 2}段目予約",
+            this
         );
     }
 
     /// <summary>
-    /// 技を実際に開始する共通処理。
+    /// MoveDataを実際に開始する。
     /// </summary>
     private void StartMoveInternal(
         MoveData move,
@@ -286,12 +343,7 @@ public sealed class FighterMoveController : MonoBehaviour
     {
         if (move == null)
         {
-            Debug.LogWarning(
-                $"{name}が出そうとしたMoveDataが未設定です。",
-                this
-            );
-
-            ResetAssistCombo();
+            ResetCombo();
             return;
         }
 
@@ -301,6 +353,11 @@ public sealed class FighterMoveController : MonoBehaviour
         attackFacingDirection =
             facingDirection >= 0 ? 1 : -1;
 
+        if (attackHitbox != null)
+        {
+            attackHitbox.Deactivate();
+        }
+
         if (stateMachine != null)
         {
             stateMachine.TryChangeState(
@@ -308,32 +365,31 @@ public sealed class FighterMoveController : MonoBehaviour
             );
         }
 
-        if (attackHitbox != null)
-        {
-            attackHitbox.Deactivate();
-        }
-
         Debug.Log(
-            $"{name}：{move.MoveName}開始 " +
-            $"方向：{attackFacingDirection}",
+            $"{name}：" +
+            $"{move.MoveName}開始 " +
+            $"Combo={currentComboType} " +
+            $"段={currentComboIndex + 1}",
             this
         );
     }
 
-    /// <summary>
-    /// 現在の技を1フレーム進める。
-    /// </summary>
     private void UpdateCurrentMove()
     {
-        if (currentMove == null ||
-            attackHitbox == null)
+        if (currentMove == null)
         {
             return;
         }
 
-        UpdateHitbox();
+        UpdateAttackHitbox();
 
-        // 次のコンボ段へ移行できるか確認
+        // 弱・強コンボ
+        if (TryAdvanceNormalCombo())
+        {
+            return;
+        }
+
+        // アシストコンボ
         if (TryAdvanceAssistCombo())
         {
             return;
@@ -348,17 +404,21 @@ public sealed class FighterMoveController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 攻撃判定のON・OFFを更新する。
-    /// </summary>
-    private void UpdateHitbox()
+
+    private void UpdateAttackHitbox()
     {
-        bool shouldEnableHitbox =
+        if (attackHitbox == null ||
+            currentMove == null)
+        {
+            return;
+        }
+
+        bool shouldEnable =
             currentMove.IsActiveFrame(
                 currentMoveFrame
             );
 
-        if (shouldEnableHitbox)
+        if (shouldEnable)
         {
             if (!attackHitbox.IsActive)
             {
@@ -369,21 +429,91 @@ public sealed class FighterMoveController : MonoBehaviour
                 );
             }
         }
-        else if (attackHitbox.IsActive)
+        else
         {
-            attackHitbox.Deactivate();
+            if (attackHitbox.IsActive)
+            {
+                attackHitbox.Deactivate();
+            }
         }
     }
 
     /// <summary>
-    /// 予約された次のコンボ段へ移行する。
+    /// 弱・強コンボの次段へ進む。
+    /// </summary>
+    private bool TryAdvanceNormalCombo()
+    {
+        if (currentComboType !=
+                FighterComboType.Light &&
+            currentComboType !=
+                FighterComboType.Heavy)
+        {
+            return false;
+        }
+
+        if (!nextNormalStepQueued)
+        {
+            return false;
+        }
+
+        NormalComboData combo =
+            GetCurrentNormalCombo();
+
+        if (combo == null)
+        {
+            return false;
+        }
+
+        NormalComboStep currentStep =
+            combo.GetStep(
+                currentComboIndex
+            );
+
+        if (currentStep == null ||
+            !currentStep.IsCancelWindow(
+                currentMoveFrame
+            ))
+        {
+            return false;
+        }
+
+        int nextIndex =
+            currentComboIndex + 1;
+
+        NormalComboStep nextStep =
+            combo.GetStep(nextIndex);
+
+        if (nextStep == null ||
+            nextStep.Move == null)
+        {
+            return false;
+        }
+
+        currentComboIndex =
+            nextIndex;
+
+        nextNormalStepQueued =
+            false;
+
+        StartMoveInternal(
+            nextStep.Move,
+            attackFacingDirection
+        );
+
+        return true;
+    }
+    /// <summary>
+    /// アシストコンボを自動で次段へ進める。
     /// </summary>
     private bool TryAdvanceAssistCombo()
     {
-        if (!IsAssistComboActive ||
-            !assistNextQueued ||
-            moveSet == null ||
-            moveSet.AssistCombo == null)
+        if (currentComboType !=
+            FighterComboType.Assist)
+        {
+            return false;
+        }
+
+        if (moveSet == null)
         {
             return false;
         }
@@ -391,18 +521,37 @@ public sealed class FighterMoveController : MonoBehaviour
         AssistComboData combo =
             moveSet.AssistCombo;
 
-        AssistComboStep currentStep =
-            combo.GetStep(assistComboIndex);
+        if (combo == null)
+        {
+            return false;
+        }
 
-        if (currentStep == null ||
-            !currentStep.IsCancelWindow(
-                currentMoveFrame))
+        // 最終段なら次へ行かない
+        if (currentComboIndex >=
+            combo.StepCount - 1)
+        {
+            return false;
+        }
+
+        AssistComboStep currentStep =
+            combo.GetStep(
+                currentComboIndex
+            );
+
+        if (currentStep == null)
+        {
+            return false;
+        }
+
+        // 自動で次段へ進むフレームまで待つ
+        if (currentMoveFrame <
+            currentStep.NextStartFrame)
         {
             return false;
         }
 
         int nextIndex =
-            assistComboIndex + 1;
+            currentComboIndex + 1;
 
         AssistComboStep nextStep =
             combo.GetStep(nextIndex);
@@ -410,37 +559,44 @@ public sealed class FighterMoveController : MonoBehaviour
         if (nextStep == null ||
             nextStep.Move == null)
         {
-            Debug.LogWarning(
-                $"{name}のアシストコンボ" +
-                $"{nextIndex + 1}段目が未設定です。",
-                this
-            );
-
-            assistNextQueued = false;
             return false;
         }
 
-        assistComboIndex = nextIndex;
-
-        // 自動式なら、さらに次の段も予約する
-        assistNextQueued =
-            combo.AdvanceMode ==
-                AssistComboAdvanceMode.OnePressAuto &&
-            assistComboIndex <
-                combo.StepCount - 1;
+        currentComboIndex =
+            nextIndex;
 
         StartMoveInternal(
             nextStep.Move,
             attackFacingDirection
         );
 
-        Debug.Log(
-            $"{name}：アシストコンボ" +
-            $"{assistComboIndex + 1}段目",
-            this
-        );
-
         return true;
+    }
+
+    /// <summary>
+    /// 現在実行している通常コンボを取得する。
+    /// </summary>
+    private NormalComboData GetCurrentNormalCombo()
+    {
+        if (moveSet == null)
+        {
+            return null;
+        }
+
+        switch (currentComboType)
+        {
+            case FighterComboType.Light:
+
+                return moveSet.LightCombo;
+
+            case FighterComboType.Heavy:
+
+                return moveSet.HeavyCombo;
+
+            default:
+
+                return null;
+        }
     }
 
     /// <summary>
@@ -453,21 +609,14 @@ public sealed class FighterMoveController : MonoBehaviour
             attackHitbox.Deactivate();
         }
 
-        if (currentMove != null)
-        {
-            Debug.Log(
-                $"{name}：{currentMove.MoveName}終了",
-                this
-            );
-        }
-
         currentMove = null;
         currentMoveFrame = 0;
 
-        ResetAssistCombo();
+        ResetCombo();
 
         if (stateMachine != null &&
-            stateMachine.CurrentState != FighterState.KO)
+            stateMachine.CurrentState !=
+                FighterState.KO)
         {
             stateMachine.TryChangeState(
                 FighterState.Idle
@@ -476,7 +625,7 @@ public sealed class FighterMoveController : MonoBehaviour
     }
 
     /// <summary>
-    /// 被弾などで攻撃を中断する。
+    /// 被弾などで攻撃を強制終了する。
     /// </summary>
     public void CancelCurrentMove()
     {
@@ -488,20 +637,32 @@ public sealed class FighterMoveController : MonoBehaviour
         currentMove = null;
         currentMoveFrame = 0;
 
-        ResetAssistCombo();
+        ResetCombo();
     }
 
-    private void ResetAssistCombo()
+    /// <summary>
+    /// コンボ状態を初期化する。
+    /// </summary>
+    private void ResetCombo()
     {
-        assistComboIndex = -1;
-        assistNextQueued = false;
+        currentComboType =
+            FighterComboType.None;
+
+        currentComboIndex = -1;
+
+        nextNormalStepQueued = false;
     }
 
+    /// <summary>
+    /// 使用するキャラクターのMoveSetを変更する。
+    /// </summary>
     public void SetMoveSet(
         FighterMoveSet newMoveSet
     )
     {
         CancelCurrentMove();
+
         moveSet = newMoveSet;
     }
 }
+

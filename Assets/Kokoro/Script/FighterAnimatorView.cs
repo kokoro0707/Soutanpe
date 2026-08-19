@@ -23,6 +23,9 @@ public sealed class FighterAnimatorView : MonoBehaviour
     [SerializeField]
     private float movementThreshold = 0.05f;
 
+    [SerializeField]
+    private FighterMoveController moveController;
+
     private static readonly int MoveDirectionHash =
         Animator.StringToHash("MoveDirection");
 
@@ -44,6 +47,9 @@ public sealed class FighterAnimatorView : MonoBehaviour
     private static readonly int IsHitHash =
     Animator.StringToHash("IsHit");
 
+    private static readonly int AttackIndexHash =
+    Animator.StringToHash("AttackIndex");
+
 
     private void Reset()
     {
@@ -58,6 +64,9 @@ public sealed class FighterAnimatorView : MonoBehaviour
 
         rigidBody2D =
             GetComponentInParent<Rigidbody2D>();
+
+        moveController =
+            GetComponentInParent<FighterMoveController>();
     }
 
     private void Awake()
@@ -85,6 +94,13 @@ public sealed class FighterAnimatorView : MonoBehaviour
             rigidBody2D =
                 GetComponentInParent<Rigidbody2D>();
         }
+
+        if (moveController == null)
+        {
+            moveController =
+                GetComponentInParent<FighterMoveController>();
+        }
+
     }
 
     private void Update()
@@ -104,6 +120,7 @@ public sealed class FighterAnimatorView : MonoBehaviour
         UpdateJumpAnimation();
         UpdateBlockAnimation();
         UpdateHitAnimation();
+        UpdateAttackAnimation();
     }
 
     /// <summary>
@@ -229,6 +246,28 @@ public sealed class FighterAnimatorView : MonoBehaviour
         animator.SetBool(
             IsHitHash,
             isHit
+        );
+    }
+
+    /// <summary>
+    /// 現在実行している技のアニメーション番号をAnimatorへ送る。
+    /// </summary>
+    private void UpdateAttackAnimation()
+    {
+        int attackIndex = 0;
+
+        if (stateMachine.CurrentState ==
+                FighterState.Attack &&
+            moveController != null &&
+            moveController.CurrentMove != null)
+        {
+            attackIndex =
+                moveController.CurrentMove.AnimationIndex;
+        }
+
+        animator.SetInteger(
+            AttackIndexHash,
+            attackIndex
         );
     }
 
