@@ -15,8 +15,8 @@ EditorBuildSettings:
     path: Assets/Konno/CharacterSelection.unity
     guid: 4ff673284ac6d0043ae3301fd737aa08
   - enabled: 1
-    path: Assets/Kokoro/Scene/Main.unity
-    guid: 20c99f8c61f4ceb46b3de04b78ad631b
+    path: Assets/Kokoro/Scene/Character.unity
+    guid: 87e1d9479c2044a4883a7ed17b98572b
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

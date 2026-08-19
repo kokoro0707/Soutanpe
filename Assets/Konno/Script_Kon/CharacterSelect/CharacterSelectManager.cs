@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using System.Collections;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class CharacterSelectManager : MonoBehaviour
 {
@@ -34,10 +35,13 @@ public class CharacterSelectManager : MonoBehaviour
     [Header("キャラクター表示画像")]
     [SerializeField] private Sprite[] characterPreviewSprites;
 
+    [Header("バトルシーン")]
+    [SerializeField] private string battleSceneName = "Character";
+
     //[SerializeField] private Sprite[] characterSprites; 画像を使う場合はここに設定する
 
     private int player1Index = 0;
-    private int player2Index = 1;
+    private int player2Index = 0;
 
     private bool player1Decided;
     private bool player2Decided;
@@ -50,7 +54,7 @@ public class CharacterSelectManager : MonoBehaviour
     //private bool selectingCPU;
     private bool canInput = false;
     private bool previousCpuMode;
-
+    private bool isChangingScene = false;
 
     [SerializeField]
     private Color[] characterColors =
@@ -222,6 +226,8 @@ public class CharacterSelectManager : MonoBehaviour
             UpdateSelectionColor();
 
             Debug.Log("UpdateSelectionColor後");
+            // 両方決定したか確認
+            CheckBothPlayersDecided();
         }
     }
 
@@ -264,6 +270,8 @@ public class CharacterSelectManager : MonoBehaviour
             CharacterSelectionData.Instance.player2Character =
         characterPrefabs[player2Index];
             UpdateSelectionColor();
+            // 両方決定したか確認
+            CheckBothPlayersDecided();
         }
 
         // 追加: P2未決定中にBを押したらP1選択へ戻る
@@ -315,7 +323,8 @@ public class CharacterSelectManager : MonoBehaviour
             Debug.Log("CPUキャラクター決定");
 
             UpdateSelectionColor();
-
+            // 両方決定したか確認
+            CheckBothPlayersDecided();
             // TODO : バトルシーンへ
         }
         // Bボタン（取消）
@@ -405,6 +414,8 @@ public class CharacterSelectManager : MonoBehaviour
         }
         //UpdateSelectionColor();
         UpdatePreview();
+
+        CheckBothPlayersDecided();
     }
     private IEnumerator WaitReleaseButton()
     {
@@ -443,8 +454,10 @@ public class CharacterSelectManager : MonoBehaviour
         player1Decided = false;
         player2Decided = false;
 
+        isChangingScene = false;
+
         player1Index = 0;
-        player2Index = 1;
+        player2Index = 0;
 
         previousCpuMode = cpuMode;
         canInput = true;
@@ -501,5 +514,30 @@ public class CharacterSelectManager : MonoBehaviour
         {
             player2Preview.gameObject.SetActive(false);
         }
+    }
+    private void CheckBothPlayersDecided()
+    {
+        if (isChangingScene)
+            return;
+
+        if (player1Decided && player2Decided)
+        {
+            isChangingScene = true;
+
+            Debug.Log("両プレイヤー決定 → BattleSceneへ移動");
+
+            FadeManager.Instance.FadeToScene(battleSceneName);
+        }
+    }
+    private IEnumerator GoToBattleRoutine()
+    {
+        // フェードアウト
+        if (FadeManager.Instance != null)
+        {
+            yield return FadeManager.Instance.StartFadeOut();
+        }
+
+        // Battleシーンへ移動
+        SceneManager.LoadScene(battleSceneName);
     }
 }
