@@ -84,14 +84,14 @@ public sealed class LocalTwoPlayerDeviceSetup : MonoBehaviour
 
         AssignDevice(
             player1Input,
-            keyboardSchemeName,
-            Keyboard.current
+            gamepadSchemeName,
+            Gamepad.all[0]
         );
 
         AssignDevice(
             player2Input,
-            gamepadSchemeName,
-            Gamepad.all[0]
+            keyboardSchemeName,
+            Keyboard.current
         );
 
         Debug.Log(

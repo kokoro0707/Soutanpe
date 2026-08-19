@@ -29,6 +29,22 @@ public sealed class FighterAnimatorView : MonoBehaviour
     private static readonly int IsDashingHash =
         Animator.StringToHash("IsDashing");
 
+    private static readonly int IsForwardStepHash =
+        Animator.StringToHash("IsForwardStep");
+
+    private static readonly int IsBackStepHash =
+       Animator.StringToHash("IsBackStep");
+
+    private static readonly int IsJumpingHash =
+    Animator.StringToHash("IsJumping");
+
+    private static readonly int IsBlockingHash =
+    Animator.StringToHash("IsBlocking");
+
+    private static readonly int IsHitHash =
+    Animator.StringToHash("IsHit");
+
+
     private void Reset()
     {
         animator =
@@ -83,6 +99,11 @@ public sealed class FighterAnimatorView : MonoBehaviour
 
         UpdateMovementAnimation();
         UpdateDashAnimation();
+        UpdateForwardStepAnimation();
+        UpdateBackStepAnimation();
+        UpdateJumpAnimation();
+        UpdateBlockAnimation();
+        UpdateHitAnimation();
     }
 
     /// <summary>
@@ -139,4 +160,78 @@ public sealed class FighterAnimatorView : MonoBehaviour
             isDashing
         );
     }
+    private void UpdateForwardStepAnimation()
+    {
+        bool isForwardStep =
+            stateMachine.CurrentState ==
+            FighterState.ForwardStep;
+
+        animator.SetBool(
+            IsForwardStepHash,
+            isForwardStep
+        );
+    }
+
+    /// <summary>
+    /// バックステップ状態をAnimatorへ送る。
+    /// </summary>
+    private void UpdateBackStepAnimation()
+    {
+        bool isBackStep =
+            stateMachine.CurrentState ==
+            FighterState.BackStep;
+
+        animator.SetBool(
+            IsBackStepHash,
+            isBackStep
+        );
+    }
+
+    /// <summary>
+    /// ジャンプ状態をAnimatorへ送る。
+    /// </summary>
+    private void UpdateJumpAnimation()
+    {
+        bool isJumping =
+            stateMachine.CurrentState ==
+            FighterState.Jump;
+
+        animator.SetBool(
+            IsJumpingHash,
+            isJumping
+        );
+    }
+
+    /// <summary>
+    /// 攻撃をガードした時の硬直状態をAnimatorへ送る。
+    /// </summary>
+    private void UpdateBlockAnimation()
+    {
+        bool isBlocking =
+            stateMachine.CurrentState ==
+            FighterState.BlockStun;
+
+        animator.SetBool(
+            IsBlockingHash,
+            isBlocking
+        );
+    }
+
+    /// <summary>
+    /// 被弾硬直状態をAnimatorへ送る。
+    /// </summary>
+    private void UpdateHitAnimation()
+    {
+        bool isHit =
+            stateMachine.CurrentState ==
+            FighterState.HitStun;
+
+        animator.SetBool(
+            IsHitHash,
+            isHit
+        );
+    }
+
+
+
 }
