@@ -15,7 +15,7 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private Color player1Color = Color.red;
     [SerializeField] private Color player2Color = Color.blue;
     [SerializeField] private Color decidedColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-   
+
     [Header("ラベル")]
     [SerializeField] private TMP_Text player1Label;
     [SerializeField] private TMP_Text player2Label;
@@ -23,8 +23,8 @@ public class CharacterSelectManager : MonoBehaviour
     [Header("立ち絵")]
     [SerializeField] private Image player1Preview;
     [SerializeField] private Image player2Preview;
-        
-    [SerializeField] private GameObject gameModePanel;  // ゲームモード選択パネル（Player vs Player / Player vs CPU）
+
+    [SerializeField] private GameObject gameModePanel;  // ゲームモード選択パネル(Player vs Player / Player vs CPU)
     [SerializeField] private GameObject characterRoot;  // キャラクター選択パネルのルートオブジェクト
     [SerializeField] private GameModePanel gameModeManagerPanel;
 
@@ -37,6 +37,11 @@ public class CharacterSelectManager : MonoBehaviour
 
     [Header("バトルシーン")]
     [SerializeField] private string battleSceneName = "Character";
+
+    [Header("SE")]
+    [SerializeField] private AudioClip moveSe;   // カーソル移動音
+    [SerializeField] private AudioClip decideSe; // 決定音
+    [SerializeField] private AudioClip cancelSe; // 取消・戻る音
 
     //[SerializeField] private Sprite[] characterSprites; 画像を使う場合はここに設定する
 
@@ -90,6 +95,7 @@ public class CharacterSelectManager : MonoBehaviour
                 !player1Decided))
         {
             Debug.Log("CharacterSelectManager : B");
+            PlaySe(cancelSe);
             BackToGameMode();
             return;
         }
@@ -129,6 +135,12 @@ public class CharacterSelectManager : MonoBehaviour
                 break;
         }
     }
+
+    private void PlaySe(AudioClip clip)
+    {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(clip);
+    }
+
     private void BackToGameMode()
     {
         StartCoroutine(BackToGameModeRoutine());
@@ -160,14 +172,15 @@ public class CharacterSelectManager : MonoBehaviour
         if (Gamepad.all.Count >= 2)
             player2Pad = Gamepad.all[1];
 
-        bool active = player2Pad != null; 
-        if (active != player2Active) 
-        { player2Active = active; 
-            if (!player2Active) 
-            { 
-                player2Decided = false; 
-            } 
-            UpdateSelectionColor(); 
+        bool active = player2Pad != null;
+        if (active != player2Active)
+        {
+            player2Active = active;
+            if (!player2Active)
+            {
+                player2Decided = false;
+            }
+            UpdateSelectionColor();
         }
     }
 
@@ -175,13 +188,14 @@ public class CharacterSelectManager : MonoBehaviour
     {
         if (player1Decided)
         {
-            // 決定済みでも、相手不在（対人戦でP2なし、かつCPUモードでもない）なら
+            // 決定済みでも、相手不在(対人戦でP2なし、かつCPUモードでもない)なら
             // ここでBボタンによる取消だけは受け付ける
             if (!cpuMode && !player2Active)
             {
                 if (player1Pad.buttonEast.wasPressedThisFrame)
                 {
                     player1Decided = false;
+                    PlaySe(cancelSe);
                     UpdateSelectionColor();
 
                     Debug.Log("P1 決定取消");
@@ -195,6 +209,7 @@ public class CharacterSelectManager : MonoBehaviour
             player1Index--;
             if (player1Index < 0)
                 player1Index = characterIcons.Length - 1;
+            PlaySe(moveSe);
             UpdateSelectionColor();
         }
 
@@ -203,6 +218,7 @@ public class CharacterSelectManager : MonoBehaviour
             player1Index++;
             if (player1Index >= characterIcons.Length)
                 player1Index = 0;
+            PlaySe(moveSe);
             UpdateSelectionColor();
         }
 
@@ -211,6 +227,7 @@ public class CharacterSelectManager : MonoBehaviour
             Debug.Log("Aボタン");
 
             player1Decided = true;
+            PlaySe(decideSe);
 
             // Player1が選んだキャラクターを保存
             CharacterSelectionData.Instance.player1Character =
@@ -240,6 +257,7 @@ public class CharacterSelectManager : MonoBehaviour
             {
                 player2Decided = false;
                 selectState = SelectState.Player2;
+                PlaySe(cancelSe);
                 UpdateSelectionColor();
 
                 Debug.Log("P2 決定取消");
@@ -252,6 +270,7 @@ public class CharacterSelectManager : MonoBehaviour
             player2Index--;
             if (player2Index < 0)
                 player2Index = characterIcons.Length - 1;
+            PlaySe(moveSe);
             UpdateSelectionColor();
         }
 
@@ -260,12 +279,14 @@ public class CharacterSelectManager : MonoBehaviour
             player2Index++;
             if (player2Index >= characterIcons.Length)
                 player2Index = 0;
+            PlaySe(moveSe);
             UpdateSelectionColor();
         }
 
         if (player2Pad.buttonSouth.wasPressedThisFrame)
         {
             player2Decided = true;
+            PlaySe(decideSe);
             // Player2が選んだキャラクターを保存
             CharacterSelectionData.Instance.player2Character =
         characterPrefabs[player2Index];
@@ -279,6 +300,7 @@ public class CharacterSelectManager : MonoBehaviour
         {
             player1Decided = false;
             selectState = SelectState.Player1;
+            PlaySe(cancelSe);
             UpdateSelectionColor();
 
             Debug.Log("P1選択へ戻る");
@@ -300,6 +322,7 @@ public class CharacterSelectManager : MonoBehaviour
             if (player2Index < 0)
                 player2Index = characterIcons.Length - 1;
 
+            PlaySe(moveSe);
             UpdateSelectionColor();
         }
 
@@ -310,12 +333,14 @@ public class CharacterSelectManager : MonoBehaviour
             if (player2Index >= characterIcons.Length)
                 player2Index = 0;
 
+            PlaySe(moveSe);
             UpdateSelectionColor();
         }
 
         if (player1Pad.buttonSouth.wasPressedThisFrame)
         {
             player2Decided = true;
+            PlaySe(decideSe);
             // CPUが選んだキャラクターを保存
             CharacterSelectionData.Instance.player2Character =
                 characterPrefabs[player2Index];
@@ -327,13 +352,14 @@ public class CharacterSelectManager : MonoBehaviour
             CheckBothPlayersDecided();
             // TODO : バトルシーンへ
         }
-        // Bボタン（取消）
+        // Bボタン(取消)
         if (player1Pad.buttonEast.wasPressedThisFrame)
         {
             if (player2Decided)
             {
                 // CPU決定取消
                 player2Decided = false;
+                PlaySe(cancelSe);
                 UpdateSelectionColor();
 
                 Debug.Log("CPU決定取消");
@@ -344,6 +370,7 @@ public class CharacterSelectManager : MonoBehaviour
                 //selectingCPU = false;
                 player1Decided = false;
                 selectState = SelectState.Player1;
+                PlaySe(cancelSe);
                 UpdateSelectionColor();
 
                 Debug.Log("P1選択へ戻る");

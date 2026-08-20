@@ -14,7 +14,12 @@ public class GameModePanel : MonoBehaviour
     [SerializeField] private Color selectColor = Color.red;
     [SerializeField] private GameObject characterRoot;
     [Header("遷移時間")]
-    [SerializeField] private float panelFadeDuration = 0.2f; // ← キャラ選択⇔モード変更（今のまま変更しなくてよい想定だが手動調整可能に）
+    [SerializeField] private float panelFadeDuration = 0.2f; // ← キャラ選択⇔モード変更(今のまま変更しなくてよい想定だが手動調整可能に)
+
+    [Header("SE")]
+    [SerializeField] private AudioClip moveSe;   // カーソル移動音
+    [SerializeField] private AudioClip decideSe; // 決定音
+    [SerializeField] private AudioClip cancelSe; // 戻る音(MainMenuへ)
 
     private int currentIndex = 0;
     private bool decided = false;
@@ -67,6 +72,7 @@ public class GameModePanel : MonoBehaviour
                 player1Pad.buttonEast.wasPressedThisFrame))
         {
             Debug.Log("GameModePanel : B");
+            PlaySe(cancelSe);
             BackToMainMenu();
             return;
         }
@@ -90,6 +96,7 @@ public class GameModePanel : MonoBehaviour
             if (currentIndex < 0)
                 currentIndex = menuTexts.Length - 1;
 
+            PlaySe(moveSe);
             UpdateSelection();
         }
 
@@ -100,15 +107,22 @@ public class GameModePanel : MonoBehaviour
             if (currentIndex >= menuTexts.Length)
                 currentIndex = 0;
 
+            PlaySe(moveSe);
             UpdateSelection();
         }
 
         if (submit)
         {
+            PlaySe(decideSe);
             Decide();
         }
     }
-   
+
+    private void PlaySe(AudioClip clip)
+    {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(clip);
+    }
+
     private void UpdateSelection()
     {
         for (int i = 0; i < menuTexts.Length; i++)

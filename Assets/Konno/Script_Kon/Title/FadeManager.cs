@@ -51,26 +51,34 @@ public class FadeManager : MonoBehaviour
 
         StartCoroutine(FadeScene(sceneName));
     }
-  
+
     private IEnumerator FadeScene(string sceneName)
     {
         isFading = true;
 
-        // 1. フェードアウト
-        yield return FadeOut(sceneFadeOutTime);
+        Debug.Log("FadeScene Start");
 
-        // 2. 完全に黒を維持
+        // フェードアウト
+        yield return StartCoroutine(FadeOut(sceneFadeOutTime));
+
+        Debug.Log("FadeOut Complete");
+
+        // 完全な黒を維持
         SetFadeAlpha(1f);
 
-        // 3. シーン切り替え
+        // シーン切り替え
+        Debug.Log("Load Scene : " + sceneName);
         SceneManager.LoadScene(sceneName);
 
-        // 新しいシーンのUI生成を待つ
         yield return null;
         yield return null;
 
-        // 4. フェードイン
-        yield return FadeIn(sceneFadeInTime);
+        Debug.Log("FadeIn Start");
+
+        // フェードイン
+        yield return StartCoroutine(FadeIn(sceneFadeInTime));
+
+        Debug.Log("FadeIn Complete");
 
         isFading = false;
     }
