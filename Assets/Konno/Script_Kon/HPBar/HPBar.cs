@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-
 /// <summary>
 /// 汎用HPバー。特定のキャラクタークラス(Fighter/HealthSystemなど)に依存しない。
 ///
@@ -23,19 +22,22 @@ using UnityEngine.UI;
 ///   4. 手前に表示したい方(HPSlider)以外の Background は削除するか無効化する
 ///      (残すと奥のバーが隠れてしまう)
 ///   5. Hierarchy上で DamageSlider → HPSlider の順に並べる(下にある方が手前)
+///
+/// リザルト連携:
+///   SetHealth() で ratio が0になったタイミングで OnDepleted イベントが発火する。
+///   GameResultManager 側でこのイベントを購読すれば、キャラ側のスクリプトを
+///   一切変更せずにHP0検知ができる。
 /// </summary>
 public class HPBar : MonoBehaviour
 {
     [Header("スライダー参照")]
     [SerializeField] private Slider hpSlider;       // 即時反映される本体バー
     [SerializeField] private Slider damageSlider;    // 遅れて追従するダメージ表示バー
-
     [Header("演出設定")]
     [Tooltip("被ダメージ後、ダメージバーが減り始めるまでの待ち時間(秒)")]
     [SerializeField] private float delay = 0.4f;
     [Tooltip("ダメージバーが1秒間に減る割合(0から1のうちどれだけ進むか)")]
     [SerializeField] private float speed = 0.6f;
-
     [Header("ピンチ時の色変化(任意)")]
     [Tooltip("空でOK。中身を入れても、実行時に必ず Hp Slider の実際のFillで自動的に上書きされる(取り違え防止のため)")]
     [SerializeField] private Image hpFillImage;
@@ -43,8 +45,13 @@ public class HPBar : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float lowHpThreshold = 0.25f;
     [SerializeField] private Color normalColor = new Color(0.35f, 1f, 0.15f); // より明るい鮮やかな緑
     [SerializeField] private Color lowHpColor = new Color(1f, 0.2f, 0.15f);     // 明るい赤
-
     private float timer;
+
+    // ===== ここから追加: HP0検知用 =====
+    /// <summary>SetHealthで割合(ratio)が0になった瞬間に一度だけ発火する</summary>
+    public event System.Action OnDepleted;
+    private bool hasDepleted = false;
+    // ===== 追加ここまで =====
 
     private void Awake()
     {
@@ -56,12 +63,10 @@ public class HPBar : MonoBehaviour
             slider.maxValue = 1f;
             slider.wholeNumbers = false;
             slider.interactable = false; // マウス操作で動かせないようにする
-
             // InteractableをOFFにすると、Transitionが Color Tint のままだと
             // Unity側が自動でFillを薄暗く(無効化色に)してしまうため、Transitionを切る
             slider.transition = Selectable.Transition.None;
         }
-
         // hpSlider自身が「本当に描画に使っているFill」を必ず正として採用する。
         // Hp Fill Image に手動で違うImageがドラッグされていても、ここで上書きするため
         // 人為的な取り違えミスが起こりようがなくなる。
@@ -85,7 +90,6 @@ public class HPBar : MonoBehaviour
                 $"[HPBar] {name} は Hp Slider が未設定、または Fill Rect が空のため、色変更ができません。",
                 this);
         }
-
         // SetHealth()が呼ばれるまでの間、Editor上の元の色(黒など)が
         // 見えてしまわないよう、開始時点で先に通常色を反映しておく
         if (changeColorWhenLow && hpFillImage != null)
@@ -93,7 +97,6 @@ public class HPBar : MonoBehaviour
             hpFillImage.color = normalColor;
         }
     }
-
     /// <summary>
     /// 外部の攻撃/回復スクリプトから、HPが変化するたびに呼び出す。
     /// </summary>
@@ -101,21 +104,20 @@ public class HPBar : MonoBehaviour
     {
         if (max <= 0f) max = 1f;
         float ratio = Mathf.Clamp01(current / max);
-
         Debug.Log($"[HPBar] {name} SetHealth current={current} max={max} ratio={ratio} hpSlider={(hpSlider != null ? hpSlider.name : "null")}", this);
-
         if (hpSlider != null)
         {
             // Sliderへコードから代入すると OnValueChanged が誤発火し得るため
             // SetValueWithoutNotify を使う(フィードバックループ対策)
             hpSlider.SetValueWithoutNotify(ratio);
-
             if (changeColorWhenLow && hpFillImage != null)
                 hpFillImage.color = ratio <= lowHpThreshold ? lowHpColor : normalColor;
         }
-
-        if (damageSlider == null) return;
-
+        if (damageSlider == null)
+        {
+            CheckDepleted(ratio);
+            return;
+        }
         if (damageSlider.value <= ratio)
         {
             // 回復時、またはダメージバーがすでに追いついている場合は即座に同期
@@ -123,7 +125,40 @@ public class HPBar : MonoBehaviour
             timer = 0f;
         }
         // ダメージでバーが減った場合は、Update側で delay 後にゆっくり追従させる
+
+        CheckDepleted(ratio);
     }
+
+    /// <summary>
+    /// ダメージバー(残像)の追従アニメーションを待たず、即座に本体バーの値へ同期させる。
+    /// Time.timeScale = 0 でゲームを止める前に呼ぶことで、
+    /// アニメーション途中の赤いバーが凍結して残ってしまう不具合を防げる。
+    /// </summary>
+    public void SyncDamageBarInstantly()
+    {
+        if (damageSlider == null || hpSlider == null) return;
+        damageSlider.SetValueWithoutNotify(hpSlider.value);
+        timer = 0f;
+    }
+
+    // ===== ここから追加: HP0検知用 =====
+    private void CheckDepleted(float ratio)
+    {
+        if (ratio <= 0f)
+        {
+            if (!hasDepleted)
+            {
+                hasDepleted = true;
+                OnDepleted?.Invoke();
+            }
+        }
+        else
+        {
+            // 回復・シーン再読み込みなどでHPが戻った場合は再度検知できるようにリセット
+            hasDepleted = false;
+        }
+    }
+    // ===== 追加ここまで =====
 
     private void Update()
     {
@@ -133,19 +168,15 @@ public class HPBar : MonoBehaviour
         {
             Color targetColor =
                 hpSlider.value <= lowHpThreshold ? lowHpColor : normalColor;
-
             if (hpFillImage.color != targetColor)
             {
                 hpFillImage.color = targetColor;
             }
         }
-
         if (hpSlider == null || damageSlider == null) return;
         if (damageSlider.value <= hpSlider.value) return;
-
         timer += Time.deltaTime;
         if (timer < delay) return;
-
         float newValue = Mathf.MoveTowards(damageSlider.value, hpSlider.value, speed * Time.deltaTime);
         damageSlider.SetValueWithoutNotify(newValue);
     }
