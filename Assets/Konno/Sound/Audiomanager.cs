@@ -9,6 +9,9 @@ using UnityEngine;
 ///
 /// 使い方(SE再生の例、攻撃ヒット時など):
 ///   AudioManager.Instance.PlaySFX(hitSeClip);
+///
+/// マスター音量(MasterVolume)は、BGM/SEそれぞれの音量に掛け算される形で反映される。
+/// BGM/SE個別の音量設定・保存ロジック自体は変更していない。
 /// </summary>
 public class AudioManager : MonoBehaviour
 {
@@ -17,31 +20,30 @@ public class AudioManager : MonoBehaviour
     [Header("再生用ソース(未設定なら自動生成)")]
     [SerializeField] private AudioSource bgmSource;
     [SerializeField] private AudioSource sfxSource;
-    [SerializeField] private AudioSource voiceSource;
 
     [Header("初期音量(まだ一度も設定を保存していない状態でのデフォルト値, 0から1)")]
     [Tooltip("10段階ゲージでの初期表示に合わせる場合は 0.5 = レベル5")]
+    [SerializeField, Range(0f, 1f)] private float defaultMasterVolume = 0.5f;
     [SerializeField, Range(0f, 1f)] private float defaultBgmVolume = 0.5f;
     [SerializeField, Range(0f, 1f)] private float defaultSfxVolume = 0.5f;
-    [SerializeField, Range(0f, 1f)] private float defaultVoiceVolume = 0.5f;
 
+    private const string MasterVolumeKey = "MasterVolume";
     private const string BgmVolumeKey = "BGMVolume";
     private const string SfxVolumeKey = "SEVolume";
-    private const string VoiceVolumeKey = "VoiceVolume";
+    private const string MasterMutedKey = "MasterMuted";
     private const string BgmMutedKey = "BGMMuted";
     private const string SfxMutedKey = "SEMuted";
-    private const string VoiceMutedKey = "VoiceMuted";
 
+    /// <summary>現在のマスター音量(0から1、ミュート状態は含まない設定値そのもの)。BGM/SEに掛け算される</summary>
+    public float MasterVolume { get; private set; } = 1f;
     /// <summary>現在のBGM音量(0から1、ミュート状態は含まない設定値そのもの)</summary>
     public float BgmVolume { get; private set; } = 1f;
     /// <summary>現在のSE音量(0から1、ミュート状態は含まない設定値そのもの)</summary>
     public float SfxVolume { get; private set; } = 1f;
-    /// <summary>現在のVoice音量(0から1、ミュート状態は含まない設定値そのもの)</summary>
-    public float VoiceVolume { get; private set; } = 1f;
 
+    public bool MasterMuted { get; private set; }
     public bool BgmMuted { get; private set; }
     public bool SfxMuted { get; private set; }
-    public bool VoiceMuted { get; private set; }
 
     private void Awake()
     {
@@ -62,24 +64,29 @@ public class AudioManager : MonoBehaviour
         if (sfxSource == null) sfxSource = gameObject.AddComponent<AudioSource>();
         sfxSource.playOnAwake = false;
 
-        if (voiceSource == null) voiceSource = gameObject.AddComponent<AudioSource>();
-        voiceSource.playOnAwake = false;
-
         LoadSavedSettings();
     }
 
     private void LoadSavedSettings()
     {
+        MasterVolume = PlayerPrefs.GetFloat(MasterVolumeKey, defaultMasterVolume);
         BgmVolume = PlayerPrefs.GetFloat(BgmVolumeKey, defaultBgmVolume);
         SfxVolume = PlayerPrefs.GetFloat(SfxVolumeKey, defaultSfxVolume);
-        VoiceVolume = PlayerPrefs.GetFloat(VoiceVolumeKey, defaultVoiceVolume);
 
+        MasterMuted = PlayerPrefs.GetInt(MasterMutedKey, 0) == 1;
         BgmMuted = PlayerPrefs.GetInt(BgmMutedKey, 0) == 1;
         SfxMuted = PlayerPrefs.GetInt(SfxMutedKey, 0) == 1;
-        VoiceMuted = PlayerPrefs.GetInt(VoiceMutedKey, 0) == 1;
 
         ApplyBgmVolume();
-        // SE/VoiceはPlayOneShotのたびに音量を渡す方式なので、ここでは値の保持のみ
+        // SEはPlayOneShotのたびに音量を渡す方式なので、ここでは値の保持のみ
+    }
+
+    /// <summary>マスター音量を設定して保存する(0から1)。BGM/SE両方に反映される</summary>
+    public void SetMasterVolume(float value)
+    {
+        MasterVolume = Mathf.Clamp01(value);
+        ApplyBgmVolume();
+        PlayerPrefs.SetFloat(MasterVolumeKey, MasterVolume);
     }
 
     /// <summary>BGM音量を設定して保存する(0から1)</summary>
@@ -97,11 +104,11 @@ public class AudioManager : MonoBehaviour
         PlayerPrefs.SetFloat(SfxVolumeKey, SfxVolume);
     }
 
-    /// <summary>Voice音量を設定して保存する(0から1)</summary>
-    public void SetVoiceVolume(float value)
+    public void SetMasterMuted(bool muted)
     {
-        VoiceVolume = Mathf.Clamp01(value);
-        PlayerPrefs.SetFloat(VoiceVolumeKey, VoiceVolume);
+        MasterMuted = muted;
+        ApplyBgmVolume();
+        PlayerPrefs.SetInt(MasterMutedKey, muted ? 1 : 0);
     }
 
     public void SetBgmMuted(bool muted)
@@ -117,15 +124,16 @@ public class AudioManager : MonoBehaviour
         PlayerPrefs.SetInt(SfxMutedKey, muted ? 1 : 0);
     }
 
-    public void SetVoiceMuted(bool muted)
+    /// <summary>マスターがミュートなら、他のミュート状態に関わらず無音になる</summary>
+    private float GetEffectiveMasterVolume()
     {
-        VoiceMuted = muted;
-        PlayerPrefs.SetInt(VoiceMutedKey, muted ? 1 : 0);
+        return MasterMuted ? 0f : MasterVolume;
     }
 
     private void ApplyBgmVolume()
     {
-        if (bgmSource != null) bgmSource.volume = BgmMuted ? 0f : BgmVolume;
+        if (bgmSource == null) return;
+        bgmSource.volume = BgmMuted ? 0f : BgmVolume * GetEffectiveMasterVolume();
     }
 
     /// <summary>
@@ -137,7 +145,7 @@ public class AudioManager : MonoBehaviour
         if (bgmSource.clip == clip && bgmSource.isPlaying) return;
 
         bgmSource.clip = clip;
-        bgmSource.volume = BgmMuted ? 0f : BgmVolume;
+        bgmSource.volume = BgmMuted ? 0f : BgmVolume * GetEffectiveMasterVolume();
         bgmSource.Play();
     }
 
@@ -152,15 +160,6 @@ public class AudioManager : MonoBehaviour
     public void PlaySFX(AudioClip clip)
     {
         if (clip == null || sfxSource == null || SfxMuted) return;
-        sfxSource.PlayOneShot(clip, SfxVolume);
-    }
-
-    /// <summary>
-    /// ボイスを1回再生する。
-    /// </summary>
-    public void PlayVoice(AudioClip clip)
-    {
-        if (clip == null || voiceSource == null || VoiceMuted) return;
-        voiceSource.PlayOneShot(clip, VoiceVolume);
+        sfxSource.PlayOneShot(clip, SfxVolume * GetEffectiveMasterVolume());
     }
 }
