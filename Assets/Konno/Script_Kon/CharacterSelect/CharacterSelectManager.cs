@@ -43,6 +43,10 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private AudioClip decideSe; // 決定音
     [SerializeField] private AudioClip cancelSe; // 取消・戻る音
 
+    [Header("確認パネル")]
+    [SerializeField] private GameObject confirmPanel;
+
+    private bool isConfirmOpen = false;
     //[SerializeField] private Sprite[] characterSprites; 画像を使う場合はここに設定する
 
     private int player1Index = 0;
@@ -63,11 +67,12 @@ public class CharacterSelectManager : MonoBehaviour
 
     [SerializeField]
     private Color[] characterColors =
-{
-    Color.red,
-    Color.blue,
-    Color.yellow,
-    Color.green
+
+    {
+Color.red,
+Color.blue,
+Color.yellow,
+Color.green
 };
     private enum SelectState
     {
@@ -85,8 +90,23 @@ public class CharacterSelectManager : MonoBehaviour
         Initialize();
         //StartCoroutine(WaitReleaseButton());
     }
+    void Start()
+    {
+        if (confirmPanel != null)
+        {
+            confirmPanel.SetActive(false);
+        }
+
+        isConfirmOpen = false;
+    }
     private void Update()
     {
+        // 確認パネルが開いている間
+        if (isConfirmOpen)
+        {
+            ConfirmInput();
+            return;
+        }
         //UpdateGamepads();
         if (Keyboard.current.escapeKey.wasPressedThisFrame ||
              (player1Pad != null &&
@@ -133,6 +153,11 @@ public class CharacterSelectManager : MonoBehaviour
                 if (player1Pad != null)
                     CPUInput();
                 break;
+        }
+        if (isConfirmOpen)
+        {
+            ConfirmInput();
+            return;
         }
     }
 
@@ -229,9 +254,23 @@ public class CharacterSelectManager : MonoBehaviour
             player1Decided = true;
             PlaySe(decideSe);
 
-            // Player1が選んだキャラクターを保存
-            CharacterSelectionData.Instance.player1Character =
-    characterPrefabs[player1Index];
+            //if (player1Index >= 0 && player1Index < characterPrefabs.Length)
+            //{
+            //    CharacterSelectionData.Instance.player1Character =
+            //        characterPrefabs[player1Index];
+            //}
+            //else
+            //{
+            //    Debug.LogError(
+            //        "Player1のPrefabが設定されていません。Index = " +
+            //        player1Index
+            //    );
+
+            //    player1Decided = false;
+            //    return;
+            //}
+            // 仮：Prefab保存なし
+            Debug.Log("Player1 キャラクター決定 Index = " + player1Index);
 
             if (cpuMode)
                 selectState = SelectState.CPU;
@@ -287,9 +326,24 @@ public class CharacterSelectManager : MonoBehaviour
         {
             player2Decided = true;
             PlaySe(decideSe);
-            // Player2が選んだキャラクターを保存
-            CharacterSelectionData.Instance.player2Character =
-        characterPrefabs[player2Index];
+            //if (player2Index >= 0 && player2Index < characterPrefabs.Length)
+            //{
+            //    CharacterSelectionData.Instance.player2Character =
+            //        characterPrefabs[player2Index];
+            //}
+            //else
+            //{
+            //    Debug.LogError(
+            //        "Player2のPrefabが設定されていません。Index = " +
+            //        player2Index
+            //    );
+
+            //    player2Decided = false;
+            //    return;
+            //}
+            // 仮：Prefab保存なし
+            // 仮：Prefab保存なし
+            Debug.Log("Player2 キャラクター決定 Index = " + player2Index);
             UpdateSelectionColor();
             // 両方決定したか確認
             CheckBothPlayersDecided();
@@ -342,9 +396,23 @@ public class CharacterSelectManager : MonoBehaviour
             player2Decided = true;
             PlaySe(decideSe);
             // CPUが選んだキャラクターを保存
-            CharacterSelectionData.Instance.player2Character =
-                characterPrefabs[player2Index];
+            //if (player2Index >= 0 && player2Index < characterPrefabs.Length)
+            //{
+            //    CharacterSelectionData.Instance.player2Character =
+            //        characterPrefabs[player2Index];
+            //}
+            //else
+            //{
+            //    Debug.LogError(
+            //        "CPUのPrefabが設定されていません。Index = " +
+            //        player2Index
+            //    );
 
+            //    player2Decided = false;
+            //    return;
+            //}
+            // 仮：Prefab保存なし
+            Debug.Log("CPU キャラクター決定 Index = " + player2Index);
             Debug.Log("CPUキャラクター決定");
 
             UpdateSelectionColor();
@@ -544,16 +612,20 @@ public class CharacterSelectManager : MonoBehaviour
     }
     private void CheckBothPlayersDecided()
     {
+        // すでに確認パネルを表示中
+        if (isConfirmOpen)
+            return;
+
+        // すでにシーン移動中
         if (isChangingScene)
             return;
 
+        // P1とP2（またはCPU）が両方決定
         if (player1Decided && player2Decided)
         {
-            isChangingScene = true;
+            Debug.Log("両方決定 → 確認パネル表示");
 
-            Debug.Log("両プレイヤー決定 → BattleSceneへ移動");
-
-            FadeManager.Instance.FadeToScene(battleSceneName);
+            OpenConfirmPanel();
         }
     }
     private IEnumerator GoToBattleRoutine()
@@ -566,5 +638,80 @@ public class CharacterSelectManager : MonoBehaviour
 
         // Battleシーンへ移動
         SceneManager.LoadScene(battleSceneName);
+    }
+    private void ConfirmInput()
+    {
+        if (player1Pad == null)
+        {
+            Debug.LogWarning("Player1のGamepadがありません");
+            return;
+        }
+
+        // Aボタン
+        if (player1Pad.buttonSouth.wasPressedThisFrame)
+        {
+            StartBattle();
+            return;
+        }
+
+        // Bボタン
+        if (player1Pad.buttonEast.wasPressedThisFrame)
+        {
+            CloseConfirmPanel();
+            return;
+        }
+    }
+    private void StartBattle()
+    {
+        // 二重実行防止
+        if (isChangingScene)
+            return;
+
+        isChangingScene = true;
+
+        Debug.Log("スタート → フェード開始");
+
+        // 確認パネルを閉じる
+        isConfirmOpen = false;
+
+        if (confirmPanel != null)
+            confirmPanel.SetActive(false);
+
+        // FadeManagerでフェードしてシーン移動
+        if (FadeManager.Instance != null)
+        {
+            FadeManager.Instance.FadeToScene(battleSceneName);
+        }
+        else
+        {
+            Debug.LogError("FadeManager.Instance がありません");
+
+            // 保険として直接シーン移動
+            SceneManager.LoadScene(battleSceneName);
+        }
+    }
+    private void OpenConfirmPanel()
+    {
+        if (confirmPanel == null)
+        {
+            Debug.LogError("Confirm Panel が設定されていません");
+            return;
+        }
+
+        isConfirmOpen = true;
+        confirmPanel.SetActive(true);
+
+        Debug.Log("確認パネルを表示しました");
+    }
+    private void CloseConfirmPanel()
+    {
+        if (confirmPanel != null)
+        {
+            confirmPanel.SetActive(false);
+        }
+
+        isConfirmOpen = false;
+
+        Debug.Log("確認パネルを閉じる");
     }
 }
