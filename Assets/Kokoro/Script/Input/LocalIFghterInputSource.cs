@@ -43,6 +43,10 @@ public sealed class LocalFighterInputSource :
     [SerializeField]
     private string specialAttackActionName = "SpecialAttack";
 
+    [SerializeField]
+    private string grabActionName = "Grab";
+
+
     private PlayerInput playerInput;
 
     private InputAction moveAction;
@@ -51,6 +55,7 @@ public sealed class LocalFighterInputSource :
     private InputAction heavyAttackAction;
     private InputAction assistComboAction;
     private InputAction specialAttackAction;
+    private InputAction grabAction;
 
     private bool isInitialized;
 
@@ -149,13 +154,20 @@ public sealed class LocalFighterInputSource :
                 specialAttackActionName
             );
 
+        grabAction =
+            FindAction(
+                actionMap,
+                grabActionName
+            );
+
         isInitialized =
             moveAction != null &&
             jumpAction != null &&
             lightAttackAction != null &&
             heavyAttackAction != null &&
             assistComboAction != null &&
-            specialAttackAction != null;
+            specialAttackAction != null &&
+            grabAction != null;
 
         if (isInitialized)
         {
@@ -209,6 +221,11 @@ public sealed class LocalFighterInputSource :
 
         bool jumpButtonPressed =
             jumpAction.WasPressedThisFrame();
+        if (grabAction.WasPressedThisFrame())
+        {
+            Debug.Log("Åõ Ç¬Ç©Ç›ì¸óÕÅI");
+        }
+
 
         FighterInputData inputData =
             new FighterInputData
@@ -234,7 +251,12 @@ public sealed class LocalFighterInputSource :
 
                 specialAttackPressed=
                     specialAttackAction
-                        .WasPressedThisFrame()
+                        .WasPressedThisFrame(),
+
+                grabPressed=
+                    grabAction.
+                         WasPressedThisFrame()
+                
             };
 
         previousVerticalDirection =

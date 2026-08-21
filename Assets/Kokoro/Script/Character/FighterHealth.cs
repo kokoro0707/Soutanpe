@@ -85,4 +85,35 @@ public sealed class FighterHealth : MonoBehaviour
             maxHP
         );
     }
+
+    /// <summary>
+    /// キャラクターデータから最大HPを設定する。
+    /// </summary>
+    public void SetMaxHP(
+        int newMaxHP,
+        bool refill = true
+    )
+    {
+        maxHP =
+            Mathf.Max(1, newMaxHP);
+
+        if (refill)
+        {
+            CurrentHP = maxHP;
+        }
+        else
+        {
+            CurrentHP =
+                Mathf.Min(
+                    CurrentHP,
+                    maxHP
+                );
+        }
+
+        OnHealthChanged?.Invoke(
+            CurrentHP,
+            maxHP
+        );
+    }
+
 }

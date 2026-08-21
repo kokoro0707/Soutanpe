@@ -167,6 +167,9 @@ public sealed class FighterCommandInterpreter :
                 downSpecialPressed=
                     downSpecialPressed,
 
+                grabPressed=
+                    input.grabPressed,
+
                 dashHeld =
                     dashHeld
             };

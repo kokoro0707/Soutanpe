@@ -26,6 +26,9 @@ public sealed class FighterController : MonoBehaviour
     private FighterFacingController facingController;
 
     [SerializeField]
+    private FighterGrabController grabController;
+
+    [SerializeField]
     private FighterStateMachine stateMachine;
 
     private IFighterInputSource inputSource;
@@ -37,6 +40,7 @@ public sealed class FighterController : MonoBehaviour
     private bool heavyAttackQueued;
     private bool assistComboQueued;
     private bool specialAttackQueued;
+    private bool grabQueued;
 
     private int simulationFrame;
 
@@ -58,6 +62,12 @@ public sealed class FighterController : MonoBehaviour
         {
             hitReceiver =
                 GetComponent<FighterHitReceiver>();
+        }
+
+        if(grabController==null)
+        {
+            grabController=
+                GetComponent<FighterGrabController>();
         }
     }
 
@@ -121,6 +131,27 @@ public sealed class FighterController : MonoBehaviour
             }
         }
 
+        grabController?.SimulateCommand(
+    command,
+    facingController.FacingDirection,
+    motor.IsGrounded
+);
+
+        if (grabController != null &&
+            grabController.IsBusy)
+        {
+            FinishSimulationFrame();
+            return;
+        }
+
+        if (stateMachine.CurrentState ==
+            FighterState.Grabbed)
+        {
+            FinishSimulationFrame();
+            return;
+        }
+
+
         moveController.SimulateCommand(
             command,
             facingController.FacingDirection,
@@ -164,6 +195,11 @@ public sealed class FighterController : MonoBehaviour
         {
             specialAttackQueued = true;
         }
+
+        if(input.grabPressed)
+        {
+            grabQueued = true;
+        }
     }
 
     private FighterInputData
@@ -187,6 +223,9 @@ public sealed class FighterController : MonoBehaviour
         input.specialAttackPressed=
             specialAttackQueued;
 
+        input.grabPressed=
+            grabQueued;
+
         return input;
     }
 
@@ -197,6 +236,7 @@ public sealed class FighterController : MonoBehaviour
         heavyAttackQueued = false;
         assistComboQueued = false;
         specialAttackQueued = false;
+        grabQueued = false;
 
         simulationFrame++;
     }

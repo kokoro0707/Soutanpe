@@ -161,6 +161,65 @@ public sealed class FighterHitReceiver : MonoBehaviour
     }
 
     /// <summary>
+    /// ガード不能の投げダメージを受ける。
+    /// </summary>
+    public void ReceiveThrow(
+        int damage,
+        Vector2 knockback,
+        int direction,
+        int hitStunFrames
+    )
+    {
+        if (health == null ||
+            health.IsKnockedOut)
+        {
+            return;
+        }
+
+        direction =
+            direction >= 0 ? 1 : -1;
+
+        if (moveController != null)
+        {
+            moveController.CancelCurrentMove();
+        }
+
+        if (motor != null)
+        {
+            motor.CancelSpecialMovement();
+        }
+
+        health.TakeDamage(damage);
+
+        ApplyKnockback(
+            knockback,
+            direction
+        );
+
+        if (health.IsKnockedOut)
+        {
+            reactionFramesRemaining = 0;
+            return;
+        }
+
+        reactionFramesRemaining =
+            Mathf.Max(
+                1,
+                hitStunFrames
+            );
+
+        stateMachine.ForceChangeState(
+            FighterState.HitStun
+        );
+
+        Debug.Log(
+            $"{name}が投げを受けました。",
+            this
+        );
+    }
+
+
+    /// <summary>
     /// 現在の攻撃をガードできるか。
     /// </summary>
     private bool CanGuardAttack(

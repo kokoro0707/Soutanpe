@@ -17,4 +17,7 @@ public struct FighterInputData
 
     //•KŽEƒ{ƒ^ƒ“
     public bool specialAttackPressed;
+
+    //‚Â‚©‚Ý
+    public bool grabPressed;
 }

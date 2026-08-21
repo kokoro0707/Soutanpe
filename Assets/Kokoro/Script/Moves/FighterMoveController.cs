@@ -21,6 +21,10 @@ public sealed class FighterMoveController : MonoBehaviour
     [SerializeField]
     private FighterMoveSet moveSet;
 
+    [Header("横必殺技の判定表示")]
+    [SerializeField]
+    private GameObject forwardSpecialHitVisual;
+
     [Header("参照")]
     [SerializeField]
     private AttackHitbox attackHitbox;
@@ -95,6 +99,12 @@ public sealed class FighterMoveController : MonoBehaviour
             attackHitbox =
                 GetComponentInChildren<AttackHitbox>(true);
         }
+
+        if (forwardSpecialHitVisual != null)
+        {
+            forwardSpecialHitVisual.SetActive(false);
+        }
+
 
         if (attackHitbox != null)
         {
@@ -511,6 +521,8 @@ public sealed class FighterMoveController : MonoBehaviour
 
         UpdateAttackHitbox();
 
+        UpdateForwardSpecialVisual();
+
         // 弱・強コンボ
         if (TryAdvanceNormalCombo())
         {
@@ -750,6 +762,11 @@ public sealed class FighterMoveController : MonoBehaviour
                 FighterState.Idle
             );
         }
+        if (forwardSpecialHitVisual != null)
+        {
+            forwardSpecialHitVisual.SetActive(false);
+        }
+
     }
 
     /// <summary>
@@ -761,6 +778,12 @@ public sealed class FighterMoveController : MonoBehaviour
         {
             attackHitbox.Deactivate();
         }
+
+        if (forwardSpecialHitVisual != null)
+        {
+            forwardSpecialHitVisual.SetActive(false);
+        }
+
 
         currentMove = null;
         currentMoveFrame = 0;
@@ -792,5 +815,32 @@ public sealed class FighterMoveController : MonoBehaviour
 
         moveSet = newMoveSet;
     }
+
+    private void UpdateForwardSpecialVisual()
+    {
+        if (forwardSpecialHitVisual == null)
+        {
+            return;
+        }
+
+        bool shouldShow = false;
+
+        // 今使っている技が横必殺技か
+        if (currentMove != null &&
+            moveSet != null &&
+            currentMove == moveSet.ForwardSpecial)
+        {
+            // Active Frames中だけ表示
+            shouldShow =
+                currentMove.IsActiveFrame(
+                    currentMoveFrame
+                );
+        }
+
+        forwardSpecialHitVisual.SetActive(
+            shouldShow
+        );
+    }
+
 }
 

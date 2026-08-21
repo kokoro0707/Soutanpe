@@ -438,6 +438,86 @@ public sealed class FighterMotor : MonoBehaviour
                 : FighterLocomotionMode.Air;
     }
 
+    /// <summary>
+    /// キャラクターデータから基本移動性能を設定する。
+    /// </summary>
+    public void SetMovementStats(
+        float newForwardWalkSpeed,
+        float newBackwardWalkSpeed,
+        float newJumpPower,
+        float newJumpHorizontalSpeed
+    )
+    {
+        forwardWalkSpeed =
+            Mathf.Max(
+                0f,
+                newForwardWalkSpeed
+            );
+
+        backwardWalkSpeed =
+            Mathf.Max(
+                0f,
+                newBackwardWalkSpeed
+            );
+
+        jumpPower =
+            Mathf.Max(
+                0f,
+                newJumpPower
+            );
+
+        jumpHorizontalSpeed =
+            Mathf.Max(
+                0f,
+                newJumpHorizontalSpeed
+            );
+    }
+
+    /// <summary>
+    /// キャラクターデータから
+    /// ステップ・ダッシュ性能を設定する。
+    /// </summary>
+    public void SetSpecialMovementStats(
+        float newForwardStepSpeed,
+        int newForwardStepFrames,
+        float newBackStepSpeed,
+        int newBackStepFrames,
+        float newDashSpeed
+    )
+    {
+        forwardStepSpeed =
+            Mathf.Max(
+                0f,
+                newForwardStepSpeed
+            );
+
+        forwardStepFrames =
+            Mathf.Max(
+                1,
+                newForwardStepFrames
+            );
+
+        backStepSpeed =
+            Mathf.Max(
+                0f,
+                newBackStepSpeed
+            );
+
+        backStepFrames =
+            Mathf.Max(
+                1,
+                newBackStepFrames
+            );
+
+        dashSpeed =
+            Mathf.Max(
+                0f,
+                newDashSpeed
+            );
+    }
+
+
+
     private void OnDrawGizmosSelected()
     {
         if (groundCheck == null)

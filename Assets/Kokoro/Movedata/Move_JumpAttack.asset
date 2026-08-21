@@ -21,6 +21,6 @@ MonoBehaviour:
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
-  hitboxOffset: {x: 1, y: 0}
+  hitboxOffset: {x: 1.1, y: 0}
   animationIndex: 41
-  hitboxSize: {x: 1.2, y: 1}
+  hitboxSize: {x: 4, y: 1}

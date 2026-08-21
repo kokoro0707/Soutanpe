@@ -16,6 +16,9 @@ public struct FighterCommandData
     public bool forwardSpecialPressed;
     public bool downSpecialPressed;
 
+    //‚Â‚©‚Ý
+    public bool grabPressed;
+
     // ˆÚ“®ŒnƒRƒ}ƒ“ƒh
     public bool guardHeld;
     public bool forwardStepPressed;
