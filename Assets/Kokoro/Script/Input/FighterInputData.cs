@@ -14,4 +14,7 @@ public struct FighterInputData
 
     // アシストコンボ専用
     public bool assistComboPressed;
+
+    //必殺ボタン
+    public bool specialAttackPressed;
 }

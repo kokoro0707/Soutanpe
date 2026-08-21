@@ -46,6 +46,9 @@ public sealed class FighterMoveController : MonoBehaviour
     // 弱・強コンボの次段入力予約
     private bool nextNormalStepQueued;
 
+    //1ジャンプ中に空中攻撃を使用したか
+    private bool airAttackUsed;
+
     public bool IsAttacking =>
         currentMove != null;
 
@@ -108,6 +111,12 @@ public sealed class FighterMoveController : MonoBehaviour
         bool isGrounded
     )
     {
+        // 着地していたら空中攻撃を再使用可能にする
+        if (isGrounded)
+        {
+            airAttackUsed = false;
+        }
+
         if (currentMove == null)
         {
             TryStartAttack(
@@ -129,26 +138,16 @@ public sealed class FighterMoveController : MonoBehaviour
         UpdateCurrentMove();
     }
 
+
     /// <summary>
     /// 新しい攻撃を開始する。
     /// </summary>
     private void TryStartAttack(
-        FighterCommandData command,
-        int facingDirection,
-        bool isGrounded
-    )
+     FighterCommandData command,
+     int facingDirection,
+     bool isGrounded
+ )
     {
-        if (!isGrounded)
-        {
-            return;
-        }
-
-        if (stateMachine == null ||
-            !stateMachine.CanStartAttack)
-        {
-            return;
-        }
-
         if (moveSet == null)
         {
             Debug.LogWarning(
@@ -159,7 +158,63 @@ public sealed class FighterMoveController : MonoBehaviour
             return;
         }
 
-        // アシスト専用ボタン
+        // =========================
+        // 空中攻撃
+        // =========================
+
+        if (!isGrounded)
+        {
+            // 1ジャンプにつき1回だけ
+            if (airAttackUsed)
+            {
+                return;
+            }
+
+            // 空中で弱攻撃
+            if (command.lightAttackPressed)
+            {
+                StartAirAttack(
+                    moveSet.JumpAttack,
+                    facingDirection
+                );
+            }
+
+            return;
+        }
+
+        // =========================
+        // ここから地上攻撃
+        // =========================
+
+        if (stateMachine == null ||
+            !stateMachine.CanStartAttack)
+        {
+            return;
+        }
+
+        // 下 + 必殺技
+        if (command.downSpecialPressed)
+        {
+            StartSpecialMove(
+                moveSet.DownSpecial,
+                facingDirection
+            );
+
+            return;
+        }
+
+        // 前 + 必殺技
+        if (command.forwardSpecialPressed)
+        {
+            StartSpecialMove(
+                moveSet.ForwardSpecial,
+                facingDirection
+            );
+
+            return;
+        }
+
+        // アシストコンボ
         if (command.assistComboPressed)
         {
             StartAssistCombo(
@@ -192,6 +247,42 @@ public sealed class FighterMoveController : MonoBehaviour
             );
         }
     }
+
+
+
+    /// <summary>
+    /// 前必殺技・下必殺技など、
+    /// 単発の必殺技を開始する。
+    /// </summary>
+    private void StartSpecialMove(
+        MoveData move,
+        int facingDirection
+    )
+    {
+        if (move == null)
+        {
+            Debug.LogWarning(
+                $"{name}の必殺技MoveDataが設定されていません。",
+                this
+            );
+
+            return;
+        }
+
+        // 通常コンボ状態を解除
+        ResetCombo();
+
+        StartMoveInternal(
+            move,
+            facingDirection
+        );
+
+        Debug.Log(
+            $"{name}：必殺技 {move.MoveName} 開始",
+            this
+        );
+    }
+
 
     /// <summary>
     /// 弱・強コンボを開始する。
@@ -232,6 +323,43 @@ public sealed class FighterMoveController : MonoBehaviour
             facingDirection
         );
     }
+
+    /// <summary>
+    /// 空中弱攻撃を開始する。
+    /// 1ジャンプにつき1回だけ使用可能。
+    /// </summary>
+    private void StartAirAttack(
+        MoveData move,
+        int facingDirection
+    )
+    {
+        if (move == null)
+        {
+            Debug.LogWarning(
+                $"{name}のJump Attackが設定されていません。",
+                this
+            );
+
+            return;
+        }
+
+        // このジャンプではもう使用済みにする
+        airAttackUsed = true;
+
+        // 通常コンボとは別扱い
+        ResetCombo();
+
+        StartMoveInternal(
+            move,
+            facingDirection
+        );
+
+        Debug.Log(
+            $"{name}：ジャンプ攻撃開始",
+            this
+        );
+    }
+
 
     /// <summary>
     /// アシストコンボ開始。
