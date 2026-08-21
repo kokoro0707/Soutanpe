@@ -40,6 +40,9 @@ public sealed class LocalFighterInputSource :
     [SerializeField, Range(0.05f, 0.9f)]
     private float directionReleaseThreshold = 0.25f;
 
+    [SerializeField]
+    private string specialAttackActionName = "SpecialAttack";
+
     private PlayerInput playerInput;
 
     private InputAction moveAction;
@@ -47,6 +50,7 @@ public sealed class LocalFighterInputSource :
     private InputAction lightAttackAction;
     private InputAction heavyAttackAction;
     private InputAction assistComboAction;
+    private InputAction specialAttackAction;
 
     private bool isInitialized;
 
@@ -139,13 +143,19 @@ public sealed class LocalFighterInputSource :
                 actionMap,
                 assistComboActionName
             );
+        specialAttackAction =
+            FindAction(
+                actionMap,
+                specialAttackActionName
+            );
 
         isInitialized =
             moveAction != null &&
             jumpAction != null &&
             lightAttackAction != null &&
             heavyAttackAction != null &&
-            assistComboAction != null;
+            assistComboAction != null &&
+            specialAttackAction != null;
 
         if (isInitialized)
         {
@@ -220,6 +230,10 @@ public sealed class LocalFighterInputSource :
 
                 assistComboPressed =
                     assistComboAction
+                        .WasPressedThisFrame(),
+
+                specialAttackPressed=
+                    specialAttackAction
                         .WasPressedThisFrame()
             };
 

@@ -122,6 +122,15 @@ public sealed class FighterCommandInterpreter :
                 secondForwardPressFrame >=
                 dashHoldFrames;
 
+        bool downSpecialPressed =
+            input.specialAttackPressed &&
+            input.vertical == -1;
+
+        bool forwardSpecialPressed =
+            input.specialAttackPressed &&
+            input.vertical != -1 &&
+            relativeDirection == 1;
+
         FighterCommandData command =
             new FighterCommandData
             {
@@ -151,6 +160,12 @@ public sealed class FighterCommandInterpreter :
 
                 backStepPressed =
                     backStepPressed,
+
+                forwardSpecialPressed=
+                    forwardSpecialPressed,
+
+                downSpecialPressed=
+                    downSpecialPressed,
 
                 dashHeld =
                     dashHeld

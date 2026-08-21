@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b59ad2c635d79c94db287e898f47b1cd, type: 3}
   m_Name: Move_Heavy2
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
-  moveName: "\u5F31\u653B\u6483"
+  moveName: "\u5F37\u653B\u6483"
   startupFrames: 5
-  activeFrames: 3
-  recoveryFrames: 10
+  activeFrames: 4
+  recoveryFrames: 6
   damage: 100
   hitStunFrames: 18
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
   hitboxOffset: {x: 1, y: 0}
-  animationIndex: 0
+  animationIndex: 12
   hitboxSize: {x: 1.2, y: 1}

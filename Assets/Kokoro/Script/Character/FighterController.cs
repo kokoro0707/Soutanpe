@@ -36,6 +36,7 @@ public sealed class FighterController : MonoBehaviour
     private bool lightAttackQueued;
     private bool heavyAttackQueued;
     private bool assistComboQueued;
+    private bool specialAttackQueued;
 
     private int simulationFrame;
 
@@ -158,6 +159,11 @@ public sealed class FighterController : MonoBehaviour
 
         if (input.assistComboPressed)
             assistComboQueued = true;
+
+        if(input.specialAttackPressed)
+        {
+            specialAttackQueued = true;
+        }
     }
 
     private FighterInputData
@@ -178,6 +184,9 @@ public sealed class FighterController : MonoBehaviour
         input.assistComboPressed =
             assistComboQueued;
 
+        input.specialAttackPressed=
+            specialAttackQueued;
+
         return input;
     }
 
@@ -187,6 +196,7 @@ public sealed class FighterController : MonoBehaviour
         lightAttackQueued = false;
         heavyAttackQueued = false;
         assistComboQueued = false;
+        specialAttackQueued = false;
 
         simulationFrame++;
     }

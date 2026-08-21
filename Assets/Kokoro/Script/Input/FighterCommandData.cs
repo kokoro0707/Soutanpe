@@ -12,6 +12,10 @@ public struct FighterCommandData
     // アシストコンボ
     public bool assistComboPressed;
 
+    //必殺技
+    public bool forwardSpecialPressed;
+    public bool downSpecialPressed;
+
     // 移動系コマンド
     public bool guardHeld;
     public bool forwardStepPressed;

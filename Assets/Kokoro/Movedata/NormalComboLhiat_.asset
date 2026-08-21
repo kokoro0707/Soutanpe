@@ -17,5 +17,5 @@ MonoBehaviour:
     cancelStartFrame: 9
     cancelEndFrame: 12
   - move: {fileID: 11400000, guid: 4a6a05a8cff7a0845aa6d93acdcba00e, type: 2}
-    cancelStartFrame: 9
-    cancelEndFrame: 12
+    cancelStartFrame: 12
+    cancelEndFrame: 14

@@ -23,10 +23,17 @@ public sealed class FighterMoveSet : ScriptableObject
 
     [Header("•KŽE‹Z")]
     [SerializeField]
-    private MoveData specialAttack1;
+    private MoveData forwardSpecial;
 
     [SerializeField]
-    private MoveData specialAttack2;
+    private MoveData downSpecial;
+
+    [Header("‹ó’†UŒ‚")]
+    [SerializeField]
+    private MoveData jumpAttack;
+
+
+
 
     public NormalComboData LightCombo =>
         lightCombo;
@@ -37,9 +44,12 @@ public sealed class FighterMoveSet : ScriptableObject
     public AssistComboData AssistCombo =>
         assistCombo;
 
-    public MoveData SpecialAttack1 =>
-        specialAttack1;
+    public MoveData ForwardSpecial =>
+    forwardSpecial;
 
-    public MoveData SpecialAttack2 =>
-        specialAttack2;
+    public MoveData DownSpecial =>
+        downSpecial;
+
+    public MoveData JumpAttack =>
+        jumpAttack;
 }

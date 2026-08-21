@@ -15,5 +15,6 @@ MonoBehaviour:
   lightCombo: {fileID: 11400000, guid: 81813e27fa4e29d4d81b2afc7bb9be36, type: 2}
   heavyCombo: {fileID: 11400000, guid: 8adbc27c9a75fff41971f41a9ecf61fd, type: 2}
   assistCombo: {fileID: 11400000, guid: 067147ca0b2293b468c1ab375268ccdc, type: 2}
-  specialAttack1: {fileID: 0}
-  specialAttack2: {fileID: 0}
+  forwardSpecial: {fileID: 11400000, guid: 024750a2f11b03446b3ea6b12489ac43, type: 2}
+  downSpecial: {fileID: 11400000, guid: 71972a0e24ef8c643b9bd62678bd25ab, type: 2}
+  jumpAttack: {fileID: 11400000, guid: 6a113805934bdac46bcbdd8d594c217b, type: 2}

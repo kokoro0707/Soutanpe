@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NormalComboData
   steps:
   - move: {fileID: 11400000, guid: 2b0ac152bd6da10418c5c02ede553c95, type: 2}
-    cancelStartFrame: 9
+    cancelStartFrame: 16
     cancelEndFrame: 19
   - move: {fileID: 11400000, guid: ddf22b79dfedaa140aaf15130375ee11, type: 2}
-    cancelStartFrame: 9
-    cancelEndFrame: 19
+    cancelStartFrame: 11
+    cancelEndFrame: 14
   - move: {fileID: 11400000, guid: cb6da7d4caf8b9749a5666c89bca5a3d, type: 2}
     cancelStartFrame: 9
     cancelEndFrame: 19
