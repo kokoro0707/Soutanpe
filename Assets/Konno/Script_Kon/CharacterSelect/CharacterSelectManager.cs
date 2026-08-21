@@ -43,10 +43,18 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private AudioClip decideSe; // 決定音
     [SerializeField] private AudioClip cancelSe; // 取消・戻る音
 
-    [Header("確認パネル")]
+    [Header("バトル確認パネル")]
     [SerializeField] private GameObject confirmPanel;
+    [SerializeField] private TMP_Text confirmText;
 
-    private bool isConfirmOpen = false;
+    [Header("確認パネル選択肢")]
+    [SerializeField] private TMP_Text[] confirmMenuTexts;
+
+    [SerializeField] private Color confirmNormalColor = Color.white;
+    [SerializeField] private Color confirmSelectColor = Color.red;
+
+    private int confirmIndex = 0;
+    private bool isConfirming = false;
     //[SerializeField] private Sprite[] characterSprites; 画像を使う場合はここに設定する
 
     private int player1Index = 0;
@@ -96,17 +104,18 @@ Color.green
         {
             confirmPanel.SetActive(false);
         }
-
-        isConfirmOpen = false;
     }
     private void Update()
     {
         // 確認パネルが開いている間
-        if (isConfirmOpen)
+        // 確認パネル表示中
+        if (isConfirming)
         {
             ConfirmInput();
             return;
         }
+        // 通常のキャラクター選択
+        Player1Input();
         //UpdateGamepads();
         if (Keyboard.current.escapeKey.wasPressedThisFrame ||
              (player1Pad != null &&
@@ -153,11 +162,6 @@ Color.green
                 if (player1Pad != null)
                     CPUInput();
                 break;
-        }
-        if (isConfirmOpen)
-        {
-            ConfirmInput();
-            return;
         }
     }
 
@@ -612,18 +616,20 @@ Color.green
     }
     private void CheckBothPlayersDecided()
     {
-        // シーン移動中なら何もしない
+        // シーン移動中
         if (isChangingScene)
             return;
 
-        // 両方決定したら確認パネルを開く
+        // すでに確認パネル表示中
+        if (isConfirming)
+            return;
+
+        // Player1とPlayer2の両方が決定した時だけ表示
         if (player1Decided && player2Decided)
         {
-            Debug.Log(" 両方決定 → 確認パネルを開く ");
+            Debug.Log("両方決定 → 確認パネルを開く");
 
-            OpenConfirmPanel();
-
-            return;
+            ShowConfirmPanel();
         }
     }
     private IEnumerator GoToBattleRoutine()
@@ -640,23 +646,68 @@ Color.green
     private void ConfirmInput()
     {
         if (player1Pad == null)
+            return;
+
+        // =========================
+        // 左右で選択
+        // =========================
+
+        if (player1Pad.dpad.left.wasPressedThisFrame)
         {
-            Debug.LogWarning("Player1のGamepadがありません");
+            confirmIndex--;
+
+            if (confirmIndex < 0)
+                confirmIndex = confirmMenuTexts.Length - 1;
+
+            PlaySe(moveSe);
+            UpdateConfirmSelection();
+
             return;
         }
 
-        // Aボタン
+        if (player1Pad.dpad.right.wasPressedThisFrame)
+        {
+            confirmIndex++;
+
+            if (confirmIndex >= confirmMenuTexts.Length)
+                confirmIndex = 0;
+
+            PlaySe(moveSe);
+            UpdateConfirmSelection();
+
+            return;
+        }
+
+        // =========================
+        // Aボタンで決定
+        // =========================
+
         if (player1Pad.buttonSouth.wasPressedThisFrame)
         {
-            StartBattle();
+            PlaySe(decideSe);
+
+            // 0 = スタート
+            if (confirmIndex == 0)
+            {
+                StartBattle();
+            }
+            // 1 = 戻る
+            else if (confirmIndex == 1)
+            {
+                CloseConfirmPanel();
+            }
+
             return;
         }
 
-        // Bボタン
+        // =========================
+        // Bボタンでも戻る
+        // =========================
+
         if (player1Pad.buttonEast.wasPressedThisFrame)
         {
+            PlaySe(cancelSe);
             CloseConfirmPanel();
-            return;
         }
     }
     private void StartBattle()
@@ -667,22 +718,42 @@ Color.green
         Debug.Log("Aボタン → バトル開始");
 
         isChangingScene = true;
-
-        isConfirmOpen = false;
+        isConfirming = false;
 
         if (confirmPanel != null)
         {
             confirmPanel.SetActive(false);
         }
 
-        // ここだけでシーン移動する
         FadeManager.Instance.FadeToScene(battleSceneName);
+    }
+    private void ShowConfirmPanel()
+    {
+        if (isConfirming)
+            return;
+
+        isConfirming = true;
+
+        if (confirmPanel != null)
+        {
+            confirmPanel.SetActive(true);
+        }
+
+        if (confirmText != null)
+        {
+            confirmText.text = "これで戦いますか？";
+        }
+
+        // 最初は「スタート」を選択
+        confirmIndex = 0;
+
+        UpdateConfirmSelection();
+
+        Debug.Log("確認パネル表示");
     }
     private void OpenConfirmPanel()
     {
         Debug.Log("OpenConfirmPanel実行");
-
-        isConfirmOpen = true;
 
         if (confirmPanel != null)
         {
@@ -701,8 +772,37 @@ Color.green
             confirmPanel.SetActive(false);
         }
 
-        isConfirmOpen = false;
+        isConfirming = false;
 
-        Debug.Log("確認パネルを閉じる");
+        // Player2 / CPUを選び直す
+        player2Decided = false;
+
+        selectState = cpuMode
+            ? SelectState.CPU
+            : SelectState.Player2;
+
+        UpdateSelectionColor();
+
+        Debug.Log("確認キャンセル → Player2/CPUを選び直し");
+    }
+    private void UpdateConfirmSelection()
+    {
+        if (confirmMenuTexts == null)
+            return;
+
+        for (int i = 0; i < confirmMenuTexts.Length; i++)
+        {
+            if (confirmMenuTexts[i] == null)
+                continue;
+
+            if (i == confirmIndex)
+            {
+                confirmMenuTexts[i].color = confirmSelectColor;
+            }
+            else
+            {
+                confirmMenuTexts[i].color = confirmNormalColor;
+            }
+        }
     }
 }

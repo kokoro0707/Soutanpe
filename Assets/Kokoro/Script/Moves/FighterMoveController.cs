@@ -158,6 +158,18 @@ public sealed class FighterMoveController : MonoBehaviour
      bool isGrounded
  )
     {
+        Debug.Log(
+       $"{name} AttackCheck " +
+       $"Ground={isGrounded} " +
+       $"State={stateMachine.CurrentState} " +
+       $"CanAttack={stateMachine.CanStartAttack} " +
+       $"Light={command.lightAttackPressed} " +
+       $"Heavy={command.heavyAttackPressed} " +
+       $"Assist={command.assistComboPressed} " +
+       $"ForwardSpecial={command.forwardSpecialPressed} " +
+       $"DownSpecial={command.downSpecialPressed} " +
+       $"MoveSet={(moveSet != null ? moveSet.name : "NULL")}"
+   );
         if (moveSet == null)
         {
             Debug.LogWarning(
@@ -167,7 +179,14 @@ public sealed class FighterMoveController : MonoBehaviour
 
             return;
         }
-
+        Debug.Log(
+    $"LightCombo={(moveSet.LightCombo != null ? moveSet.LightCombo.name : "NULL")} " +
+    $"HeavyCombo={(moveSet.HeavyCombo != null ? moveSet.HeavyCombo.name : "NULL")} " +
+    $"Assist={(moveSet.AssistCombo != null ? moveSet.AssistCombo.name : "NULL")} " +
+    $"ForwardSpecial={(moveSet.ForwardSpecial != null ? moveSet.ForwardSpecial.name : "NULL")} " +
+    $"DownSpecial={(moveSet.DownSpecial != null ? moveSet.DownSpecial.name : "NULL")} " +
+    $"JumpAttack={(moveSet.JumpAttack != null ? moveSet.JumpAttack.name : "NULL")}"
+);
         // =========================
         // ãÛíÜçUåÇ
         // =========================
