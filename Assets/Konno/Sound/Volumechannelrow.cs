@@ -3,13 +3,13 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// 設定画面の1行分(BGM / SE / Voice のいずれか)。
+/// 設定画面の1行分(Master / BGM / SE のいずれか)。
 /// ミュートアイコン、10段階ゲージ、数値テキストをまとめて管理し、
 /// 実際の音量はAudioManagerに反映する。
 /// </summary>
 public class VolumeChannelRow : MonoBehaviour
 {
-    public enum ChannelType { Bgm, Sfx, Voice }
+    public enum ChannelType { Master, Bgm, Sfx }
 
     [Header("チャンネル種別")]
     [SerializeField] private ChannelType channelType;
@@ -41,6 +41,10 @@ public class VolumeChannelRow : MonoBehaviour
         float volume;
         switch (channelType)
         {
+            case ChannelType.Master:
+                volume = AudioManager.Instance.MasterVolume;
+                isMuted = AudioManager.Instance.MasterMuted;
+                break;
             case ChannelType.Bgm:
                 volume = AudioManager.Instance.BgmVolume;
                 isMuted = AudioManager.Instance.BgmMuted;
@@ -50,8 +54,8 @@ public class VolumeChannelRow : MonoBehaviour
                 isMuted = AudioManager.Instance.SfxMuted;
                 break;
             default:
-                volume = AudioManager.Instance.VoiceVolume;
-                isMuted = AudioManager.Instance.VoiceMuted;
+                volume = 0f;
+                isMuted = false;
                 break;
         }
 
@@ -97,14 +101,14 @@ public class VolumeChannelRow : MonoBehaviour
 
         switch (channelType)
         {
+            case ChannelType.Master:
+                AudioManager.Instance.SetMasterVolume(normalized);
+                break;
             case ChannelType.Bgm:
                 AudioManager.Instance.SetBgmVolume(normalized);
                 break;
             case ChannelType.Sfx:
                 AudioManager.Instance.SetSfxVolume(normalized);
-                break;
-            case ChannelType.Voice:
-                AudioManager.Instance.SetVoiceVolume(normalized);
                 break;
         }
     }
@@ -115,14 +119,14 @@ public class VolumeChannelRow : MonoBehaviour
 
         switch (channelType)
         {
+            case ChannelType.Master:
+                AudioManager.Instance.SetMasterMuted(isMuted);
+                break;
             case ChannelType.Bgm:
                 AudioManager.Instance.SetBgmMuted(isMuted);
                 break;
             case ChannelType.Sfx:
                 AudioManager.Instance.SetSfxMuted(isMuted);
-                break;
-            case ChannelType.Voice:
-                AudioManager.Instance.SetVoiceMuted(isMuted);
                 break;
         }
     }

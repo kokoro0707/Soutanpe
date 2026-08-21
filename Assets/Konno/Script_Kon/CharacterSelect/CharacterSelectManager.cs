@@ -612,20 +612,18 @@ Color.green
     }
     private void CheckBothPlayersDecided()
     {
-        // すでに確認パネルを表示中
-        if (isConfirmOpen)
-            return;
-
-        // すでにシーン移動中
+        // シーン移動中なら何もしない
         if (isChangingScene)
             return;
 
-        // P1とP2（またはCPU）が両方決定
+        // 両方決定したら確認パネルを開く
         if (player1Decided && player2Decided)
         {
-            Debug.Log("両方決定 → 確認パネル表示");
+            Debug.Log(" 両方決定 → 確認パネルを開く ");
 
             OpenConfirmPanel();
+
+            return;
         }
     }
     private IEnumerator GoToBattleRoutine()
@@ -663,45 +661,38 @@ Color.green
     }
     private void StartBattle()
     {
-        // 二重実行防止
         if (isChangingScene)
             return;
 
+        Debug.Log("Aボタン → バトル開始");
+
         isChangingScene = true;
 
-        Debug.Log("スタート → フェード開始");
-
-        // 確認パネルを閉じる
         isConfirmOpen = false;
 
         if (confirmPanel != null)
+        {
             confirmPanel.SetActive(false);
-
-        // FadeManagerでフェードしてシーン移動
-        if (FadeManager.Instance != null)
-        {
-            FadeManager.Instance.FadeToScene(battleSceneName);
         }
-        else
-        {
-            Debug.LogError("FadeManager.Instance がありません");
 
-            // 保険として直接シーン移動
-            SceneManager.LoadScene(battleSceneName);
-        }
+        // ここだけでシーン移動する
+        FadeManager.Instance.FadeToScene(battleSceneName);
     }
     private void OpenConfirmPanel()
     {
-        if (confirmPanel == null)
-        {
-            Debug.LogError("Confirm Panel が設定されていません");
-            return;
-        }
+        Debug.Log("OpenConfirmPanel実行");
 
         isConfirmOpen = true;
-        confirmPanel.SetActive(true);
 
-        Debug.Log("確認パネルを表示しました");
+        if (confirmPanel != null)
+        {
+            confirmPanel.SetActive(true);
+            Debug.Log("ConfirmPanelを表示しました");
+        }
+        else
+        {
+            Debug.LogError("confirmPanelがInspectorで設定されていません");
+        }
     }
     private void CloseConfirmPanel()
     {
