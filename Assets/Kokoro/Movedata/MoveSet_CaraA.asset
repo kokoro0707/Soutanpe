@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac23ae645826ddb41b9af4950898c3e4, type: 3}
   m_Name: MoveSet_CaraA
   m_EditorClassIdentifier: Assembly-CSharp::FighterMoveSet
-  lightCombo: {fileID: 11400000, guid: 81813e27fa4e29d4d81b2afc7bb9be36, type: 2}
-  heavyCombo: {fileID: 11400000, guid: 8adbc27c9a75fff41971f41a9ecf61fd, type: 2}
+  lightCombo: {fileID: 11400000, guid: e5b6312b2bd57ac409f8e9c2b7512d94, type: 2}
+  heavyCombo: {fileID: 11400000, guid: f5453b7ad6ccea149993c538b75f4863, type: 2}
   assistCombo: {fileID: 11400000, guid: 067147ca0b2293b468c1ab375268ccdc, type: 2}
   forwardSpecial: {fileID: 11400000, guid: 024750a2f11b03446b3ea6b12489ac43, type: 2}
   downSpecial: {fileID: 11400000, guid: 71972a0e24ef8c643b9bd62678bd25ab, type: 2}
