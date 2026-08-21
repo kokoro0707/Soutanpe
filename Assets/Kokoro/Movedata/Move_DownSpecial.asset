@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Move_DownSpecial
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
   moveName: "\u5F31\u653B\u6483"
-  startupFrames: 12
+  startupFrames: 18
   activeFrames: 6
   recoveryFrames: 16
   damage: 100
@@ -21,6 +21,6 @@ MonoBehaviour:
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
-  hitboxOffset: {x: 1, y: 0}
+  hitboxOffset: {x: 1, y: 2}
   animationIndex: 32
-  hitboxSize: {x: 1.2, y: 1}
+  hitboxSize: {x: 2.5, y: 2.9}

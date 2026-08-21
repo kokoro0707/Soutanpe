@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Fighterのゲーム状態をAnimatorへ反映する。
-/// 見た目だけを担当する。
+/// このクラスは見た目だけを担当する。
 /// </summary>
 public sealed class FighterAnimatorView : MonoBehaviour
 {
@@ -17,39 +17,30 @@ public sealed class FighterAnimatorView : MonoBehaviour
     private FighterFacingController facingController;
 
     [SerializeField]
+    private FighterMoveController moveController;
+
+    [SerializeField]
     private Rigidbody2D rigidBody2D;
+
+    [SerializeField]
+    private FighterMotor motor;
 
     [Header("歩行判定")]
     [SerializeField]
     private float movementThreshold = 0.05f;
 
-    [SerializeField]
-    private FighterMoveController moveController;
+    // =========================
+    // Animator Parameters
+    // =========================
 
     private static readonly int MoveDirectionHash =
         Animator.StringToHash("MoveDirection");
 
-    private static readonly int IsDashingHash =
-        Animator.StringToHash("IsDashing");
-
-    private static readonly int IsForwardStepHash =
-        Animator.StringToHash("IsForwardStep");
-
-    private static readonly int IsBackStepHash =
-       Animator.StringToHash("IsBackStep");
-
-    private static readonly int IsJumpingHash =
-    Animator.StringToHash("IsJumping");
-
-    private static readonly int IsBlockingHash =
-    Animator.StringToHash("IsBlocking");
-
-    private static readonly int IsHitHash =
-    Animator.StringToHash("IsHit");
-
     private static readonly int AttackIndexHash =
-    Animator.StringToHash("AttackIndex");
+        Animator.StringToHash("AttackIndex");
 
+    private static readonly int ActionStateHash =
+        Animator.StringToHash("ActionState");
 
     private void Reset()
     {
@@ -62,11 +53,14 @@ public sealed class FighterAnimatorView : MonoBehaviour
         facingController =
             GetComponentInParent<FighterFacingController>();
 
-        rigidBody2D =
-            GetComponentInParent<Rigidbody2D>();
-
         moveController =
             GetComponentInParent<FighterMoveController>();
+
+        motor=
+            GetComponentInParent<FighterMotor>();
+
+        rigidBody2D =
+            GetComponentInParent<Rigidbody2D>();
     }
 
     private void Awake()
@@ -89,18 +83,23 @@ public sealed class FighterAnimatorView : MonoBehaviour
                 GetComponentInParent<FighterFacingController>();
         }
 
-        if (rigidBody2D == null)
-        {
-            rigidBody2D =
-                GetComponentInParent<Rigidbody2D>();
-        }
-
         if (moveController == null)
         {
             moveController =
                 GetComponentInParent<FighterMoveController>();
         }
 
+        if(motor==null)
+        {
+            motor=
+                GetComponentInParent<FighterMotor>();
+        }
+
+        if (rigidBody2D == null)
+        {
+            rigidBody2D =
+                GetComponentInParent<Rigidbody2D>();
+        }
     }
 
     private void Update()
@@ -108,18 +107,14 @@ public sealed class FighterAnimatorView : MonoBehaviour
         if (animator == null ||
             stateMachine == null ||
             facingController == null ||
-            rigidBody2D == null)
+            rigidBody2D == null||            
+            motor==null)
         {
             return;
         }
 
         UpdateMovementAnimation();
-        UpdateDashAnimation();
-        UpdateForwardStepAnimation();
-        UpdateBackStepAnimation();
-        UpdateJumpAnimation();
-        UpdateBlockAnimation();
-        UpdateHitAnimation();
+        UpdateActionAnimation();
         UpdateAttackAnimation();
     }
 
@@ -163,94 +158,79 @@ public sealed class FighterAnimatorView : MonoBehaviour
         );
     }
 
-    /// <summary>
-    /// ダッシュ状態をAnimatorへ送る。
-    /// </summary>
-    private void UpdateDashAnimation()
+    private void UpdateActionAnimation()
     {
-        bool isDashing =
-            stateMachine.CurrentState ==
-            FighterState.Dash;
+        int actionState = 0;
 
-        animator.SetBool(
-            IsDashingHash,
-            isDashing
-        );
-    }
-    private void UpdateForwardStepAnimation()
-    {
-        bool isForwardStep =
-            stateMachine.CurrentState ==
-            FighterState.ForwardStep;
+        // =========================
+        // 戦闘状態を優先
+        // =========================
 
-        animator.SetBool(
-            IsForwardStepHash,
-            isForwardStep
-        );
-    }
+        switch (stateMachine.CurrentState)
+        {
+            case FighterState.BlockStun:
+                actionState = 5;
+                break;
 
-    /// <summary>
-    /// バックステップ状態をAnimatorへ送る。
-    /// </summary>
-    private void UpdateBackStepAnimation()
-    {
-        bool isBackStep =
-            stateMachine.CurrentState ==
-            FighterState.BackStep;
+            case FighterState.HitStun:
+                actionState = 6;
+                break;
 
-        animator.SetBool(
-            IsBackStepHash,
-            isBackStep
-        );
-    }
+            case FighterState.Grab:
+                actionState = 7;
+                break;
 
-    /// <summary>
-    /// ジャンプ状態をAnimatorへ送る。
-    /// </summary>
-    private void UpdateJumpAnimation()
-    {
-        bool isJumping =
-            stateMachine.CurrentState ==
-            FighterState.Jump;
+            case FighterState.Throw:
+                actionState = 8;
+                break;
 
-        animator.SetBool(
-            IsJumpingHash,
-            isJumping
-        );
-    }
+            case FighterState.Attack:
+                // 攻撃はAttackIndex側で管理する
+                actionState = 0;
+                break;
 
-    /// <summary>
-    /// 攻撃をガードした時の硬直状態をAnimatorへ送る。
-    /// </summary>
-    private void UpdateBlockAnimation()
-    {
-        bool isBlocking =
-            stateMachine.CurrentState ==
-            FighterState.BlockStun;
+            default:
 
-        animator.SetBool(
-            IsBlockingHash,
-            isBlocking
-        );
-    }
+                // =========================
+                // 実際の移動状態を見る
+                // =========================
 
-    /// <summary>
-    /// 被弾硬直状態をAnimatorへ送る。
-    /// </summary>
-    private void UpdateHitAnimation()
-    {
-        bool isHit =
-            stateMachine.CurrentState ==
-            FighterState.HitStun;
+                switch (motor.CurrentMode)
+                {
+                    case FighterLocomotionMode.Dash:
+                        actionState = 1;
+                        break;
 
-        animator.SetBool(
-            IsHitHash,
-            isHit
+                    case FighterLocomotionMode.ForwardStep:
+                        actionState = 2;
+                        break;
+
+                    case FighterLocomotionMode.BackStep:
+                        actionState = 3;
+                        break;
+
+                    case FighterLocomotionMode.Air:
+                        actionState = 4;
+                        break;
+
+                    default:
+                        actionState = 0;
+                        break;
+                }
+
+                break;
+        }
+
+        animator.SetInteger(
+            ActionStateHash,
+            actionState
         );
     }
 
+
     /// <summary>
-    /// 現在実行している技のアニメーション番号をAnimatorへ送る。
+    /// 現在実行しているMoveDataの
+    /// AnimationIndexをAnimatorへ送る。
     /// </summary>
     private void UpdateAttackAnimation()
     {
@@ -270,7 +250,4 @@ public sealed class FighterAnimatorView : MonoBehaviour
             attackIndex
         );
     }
-
-
-
 }

@@ -10,6 +10,9 @@ public enum FighterState
     ForwardStep,
     BackStep,
     Dash,
+    Grab,
+    Throw,
+    Grabbed,
 
     Attack,
     HitStun,
@@ -59,6 +62,12 @@ public sealed class FighterStateMachine : MonoBehaviour
         }
     }
 
+    public bool CanStartGrab =>
+    CurrentState == FighterState.Idle ||
+    CurrentState == FighterState.Walk ||
+    CurrentState == FighterState.Guard;
+
+
 
     /// <summary>
     /// ‘Šè‚Ì•ûŒü‚Ö©“®‚ÅU‚èŒü‚¯‚éó‘ÔB
@@ -74,19 +83,27 @@ public sealed class FighterStateMachine : MonoBehaviour
     }
 
     /// <summary>
-    /// UŒ‚‚â”í’e‚È‚ÇAˆÚ“®ó‘Ô‚Åã‘‚«‚µ‚Ä‚Í‚¢‚¯‚È‚¢ó‘ÔB
+    /// UŒ‚‚â”í’e‚È‚ÇA
+    /// ˆÚ“®ó‘Ô‚Åã‘‚«‚µ‚Ä‚Í‚¢‚¯‚È‚¢ó‘ÔB
     /// </summary>
     public bool IsCombatLocked
     {
         get
         {
             return CurrentState == FighterState.Attack ||
+                   CurrentState == FighterState.Grab ||
+                   CurrentState == FighterState.Throw ||
+                   CurrentState == FighterState.Grabbed ||
                    CurrentState == FighterState.HitStun ||
                    CurrentState == FighterState.BlockStun ||
                    CurrentState == FighterState.KnockDown ||
                    CurrentState == FighterState.KO;
         }
     }
+
+
+
+
 
     private void Awake()
     {

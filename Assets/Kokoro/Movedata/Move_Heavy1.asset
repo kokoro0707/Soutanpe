@@ -19,8 +19,8 @@ MonoBehaviour:
   damage: 100
   hitStunFrames: 18
   blockStunFrames: 10
-  hitKnockback: {x: 6, y: 2}
+  hitKnockback: {x: 3, y: 2}
   blockKnockback: {x: 3, y: 0}
-  hitboxOffset: {x: 1, y: 0}
+  hitboxOffset: {x: 1.6, y: 1}
   animationIndex: 11
-  hitboxSize: {x: 1.2, y: 1}
+  hitboxSize: {x: 2.5, y: 4}

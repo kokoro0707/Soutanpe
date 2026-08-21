@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cbc4d12debad65438a2cef1393033b0, type: 3}
+  m_Name: Grab_Ch1
+  m_EditorClassIdentifier: Assembly-CSharp::GrabData
+  startupFrames: 5
+  activeFrames: 3
+  whiffRecoveryFrames: 15
+  holdFrames: 12
+  throwRecoveryFrames: 15
+  throwDamage: 120
+  throwHitStunFrames: 20
+  throwKnockback: {x: 7, y: 3}
+  hitboxOffset: {x: 0.8, y: 0}
+  hitboxSize: {x: 1, y: 1.5}
+  holdOffset: {x: 0.65, y: 0}

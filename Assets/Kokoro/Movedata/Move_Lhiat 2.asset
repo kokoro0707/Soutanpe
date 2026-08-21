@@ -15,7 +15,7 @@ MonoBehaviour:
   moveName: "\u5F31\u653B\u6483"
   startupFrames: 7
   activeFrames: 5
-  recoveryFrames: 13
+  recoveryFrames: 19
   damage: 100
   hitStunFrames: 18
   blockStunFrames: 10
@@ -23,4 +23,4 @@ MonoBehaviour:
   blockKnockback: {x: 3, y: 0}
   hitboxOffset: {x: 1.6, y: 1.5}
   animationIndex: 2
-  hitboxSize: {x: 3, y: 1}
+  hitboxSize: {x: 4, y: 1}
