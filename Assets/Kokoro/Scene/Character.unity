@@ -906,7 +906,7 @@ Transform:
   m_GameObject: {fileID: 351946262}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.81, y: -3.458, z: 0}
+  m_LocalPosition: {x: -6.81, y: -3.6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1549,6 +1549,7 @@ GameObject:
   - component: {fileID: 834616043}
   - component: {fileID: 834616045}
   - component: {fileID: 834616044}
+  - component: {fileID: 834616046}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1725,6 +1726,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleBGM
   battleBGM: {fileID: 0}
+--- !u!114 &834616046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 834616040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ffa8422582382044a56f9a2007a1660, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BattleModeSetup
+  player1: {fileID: 351946271}
+  player2Controller: {fileID: 1320457834}
+  player2LocalInput: {fileID: 1320457837}
+  player2CPUInput: {fileID: 1320457847}
 --- !u!1 &870369417
 GameObject:
   m_ObjectHideFlags: 0
@@ -2360,6 +2377,7 @@ GameObject:
   - component: {fileID: 1320457845}
   - component: {fileID: 1320457844}
   - component: {fileID: 1320457846}
+  - component: {fileID: 1320457847}
   m_Layer: 0
   m_Name: Player2
   m_TagString: Untagged
@@ -2770,6 +2788,29 @@ MonoBehaviour:
   health: {fileID: 1320457830}
   motor: {fileID: 1320457835}
   animator: {fileID: 1728460568}
+--- !u!114 &1320457847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320457828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88bba3ef201aa354c9c2fac3a937181d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CPUFighterInputSource
+  opponent: {fileID: 0}
+  attackDistance: 1.6
+  specialDistance: 4
+  decisionInterval: 0.25
+  guardChance: 0.15
+  grabChance: 0.15
+  heavyAttackChance: 0.2
+  assistComboChance: 0.1
+  specialChance: 0.15
+  jumpChance: 0.05
+  guardDuration: 0.5
 --- !u!114 &1342578148 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7062701907607101955, guid: 748303f81f8d2784681245709e785d4f, type: 3}

@@ -307,9 +307,58 @@ public sealed class FighterController : MonoBehaviour
     }
 
     public void SetUseLocalInput(
-        bool value
-    )
+    bool value
+)
     {
         useLocalInput = value;
     }
-}
+
+    /// <summary>
+    /// Player操作・CPU操作など、
+    /// FighterControllerが読む入力元を変更する。
+    /// </summary>
+    public void SetInputSource(
+        MonoBehaviour newInputSource
+    )
+    {
+        if (newInputSource == null)
+        {
+            Debug.LogError(
+                $"{name}：InputSourceにnullが渡されました。",
+                this
+            );
+
+            return;
+        }
+
+        IFighterInputSource newSource =
+            newInputSource as IFighterInputSource;
+
+        if (newSource == null)
+        {
+            Debug.LogError(
+                $"{name}：{newInputSource.name}は" +
+                $"IFighterInputSourceを実装していません。",
+                this
+            );
+
+            return;
+        }
+
+        inputSourceComponent =
+            newInputSource;
+
+        inputSource =
+            newSource;
+
+        // 今のFighterControllerでは
+        // trueのときだけReadInput()を呼ぶためONにする
+        useLocalInput = true;
+
+        Debug.Log(
+            $"{name}：InputSource変更 → " +
+            $"{newInputSource.GetType().Name}",
+            this
+        );
+    }
+} 
