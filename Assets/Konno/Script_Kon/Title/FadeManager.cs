@@ -26,7 +26,7 @@ public class FadeManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // ゲーム開始時だけ透明
+            // ゲーム開始時は透明
             SetFadeAlpha(0f);
         }
         else
@@ -70,12 +70,13 @@ public class FadeManager : MonoBehaviour
         Debug.Log("Load Scene : " + sceneName);
         SceneManager.LoadScene(sceneName);
 
+        // 新しいシーンの生成を待つ
         yield return null;
         yield return null;
 
         Debug.Log("FadeIn Start");
 
-        // フェードイン
+        // Time.timeScale = 0でも動く
         yield return StartCoroutine(FadeIn(sceneFadeInTime));
 
         Debug.Log("FadeIn Complete");
@@ -103,7 +104,8 @@ public class FadeManager : MonoBehaviour
 
         while (t < time)
         {
-            t += Time.deltaTime;
+            // Time.timeScaleの影響を受けない
+            t += Time.unscaledDeltaTime;
 
             float alpha = Mathf.Lerp(0f, 1f, t / time);
             SetFadeAlpha(alpha);
@@ -134,7 +136,8 @@ public class FadeManager : MonoBehaviour
 
         while (t < time)
         {
-            t += Time.deltaTime;
+            // Time.timeScale = 0でも動く
+            t += Time.unscaledDeltaTime;
 
             float alpha = Mathf.Lerp(1f, 0f, t / time);
             SetFadeAlpha(alpha);
