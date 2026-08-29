@@ -315,8 +315,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u30BF\u30A4\u30C8\u30EB"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8bd0fca6ca642be4690b3a543f8d3ca7, type: 2}
-  m_sharedMaterial: {fileID: 5579513220195528640, guid: 8bd0fca6ca642be4690b3a543f8d3ca7, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8d5cd2f42a876a742a1d75c6a29af92f, type: 2}
+  m_sharedMaterial: {fileID: 7617066262122040047, guid: 8d5cd2f42a876a742a1d75c6a29af92f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1303,8 +1303,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Press A Start '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8d5cd2f42a876a742a1d75c6a29af92f, type: 2}
+  m_sharedMaterial: {fileID: 7617066262122040047, guid: 8d5cd2f42a876a742a1d75c6a29af92f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
