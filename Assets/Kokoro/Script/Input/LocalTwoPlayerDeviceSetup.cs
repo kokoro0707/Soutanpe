@@ -3,21 +3,23 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// ローカル2人対戦で使用するデバイスを割り当てる。
-/// 現在はキーボード＋ゲームパッド、
-/// 将来はゲームパッド2台へInspectorから切り替えられる。
+/// ・キーボード＋ゲームパッド
+/// ・ゲームパッド2台
+/// ・キーボード＋キーボード
 /// </summary>
 public sealed class LocalTwoPlayerDeviceSetup : MonoBehaviour
 {
     public enum LocalDeviceMode
     {
         KeyboardAndGamepad,
-        TwoGamepads
+        TwoGamepads,
+        KeyboardAndKeyboard
     }
 
     [Header("入力方式")]
     [SerializeField]
     private LocalDeviceMode deviceMode =
-        LocalDeviceMode.KeyboardAndGamepad;
+        LocalDeviceMode.KeyboardAndKeyboard;
 
     [Header("プレイヤー")]
     [SerializeField]
@@ -53,32 +55,28 @@ public sealed class LocalTwoPlayerDeviceSetup : MonoBehaviour
             case LocalDeviceMode.TwoGamepads:
                 SetupTwoGamepads();
                 break;
+
+            case LocalDeviceMode.KeyboardAndKeyboard:
+                SetupKeyboardAndKeyboard();
+                break;
         }
     }
 
     /// <summary>
-    /// Player1をキーボード、
-    /// Player2を1台目のゲームパッドに設定する。
+    /// Player1をゲームパッド、
+    /// Player2をキーボードに設定する。
     /// </summary>
     private void SetupKeyboardAndGamepad()
     {
         if (Keyboard.current == null)
         {
-            Debug.LogError(
-                "キーボードが見つかりません。",
-                this
-            );
-
+            Debug.LogError("キーボードが見つかりません。", this);
             return;
         }
 
         if (Gamepad.all.Count < 1)
         {
-            Debug.LogError(
-                "ゲームパッドが接続されていません。",
-                this
-            );
-
+            Debug.LogError("ゲームパッドが接続されていません。", this);
             return;
         }
 
@@ -95,7 +93,7 @@ public sealed class LocalTwoPlayerDeviceSetup : MonoBehaviour
         );
 
         Debug.Log(
-            "Player1：キーボード / Player2：ゲームパッド",
+            "Player1：ゲームパッド / Player2：キーボード",
             this
         );
     }
@@ -108,8 +106,7 @@ public sealed class LocalTwoPlayerDeviceSetup : MonoBehaviour
         if (Gamepad.all.Count < 2)
         {
             Debug.LogError(
-                $"ゲームパッドが2台必要です。" +
-                $" 現在の接続数：{Gamepad.all.Count}",
+                $"ゲームパッドが2台必要です。現在の接続数：{Gamepad.all.Count}",
                 this
             );
 
@@ -134,6 +131,41 @@ public sealed class LocalTwoPlayerDeviceSetup : MonoBehaviour
         Debug.Log(
             $"Player1：{player1Gamepad.displayName} / " +
             $"Player2：{player2Gamepad.displayName}",
+            this
+        );
+    }
+
+    /// <summary>
+    /// Player1とPlayer2の両方を同じキーボードで操作する。
+    /// </summary>
+    private void SetupKeyboardAndKeyboard()
+    {
+        if (Keyboard.current == null)
+        {
+            Debug.LogError(
+                "キーボードが見つかりません。",
+                this
+            );
+
+            return;
+        }
+
+        // P1にキーボード
+        AssignDevice(
+            player1Input,
+            keyboardSchemeName,
+            Keyboard.current
+        );
+
+        // P2にも同じキーボード
+        AssignDevice(
+            player2Input,
+            keyboardSchemeName,
+            Keyboard.current
+        );
+
+        Debug.Log(
+            "Player1：キーボード / Player2：キーボード",
             this
         );
     }
