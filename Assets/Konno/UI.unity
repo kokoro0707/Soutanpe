@@ -220,6 +220,57 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &828436027
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 828436029}
+  - component: {fileID: 828436028}
+  m_Layer: 0
+  m_Name: EqualizerController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &828436028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828436027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be6b75e2938eac941b86b7fb5df93e04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RandomEqualizerBars
+  barPrefab: {fileID: 0}
+  barCount: 12
+  barSpacing: 0.6
+  barWidth: 0.4
+  minHeight: 0.3
+  maxHeight: 3
+  noiseSpeed: 1
+--- !u!4 &828436029
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828436027}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1103844548
 GameObject:
   m_ObjectHideFlags: 0
@@ -268,11 +319,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WaveFill
   lineWidth: 15
   segmentCount: 50
-  amplitude: 0.2
-  wavelength: 2
-  speed: 1.5
-  centerY: 0
-  thickness: 2
+  topAmplitude: 0.2
+  topWavelength: 0.05
+  topSpeed: 1.5
+  bottomAmplitude: 0.2
+  bottomWavelength: 0.05
+  bottomSpeed: -1.2
+  topEdgeY: 1
+  bottomEdgeY: -1
   fillColor: {r: 1, g: 0.058691517, b: 0, a: 1}
 --- !u!23 &1103844552
 MeshRenderer:
@@ -502,6 +556,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2034380418
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2034380420}
+  - component: {fileID: 2034380419}
+  m_Layer: 0
+  m_Name: WaveEdgeController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &2034380419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2034380418}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c74a128c9bab36f4e9100561c8d03a38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaveEdges
+  lineWidth: 8
+  segmentCount: 50
+  amplitude: 0.2
+  wavelength: 2
+  speed: 1.5
+  topEdgeY: 1
+  bottomEdgeY: -1
+  lineThickness: 0.05
+  lineColor: {r: 0, g: 0, b: 1, a: 1}
+--- !u!4 &2034380420
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2034380418}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.15, y: -0.09, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -510,3 +617,5 @@ SceneRoots:
   - {fileID: 354631161}
   - {fileID: 1824673181}
   - {fileID: 1103844550}
+  - {fileID: 828436029}
+  - {fileID: 2034380420}
