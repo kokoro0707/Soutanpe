@@ -266,7 +266,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c76369bfa562d34e847242fed9a3948, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveFill
-  lineWidth: 8
+  lineWidth: 15
   segmentCount: 50
   amplitude: 0.2
   wavelength: 2
