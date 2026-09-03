@@ -7,17 +7,22 @@ public class WaveFill : MonoBehaviour
     public float lineWidth = 8f;
     public int segmentCount = 50;
 
-    [Header("波の形状")]
-    public float amplitude = 0.2f;
-    public float wavelength = 2f;
-    public float speed = 1.5f;
+    [Header("上端の波(独立)")]
+    public float topAmplitude = 0.2f;
+    public float topWavelength = 2f;
+    public float topSpeed = 1.5f;
 
-    [Header("帯の位置(中心Yと厚み)")]
-    public float centerY = 0f;
-    public float thickness = 2f; // 上端と下端の距離
+    [Header("下端の波(独立)")]
+    public float bottomAmplitude = 0.2f;
+    public float bottomWavelength = 2f;
+    public float bottomSpeed = -1.2f; // 上と違う速さ・向きにすると自然
+
+    [Header("帯の位置(上端Y・下端Y)")]
+    public float topEdgeY = 1f;
+    public float bottomEdgeY = -1f;
 
     [Header("見た目")]
-    public Color fillColor = new Color(0.3f, 0.6f, 0.9f); // 元の四角形と同じ青
+    public Color fillColor = new Color(0.3f, 0.6f, 0.9f);
 
     private Mesh mesh;
     private Vector3[] vertices;
@@ -33,26 +38,10 @@ public class WaveFill : MonoBehaviour
 
         vertices = new Vector3[segmentCount * 2];
 
-        // 先に初期頂点を計算してセットする(ここを追加)
         UpdateVertices();
         mesh.vertices = vertices;
 
-        // その後で三角形を設定する
         BuildTriangles();
-    }
-    void UpdateVertices()
-    {
-        float halfThick = thickness / 2f;
-
-        for (int i = 0; i < segmentCount; i++)
-        {
-            float tt = (float)i / (segmentCount - 1);
-            float x = Mathf.Lerp(-lineWidth / 2f, lineWidth / 2f, tt);
-            float wave = Mathf.Sin((x / wavelength) + Time.time * speed) * amplitude;
-
-            vertices[i * 2] = new Vector3(x, centerY + halfThick + wave, 0);
-            vertices[i * 2 + 1] = new Vector3(x, centerY - halfThick + wave, 0);
-        }
     }
 
     void BuildTriangles()
@@ -70,6 +59,24 @@ public class WaveFill : MonoBehaviour
             triangles[t++] = botA; triangles[t++] = topB; triangles[t++] = botB;
         }
         mesh.triangles = triangles;
+    }
+
+    void UpdateVertices()
+    {
+        for (int i = 0; i < segmentCount; i++)
+        {
+            float tt = (float)i / (segmentCount - 1);
+            float x = Mathf.Lerp(-lineWidth / 2f, lineWidth / 2f, tt);
+
+            // 上端の波(下端とは完全に独立)
+            float waveTop = Mathf.Sin((x / topWavelength) + Time.time * topSpeed) * topAmplitude;
+
+            // 下端の波(上端とは完全に独立)
+            float waveBottom = Mathf.Sin((x / bottomWavelength) + Time.time * bottomSpeed) * bottomAmplitude;
+
+            vertices[i * 2] = new Vector3(x, topEdgeY + waveTop, 0);
+            vertices[i * 2 + 1] = new Vector3(x, bottomEdgeY + waveBottom, 0);
+        }
     }
 
     void Update()
