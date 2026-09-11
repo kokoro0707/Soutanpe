@@ -170,7 +170,7 @@ namespace PersonaMenuUI
             if (slashFlash != null)
             {
                 if (slashRoutine != null) StopCoroutine(slashRoutine);
-                slashRoutine = StartCoroutine(SlashFlashRoutine());
+                slashRoutine = StartCoroutine(SlashFlashRoutine(menuItems[CurrentIndex]));
             }
         }
 
@@ -206,7 +206,7 @@ namespace PersonaMenuUI
         /// 幅0→最大まで一気に走らせてからフェードアウトさせる演出。
         /// 「斜めスラッシュが切り込むような」ペルソナ風の切替感を出す。
         /// </summary>
-        private IEnumerator SlashFlashRoutine()
+        private IEnumerator SlashFlashRoutine(RectTransform target)
         {
             RectTransform rt = slashFlash.rectTransform;
             float baseWidth = slashFullWidth;
@@ -220,6 +220,11 @@ namespace PersonaMenuUI
 
             float half = Mathf.Max(0.0001f, slashDuration * 0.5f);
             float t = 0f;
+
+            if (target != null)
+            {
+                rt.anchoredPosition = target.anchoredPosition;
+            }
 
             // 幅0→最大まで一気に広がる(スラッシュが走り抜ける)
             while (t < half)
