@@ -21,6 +21,14 @@ public class GameModePanel : MonoBehaviour
     [SerializeField] private AudioClip decideSe; // 決定音
     [SerializeField] private AudioClip cancelSe; // 戻る音(MainMenuへ)
 
+    [Header("キーボード操作")]
+    [Tooltip("移動キー(上)")]
+    [SerializeField] private Key keyboardUpKey = Key.UpArrow;
+    [Tooltip("移動キー(下)")]
+    [SerializeField] private Key keyboardDownKey = Key.DownArrow;
+    [Tooltip("決定キー(複数指定可)")]
+    [SerializeField] private Key[] keyboardDecideKeys = { Key.A, Key.Enter, Key.Space };
+
     private int currentIndex = 0;
     private bool decided = false;
     private Gamepad player1Pad;
@@ -66,7 +74,7 @@ public class GameModePanel : MonoBehaviour
 
         player1Pad = Gamepad.current;
 
-        // 戻る
+        // 戻る(キーボードはEscape、ゲームパッドはBボタン)
         if (Keyboard.current.escapeKey.wasPressedThisFrame ||
             (player1Pad != null &&
                 player1Pad.buttonEast.wasPressedThisFrame))
@@ -80,14 +88,9 @@ public class GameModePanel : MonoBehaviour
         if (decided)
             return;
 
-        bool up = player1Pad != null &&
-                  player1Pad.dpad.up.wasPressedThisFrame;
-
-        bool down = player1Pad != null &&
-                    player1Pad.dpad.down.wasPressedThisFrame;
-
-        bool submit = player1Pad != null &&
-                      player1Pad.buttonSouth.wasPressedThisFrame;
+        bool up = IsUpPressed();
+        bool down = IsDownPressed();
+        bool submit = IsDecidePressed();
 
         if (up)
         {
@@ -116,6 +119,41 @@ public class GameModePanel : MonoBehaviour
             PlaySe(decideSe);
             Decide();
         }
+    }
+
+    private bool IsUpPressed()
+    {
+        bool key = Keyboard.current != null && Keyboard.current[keyboardUpKey].wasPressedThisFrame;
+        bool gp = player1Pad != null && player1Pad.dpad.up.wasPressedThisFrame;
+        return key || gp;
+    }
+
+    private bool IsDownPressed()
+    {
+        bool key = Keyboard.current != null && Keyboard.current[keyboardDownKey].wasPressedThisFrame;
+        bool gp = player1Pad != null && player1Pad.dpad.down.wasPressedThisFrame;
+        return key || gp;
+    }
+
+    private bool IsDecidePressed()
+    {
+        bool gp = player1Pad != null && player1Pad.buttonSouth.wasPressedThisFrame;
+        return IsKeyboardDecidePressed() || gp;
+    }
+
+    private bool IsKeyboardDecidePressed()
+    {
+        if (Keyboard.current == null) return false;
+
+        for (int i = 0; i < keyboardDecideKeys.Length; i++)
+        {
+            if (Keyboard.current[keyboardDecideKeys[i]].wasPressedThisFrame)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void PlaySe(AudioClip clip)

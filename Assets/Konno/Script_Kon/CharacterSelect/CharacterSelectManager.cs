@@ -43,6 +43,16 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private AudioClip decideSe; // 決定音
     [SerializeField] private AudioClip cancelSe; // 取消・戻る音
 
+    [Header("キーボード操作(Player1用)")]
+    [Tooltip("Player1の移動キー(左)")]
+    [SerializeField] private Key keyboardLeftKey = Key.LeftArrow;
+    [Tooltip("Player1の移動キー(右)")]
+    [SerializeField] private Key keyboardRightKey = Key.RightArrow;
+    [Tooltip("Player1の決定キー(複数指定可)")]
+    [SerializeField] private Key[] keyboardDecideKeys = { Key.Enter, Key.Space };
+    [Tooltip("Player1の取消キー(決定の取り消しなど、ゲームパッドのBボタン相当)")]
+    [SerializeField] private Key keyboardCancelKey = Key.Backspace;
+
     [Header("バトル確認パネル")]
     [SerializeField] private GameObject confirmPanel;
     [SerializeField] private TMP_Text confirmText;
@@ -114,8 +124,6 @@ Color.green
             ConfirmInput();
             return;
         }
-        // 通常のキャラクター選択
-        Player1Input();
         //UpdateGamepads();
         if (Keyboard.current.escapeKey.wasPressedThisFrame ||
              (player1Pad != null &&
@@ -149,8 +157,7 @@ Color.green
         switch (selectState)
         {
             case SelectState.Player1:
-                if (player1Pad != null)
-                    Player1Input();
+                Player1Input();
                 break;
 
             case SelectState.Player2:
@@ -159,8 +166,7 @@ Color.green
                 break;
 
             case SelectState.CPU:
-                if (player1Pad != null)
-                    CPUInput();
+                CPUInput();
                 break;
         }
     }
@@ -168,6 +174,54 @@ Color.green
     private void PlaySe(AudioClip clip)
     {
         if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(clip);
+    }
+
+    // ===== キーボード+ゲームパッド共通の入力判定(Player1 / CPU選択 / 確認パネルで使用) =====
+
+    private bool IsLeftPressed(Gamepad pad)
+    {
+        bool key = Keyboard.current != null &&
+            (Keyboard.current[keyboardLeftKey].wasPressedThisFrame ||
+             Keyboard.current.aKey.wasPressedThisFrame);
+        bool gp = pad != null && pad.dpad.left.wasPressedThisFrame;
+        return key || gp;
+    }
+
+    private bool IsRightPressed(Gamepad pad)
+    {
+        bool key = Keyboard.current != null &&
+            (Keyboard.current[keyboardRightKey].wasPressedThisFrame ||
+             Keyboard.current.dKey.wasPressedThisFrame);
+        bool gp = pad != null && pad.dpad.right.wasPressedThisFrame;
+        return key || gp;
+    }
+
+    private bool IsDecidePressed(Gamepad pad)
+    {
+        bool gp = pad != null && pad.buttonSouth.wasPressedThisFrame;
+        return IsKeyboardDecidePressed() || gp;
+    }
+
+    private bool IsCancelPressed(Gamepad pad)
+    {
+        bool key = Keyboard.current != null && Keyboard.current[keyboardCancelKey].wasPressedThisFrame;
+        bool gp = pad != null && pad.buttonEast.wasPressedThisFrame;
+        return key || gp;
+    }
+
+    private bool IsKeyboardDecidePressed()
+    {
+        if (Keyboard.current == null) return false;
+
+        for (int i = 0; i < keyboardDecideKeys.Length; i++)
+        {
+            if (Keyboard.current[keyboardDecideKeys[i]].wasPressedThisFrame)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void BackToGameMode()
@@ -218,10 +272,10 @@ Color.green
         if (player1Decided)
         {
             // 決定済みでも、相手不在(対人戦でP2なし、かつCPUモードでもない)なら
-            // ここでBボタンによる取消だけは受け付ける
+            // ここで取消だけは受け付ける
             if (!cpuMode && !player2Active)
             {
-                if (player1Pad.buttonEast.wasPressedThisFrame)
+                if (IsCancelPressed(player1Pad))
                 {
                     player1Decided = false;
                     PlaySe(cancelSe);
@@ -233,7 +287,7 @@ Color.green
             return;
         }
 
-        if (player1Pad.dpad.left.wasPressedThisFrame)
+        if (IsLeftPressed(player1Pad))
         {
             player1Index--;
             if (player1Index < 0)
@@ -242,7 +296,7 @@ Color.green
             UpdateSelectionColor();
         }
 
-        if (player1Pad.dpad.right.wasPressedThisFrame)
+        if (IsRightPressed(player1Pad))
         {
             player1Index++;
             if (player1Index >= characterIcons.Length)
@@ -251,7 +305,7 @@ Color.green
             UpdateSelectionColor();
         }
 
-        if (player1Pad.buttonSouth.wasPressedThisFrame)
+        if (IsDecidePressed(player1Pad))
         {
             Debug.Log("Aボタン");
 
@@ -273,7 +327,7 @@ Color.green
             //    player1Decided = false;
             //    return;
             //}
-            // 仮：Prefab保存なし
+            // 仮:Prefab保存なし
             Debug.Log("Player1 キャラクター決定 Index = " + player1Index);
 
             if (cpuMode)
@@ -345,8 +399,7 @@ Color.green
             //    player2Decided = false;
             //    return;
             //}
-            // 仮：Prefab保存なし
-            // 仮：Prefab保存なし
+            // 仮:Prefab保存なし
             Debug.Log("Player2 キャラクター決定 Index = " + player2Index);
             UpdateSelectionColor();
             // 両方決定したか確認
@@ -373,7 +426,7 @@ Color.green
         // 1P決定後にCPU選択開始
         //selectingCPU = true;
 
-        if (player1Pad.dpad.left.wasPressedThisFrame)
+        if (IsLeftPressed(player1Pad))
         {
             player2Index--;
 
@@ -384,7 +437,7 @@ Color.green
             UpdateSelectionColor();
         }
 
-        if (player1Pad.dpad.right.wasPressedThisFrame)
+        if (IsRightPressed(player1Pad))
         {
             player2Index++;
 
@@ -395,7 +448,7 @@ Color.green
             UpdateSelectionColor();
         }
 
-        if (player1Pad.buttonSouth.wasPressedThisFrame)
+        if (IsDecidePressed(player1Pad))
         {
             player2Decided = true;
             PlaySe(decideSe);
@@ -415,7 +468,7 @@ Color.green
             //    player2Decided = false;
             //    return;
             //}
-            // 仮：Prefab保存なし
+            // 仮:Prefab保存なし
             Debug.Log("CPU キャラクター決定 Index = " + player2Index);
             Debug.Log("CPUキャラクター決定");
 
@@ -424,8 +477,8 @@ Color.green
             CheckBothPlayersDecided();
             // TODO : バトルシーンへ
         }
-        // Bボタン(取消)
-        if (player1Pad.buttonEast.wasPressedThisFrame)
+        // 取消
+        if (IsCancelPressed(player1Pad))
         {
             if (player2Decided)
             {
@@ -645,14 +698,11 @@ Color.green
     }
     private void ConfirmInput()
     {
-        if (player1Pad == null)
-            return;
-
         // =========================
         // 左右で選択
         // =========================
 
-        if (player1Pad.dpad.left.wasPressedThisFrame)
+        if (IsLeftPressed(player1Pad))
         {
             confirmIndex--;
 
@@ -665,7 +715,7 @@ Color.green
             return;
         }
 
-        if (player1Pad.dpad.right.wasPressedThisFrame)
+        if (IsRightPressed(player1Pad))
         {
             confirmIndex++;
 
@@ -679,10 +729,10 @@ Color.green
         }
 
         // =========================
-        // Aボタンで決定
+        // 決定
         // =========================
 
-        if (player1Pad.buttonSouth.wasPressedThisFrame)
+        if (IsDecidePressed(player1Pad))
         {
             PlaySe(decideSe);
 
@@ -701,10 +751,10 @@ Color.green
         }
 
         // =========================
-        // Bボタンでも戻る
+        // 取消でも戻る
         // =========================
 
-        if (player1Pad.buttonEast.wasPressedThisFrame)
+        if (IsCancelPressed(player1Pad))
         {
             PlaySe(cancelSe);
             CloseConfirmPanel();
@@ -715,7 +765,7 @@ Color.green
         if (isChangingScene)
             return;
 
-        Debug.Log("Aボタン → バトル開始");
+        Debug.Log("決定 → バトル開始");
 
         isChangingScene = true;
         isConfirming = false;
@@ -741,7 +791,7 @@ Color.green
 
         if (confirmText != null)
         {
-            confirmText.text = "これで戦いますか？";
+            confirmText.text = "これで戦いますか?";
         }
 
         // 最初は「スタート」を選択

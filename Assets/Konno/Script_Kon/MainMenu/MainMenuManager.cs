@@ -12,6 +12,9 @@ public class MainMenuManager : MonoBehaviour
     [Header("斜めカーソル")]
     [Tooltip("SlantedRectで作った斜めカーソルを制御するコンポーネント。未設定でも動作する(その場合はカーソル演出なし)。")]
     [SerializeField] private MenuCursorSelector cursor;
+    [Header("キーボード操作")]
+    [Tooltip("決定として扱うキーボードのキー(複数指定可)")]
+    [SerializeField] private Key[] keyboardDecideKeys = { Key.A, Key.Enter, Key.Space };
     [Header("SE")]
     [SerializeField] private AudioClip moveSe;
     [SerializeField] private AudioClip decideSe;
@@ -28,7 +31,7 @@ public class MainMenuManager : MonoBehaviour
         // メインメニュー側の決定操作を一切受け付けない
         if (inputLock) return;
         bool submit =
-            (Keyboard.current != null && Keyboard.current.aKey.wasPressedThisFrame) ||
+            IsKeyboardDecidePressed() ||
             (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame);
         if (submit)
         {
@@ -54,8 +57,10 @@ public class MainMenuManager : MonoBehaviour
     {
         if (inputLock) return;
         bool left = Keyboard.current.leftArrowKey.wasPressedThisFrame ||
+            Keyboard.current.aKey.wasPressedThisFrame ||
             (Gamepad.current != null && Gamepad.current.dpad.left.wasPressedThisFrame);
         bool right = Keyboard.current.rightArrowKey.wasPressedThisFrame ||
+            Keyboard.current.dKey.wasPressedThisFrame ||
             (Gamepad.current != null && Gamepad.current.dpad.right.wasPressedThisFrame);
         if (left)
         {
@@ -74,6 +79,23 @@ public class MainMenuManager : MonoBehaviour
             UpdateSelection();
         }
     }
+    /// <summary>
+    /// keyboardDecideKeys に登録されたキーのいずれかが押されたかを判定する。
+    /// </summary>
+    private bool IsKeyboardDecidePressed()
+    {
+        if (Keyboard.current == null) return false;
+
+        for (int i = 0; i < keyboardDecideKeys.Length; i++)
+        {
+            if (Keyboard.current[keyboardDecideKeys[i]].wasPressedThisFrame)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
     private void PlaySe(AudioClip clip)
     {
         if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(clip);
@@ -84,7 +106,7 @@ public class MainMenuManager : MonoBehaviour
         {
             if (i == currentIndex)
             {
-                menuTexts[i].color = Color.red;
+                menuTexts[i].color = Color.black;
                 menuTexts[i].fontSize = 48;
             }
             else
