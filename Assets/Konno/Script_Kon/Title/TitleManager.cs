@@ -7,7 +7,11 @@ public class TitleManager : MonoBehaviour
     [Header("遷移先シーン")]
     [SerializeField] private string nextScene = "MainMenu";
 
-    [Header("PCデバッグ用キー")]
+    [Header("キーボード操作")]
+    [Tooltip("スタートとして扱うキーボードのキー(複数指定可)")]
+    [SerializeField] private Key[] keyboardStartKeys = { Key.Enter, Key.Space };
+
+    [Header("PCデバッグ用キー(任意、キーボード操作とは別に1つだけ追加したい場合)")]
     [SerializeField] private Key debugStartKey = Key.A;
 
     private bool started;
@@ -35,14 +39,34 @@ public class TitleManager : MonoBehaviour
             Gamepad.current != null &&
             Gamepad.current.buttonSouth.wasPressedThisFrame;
 
+        bool keyboardStart = IsKeyboardStartPressed();
+
         bool debugKeyStart =
             Keyboard.current != null &&
             Keyboard.current[debugStartKey].wasPressedThisFrame;
 
-        if (gamepadStart || debugKeyStart)
+        if (gamepadStart || keyboardStart || debugKeyStart)
         {
             StartGame();
         }
+    }
+
+    /// <summary>
+    /// keyboardStartKeys に登録されたキーのいずれかが押されたかを判定する。
+    /// </summary>
+    private bool IsKeyboardStartPressed()
+    {
+        if (Keyboard.current == null) return false;
+
+        for (int i = 0; i < keyboardStartKeys.Length; i++)
+        {
+            if (Keyboard.current[keyboardStartKeys[i]].wasPressedThisFrame)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void StartGame()

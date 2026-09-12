@@ -3120,10 +3120,16 @@ MonoBehaviour:
   characterPreviewSprites:
   - {fileID: 21300000, guid: 423eda3be8fe7e64588d91f023b61095, type: 3}
   - {fileID: 21300000, guid: 423eda3be8fe7e64588d91f023b61095, type: 3}
+  - {fileID: 21300000, guid: 423eda3be8fe7e64588d91f023b61095, type: 3}
+  - {fileID: 21300000, guid: 423eda3be8fe7e64588d91f023b61095, type: 3}
   battleSceneName: Character
   moveSe: {fileID: 8300000, guid: 2d4914e0838334947b21c7adabf918e1, type: 3}
   decideSe: {fileID: 8300000, guid: 2d4914e0838334947b21c7adabf918e1, type: 3}
   cancelSe: {fileID: 0}
+  keyboardLeftKey: 61
+  keyboardRightKey: 62
+  keyboardDecideKeys: 02000000
+  keyboardCancelKey: 65
   confirmPanel: {fileID: 1073903137}
   confirmText: {fileID: 356628725}
   confirmMenuTexts:
@@ -3779,6 +3785,9 @@ MonoBehaviour:
   moveSe: {fileID: 8300000, guid: 2d4914e0838334947b21c7adabf918e1, type: 3}
   decideSe: {fileID: 8300000, guid: 2d4914e0838334947b21c7adabf918e1, type: 3}
   cancelSe: {fileID: 0}
+  keyboardUpKey: 37
+  keyboardDownKey: 33
+  keyboardDecideKeys: 0f0000000200000001000000
   characterManager: {fileID: 1204676512}
   menuSceneName: MainMenu
 --- !u!82 &1440630161
