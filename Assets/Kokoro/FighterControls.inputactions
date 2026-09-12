@@ -77,6 +77,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "SpAttack",
+                    "type": "Button",
+                    "id": "d4454e6a-e26a-4237-b604-5bd8e1c8e571",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ComboReset",
+                    "type": "Button",
+                    "id": "c772f8f3-fe87-4242-8eda-0f8f35839e75",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -248,7 +266,7 @@
                 {
                     "name": "",
                     "id": "54386aaa-df8d-4ec9-85e6-14b9e7c4d143",
-                    "path": "<Gamepad>/leftShoulder",
+                    "path": "<Gamepad>/dpad/down",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
@@ -297,6 +315,28 @@
                     "processors": "",
                     "groups": ";Gamepad;Keyboard",
                     "action": "Grab",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b2f9381d-674d-4b50-946b-f8597def8428",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "SpAttack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "479a1cdc-4371-477f-89d2-1a0d4bac8577",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ComboReset",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

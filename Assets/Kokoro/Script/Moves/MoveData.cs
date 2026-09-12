@@ -60,6 +60,12 @@ public sealed class MoveData : ScriptableObject
     [Tooltip("この技に対応するAnimator上の番号")]
     [SerializeField, Min(0)]
     private int animationIndex;
+
+    [Header("SP")]
+    [SerializeField, Min(0)]
+    private int spCost = 0;
+
+    public int SPCost => spCost;
     
 
     [SerializeField]
@@ -101,6 +107,22 @@ public sealed class MoveData : ScriptableObject
         return currentFrame >= activeStart &&
                currentFrame < activeEnd;
     }
+
+    /// <summary>
+    /// 現在フレームがリカバリー中か。
+    /// </summary>
+    public bool IsRecoveryFrame(
+        int frame
+    )
+    {
+        int recoveryStart =
+            startupFrames +
+            activeFrames;
+
+        return frame >= recoveryStart &&
+               frame < TotalFrames;
+    }
+
 
     private void OnValidate()
     {
