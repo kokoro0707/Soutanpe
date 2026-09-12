@@ -6,21 +6,6 @@ using TMPro;
 
 namespace PersonaMenuUI
 {
-    /// <summary>
-    /// 縦・横どちらに並んだメニュー項目にも使える「選択カーソル(斜めハイライト)」を制御する。
-    /// カーソルは各項目のRectTransformのanchoredPosition(X・Y両方)へ移動するので、
-    /// 縦リストにも横並びメニューにもそのまま使える。
-    ///
-    /// メニュー項目そのもの(テキストの配置など)は既に用意されている前提で、
-    /// このコンポーネントは
-    ///   ・選択位置へカーソル(SlantedRectを付けたImage的オブジェクト)を移動させる
-    ///   ・移動中に斜めスラッシュが走るワイプ演出を再生する
-    ///   ・選択中/非選択の項目テキストの色・太さを切り替える
-    /// という3つだけを担当する。
-    ///
-    /// 既存のメニュー入力ロジックがある場合は useInternalInput を false にして、
-    /// 自前のコードから Select(index) を呼び出すだけで組み込める。
-    /// </summary>
     public class MenuCursorSelector : MonoBehaviour
     {
         [System.Serializable]
@@ -30,7 +15,7 @@ namespace PersonaMenuUI
         [Tooltip("各メニュー項目のRectTransform(縦並びなら上から順、横並びなら左から順)。カーソルはこれらの座標(X・Y)へ移動する。")]
         [SerializeField] private RectTransform[] menuItems;
 
-        [Tooltip("各メニュー項目に対応するテキスト。省略可(色/太さの切替をしない場合は空でよい)。")]
+        [Tooltip("各メニュー項目に対応するテキスト(menuItemsと同じ順番)。Manage Label ColorsがONなら色/太さの切替に、反転テキスト演出を使うなら文字列のコピー元として使う。両方使わないなら空でよい。")]
         [SerializeField] private TMP_Text[] menuLabels;
 
         [Header("カーソル本体")]
@@ -51,9 +36,15 @@ namespace PersonaMenuUI
         [SerializeField] private float slashFullWidth = 260f;
 
         [Header("テキストの見た目")]
+        [Tooltip("ONにすると、このコンポーネントがMenu Labelsの色/太さを直接書き換える。既存のコード(MainMenuManagerなど)側で色/サイズを管理している場合はOFFのままにする。")]
+        [SerializeField] private bool manageLabelColors = false;
         [SerializeField] private Color normalColor = new Color(0.55f, 0.85f, 1f);
         [SerializeField] private Color selectedColor = Color.black;
         [SerializeField] private bool boldWhenSelected = true;
+
+        [Header("反転テキスト演出 (ペルソナ3風・任意)")]
+        [Tooltip("Cursorの子にした、色反転表示専用のTMP_Text。CursorにMaskコンポーネントを付けて、この文字をカーソルの斜め形状で切り抜く。\n選択中の項目と同じ文字列・フォントサイズ・スタイルを自動でコピーし、Color欄で設定した色(白など)だけがカーソルの中に見える。未設定なら反転演出なしで動作する。")]
+        [SerializeField] private TMP_Text invertedLabel;
 
         [Header("入力 (簡易デモ用。既存の入力処理がある場合はOFFにする)")]
         [SerializeField] private bool useInternalInput = true;
@@ -120,11 +111,6 @@ namespace PersonaMenuUI
             }
         }
 
-        /// <summary>
-        /// EventSystemの現在の選択オブジェクトを見て、menuItemsに含まれていれば
-        /// そのインデックスをSelect()する。Selectable(Button等)で上下ナビゲーションを
-        /// 組んでいる既存メニューに、見た目のカーソルだけ後付けしたい場合に使う。
-        /// </summary>
         public void SyncToEventSystemSelection()
         {
             if (EventSystem.current == null) return;
@@ -141,15 +127,10 @@ namespace PersonaMenuUI
             }
         }
 
-        /// <summary>
-        /// 指定インデックスへ選択を切り替える。外部の入力/選択ロジックから
-        /// 直接呼び出してよい公開メソッド。
-        /// </summary>
         public void Select(int index)
         {
             if (menuItems == null || menuItems.Length == 0) return;
 
-            // 端でループさせる(最上段でさらに上へ行くと最下段へ)
             index = ((index % menuItems.Length) + menuItems.Length) % menuItems.Length;
 
             bool changed = index != CurrentIndex;
@@ -184,8 +165,6 @@ namespace PersonaMenuUI
         {
             if (cursorRect == null || target == null) yield break;
 
-            // 縦並びメニュー(Y移動のみ)・横並びメニュー(X移動のみ)の
-            // どちらでも使えるよう、XY両方を対象の座標へ補間する。
             Vector2 startPos = cursorRect.anchoredPosition;
             Vector2 endPos = target.anchoredPosition;
             float t = 0f;
@@ -201,15 +180,15 @@ namespace PersonaMenuUI
             cursorRect.anchoredPosition = endPos;
         }
 
-        /// <summary>
-        /// 選択切替の瞬間に、斜めの白いバー(slashFlash)を
-        /// 幅0→最大まで一気に走らせてからフェードアウトさせる演出。
-        /// 「斜めスラッシュが切り込むような」ペルソナ風の切替感を出す。
-        /// </summary>
         private IEnumerator SlashFlashRoutine(RectTransform target)
         {
             RectTransform rt = slashFlash.rectTransform;
             float baseWidth = slashFullWidth;
+
+            if (target != null)
+            {
+                rt.anchoredPosition = target.anchoredPosition;
+            }
 
             Color startColor = slashColor;
             startColor.a = 1f;
@@ -221,12 +200,6 @@ namespace PersonaMenuUI
             float half = Mathf.Max(0.0001f, slashDuration * 0.5f);
             float t = 0f;
 
-            if (target != null)
-            {
-                rt.anchoredPosition = target.anchoredPosition;
-            }
-
-            // 幅0→最大まで一気に広がる(スラッシュが走り抜ける)
             while (t < half)
             {
                 t += Time.unscaledDeltaTime;
@@ -237,7 +210,6 @@ namespace PersonaMenuUI
 
             rt.sizeDelta = new Vector2(baseWidth, rt.sizeDelta.y);
 
-            // 広がりきったら、フェードアウトしながら消える
             t = 0f;
             while (t < half)
             {
@@ -255,20 +227,41 @@ namespace PersonaMenuUI
 
         private void UpdateLabelStyles()
         {
-            if (menuLabels == null) return;
-
-            for (int i = 0; i < menuLabels.Length; i++)
+            if (manageLabelColors && menuLabels != null)
             {
-                if (menuLabels[i] == null) continue;
-
-                bool isSelected = i == CurrentIndex;
-                menuLabels[i].color = isSelected ? selectedColor : normalColor;
-
-                if (boldWhenSelected)
+                for (int i = 0; i < menuLabels.Length; i++)
                 {
-                    menuLabels[i].fontStyle = isSelected ? FontStyles.Bold : FontStyles.Normal;
+                    if (menuLabels[i] == null) continue;
+
+                    bool isSelected = i == CurrentIndex;
+                    menuLabels[i].color = isSelected ? selectedColor : normalColor;
+
+                    if (boldWhenSelected)
+                    {
+                        menuLabels[i].fontStyle = isSelected ? FontStyles.Bold : FontStyles.Normal;
+                    }
                 }
             }
+
+            UpdateInvertedLabel();
+        }
+
+        private void UpdateInvertedLabel()
+        {
+            if (invertedLabel == null) return;
+
+            if (menuLabels == null || CurrentIndex < 0 || CurrentIndex >= menuLabels.Length || menuLabels[CurrentIndex] == null)
+            {
+                invertedLabel.text = string.Empty;
+                return;
+            }
+
+            TMP_Text source = menuLabels[CurrentIndex];
+            invertedLabel.text = source.text;
+            invertedLabel.font = source.font;
+            invertedLabel.fontSize = source.fontSize;
+            invertedLabel.alignment = source.alignment;
+            invertedLabel.fontStyle = source.fontStyle;
         }
     }
 }
