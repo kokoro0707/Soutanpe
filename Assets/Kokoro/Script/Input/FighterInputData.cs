@@ -18,6 +18,10 @@ public struct FighterInputData
     //•KŽEƒ{ƒ^ƒ“
     public bool specialAttackPressed;
 
+    public bool spAttackPressed;
+
     //‚Â‚©‚Ý
     public bool grabPressed;
+
+    public bool comboResetPressed;
 }

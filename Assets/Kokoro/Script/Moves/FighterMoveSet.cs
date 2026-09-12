@@ -28,6 +28,10 @@ public sealed class FighterMoveSet : ScriptableObject
     [SerializeField]
     private MoveData downSpecial;
 
+    [Header("SPUŒ‚")]
+    [SerializeField]
+    private MoveData spAttack;
+
     [Header("‹ó’†UŒ‚")]
     [SerializeField]
     private MoveData jumpAttack;
@@ -52,4 +56,6 @@ public sealed class FighterMoveSet : ScriptableObject
 
     public MoveData JumpAttack =>
         jumpAttack;
+
+    public MoveData SPAttack => spAttack;
 }

@@ -171,7 +171,14 @@ public sealed class FighterCommandInterpreter :
                     input.grabPressed,
 
                 dashHeld =
-                    dashHeld
+                    dashHeld,
+
+                comboResetPressed=
+                    input.comboResetPressed,
+
+                spAttackPressed =
+                    input.spAttackPressed,
+
             };
 
         previousRelativeDirection =

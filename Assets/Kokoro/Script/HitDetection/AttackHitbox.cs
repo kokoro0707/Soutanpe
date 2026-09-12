@@ -14,14 +14,18 @@ public sealed class AttackHitbox : MonoBehaviour
 
     private int currentAttackDirection = 1;
 
+    // ƒRƒ“ƒ{‚È‚Ç‚É‚æ‚éƒ_ƒ[ƒW•â³
+    private float currentDamageMultiplier = 1f;
+
     // “¯‚¶‹Z‚Å“¯‚¶‘Šè‚Ö•¡”‰ñ“–‚½‚é‚Ì‚ğ–h‚®
-    private readonly HashSet<FighterHitReceiver>
-        hitTargets =
-            new HashSet<FighterHitReceiver>();
+    private readonly HashSet<FighterHitReceiver> hitTargets =
+        new HashSet<FighterHitReceiver>();
+
 
     public bool IsActive =>
         hitboxCollider != null &&
         hitboxCollider.enabled;
+
 
     private void Awake()
     {
@@ -32,13 +36,15 @@ public sealed class AttackHitbox : MonoBehaviour
         hitboxCollider.enabled = false;
     }
 
+
     /// <summary>
     /// UŒ‚”»’è‚ğ—LŒø‰»‚·‚éB
     /// </summary>
     public void Activate(
         MoveData move,
         int facingDirection,
-        FighterHealth attackOwner
+        FighterHealth attackOwner,
+        float damageMultiplier = 1f
     )
     {
         if (move == null ||
@@ -50,10 +56,24 @@ public sealed class AttackHitbox : MonoBehaviour
         currentMove = move;
         ownerHealth = attackOwner;
 
+        // ¡‰ñ‚ÌUŒ‚‚Ìƒ_ƒ[ƒW•â³
+        currentDamageMultiplier =
+            Mathf.Max(
+                0f,
+                damageMultiplier
+            );
+
         currentAttackDirection =
-            facingDirection >= 0 ? 1 : -1;
+            facingDirection >= 0
+                ? 1
+                : -1;
 
         hitTargets.Clear();
+
+
+        // =========================
+        // ”»’èˆÊ’u
+        // =========================
 
         Vector2 offset =
             move.HitboxOffset;
@@ -62,13 +82,20 @@ public sealed class AttackHitbox : MonoBehaviour
             Mathf.Abs(offset.x) *
             currentAttackDirection;
 
-        hitboxCollider.offset = offset;
+        hitboxCollider.offset =
+            offset;
+
         hitboxCollider.size =
             move.HitboxSize;
 
-        hitboxCollider.enabled = true;
+        hitboxCollider.enabled =
+            true;
     }
 
+
+    /// <summary>
+    /// UŒ‚”»’è‚ğ–³Œø‰»‚·‚éB
+    /// </summary>
     public void Deactivate()
     {
         if (hitboxCollider != null)
@@ -78,11 +105,17 @@ public sealed class AttackHitbox : MonoBehaviour
 
         currentMove = null;
         ownerHealth = null;
+
         currentAttackDirection = 1;
+        currentDamageMultiplier = 1f;
 
         hitTargets.Clear();
     }
 
+
+    /// <summary>
+    /// Hurtbox‚ÉG‚ê‚½‚ÌUŒ‚ˆ—B
+    /// </summary>
     private void OnTriggerEnter2D(
         Collider2D other
     )
@@ -93,6 +126,7 @@ public sealed class AttackHitbox : MonoBehaviour
             return;
         }
 
+
         Hurtbox hurtbox =
             other.GetComponent<Hurtbox>();
 
@@ -100,6 +134,7 @@ public sealed class AttackHitbox : MonoBehaviour
         {
             return;
         }
+
 
         FighterHitReceiver targetReceiver =
             hurtbox.OwnerReceiver;
@@ -109,30 +144,43 @@ public sealed class AttackHitbox : MonoBehaviour
             return;
         }
 
+
         FighterHealth targetHealth =
             targetReceiver.OwnerHealth;
 
+        // ©•ª©g‚É‚Í“–‚½‚ç‚È‚¢
         if (targetHealth == null ||
             targetHealth == ownerHealth)
         {
             return;
         }
 
+
+        // “¯‚¶UŒ‚‚Å“¯‚¶‘Šè‚Ö
+        // •¡”‰ñƒqƒbƒg‚·‚é‚Ì‚ğ–h‚®
         if (!hitTargets.Add(targetReceiver))
         {
             return;
         }
+
 
         Transform attackerTransform =
             ownerHealth != null
                 ? ownerHealth.transform
                 : transform.root;
 
+
+        // =========================
+        // ‘Šè‚ÖUŒ‚‚ğ‘—‚é
+        // =========================
+
         targetReceiver.ReceiveAttack(
             currentMove,
             currentAttackDirection,
-            attackerTransform
+            attackerTransform,
+            currentDamageMultiplier
         );
+
 
         string attackerName =
             ownerHealth != null
@@ -142,10 +190,12 @@ public sealed class AttackHitbox : MonoBehaviour
         Debug.Log(
             $"{attackerName}‚Ì" +
             $"{currentMove.MoveName}‚ª" +
-            $"{targetHealth.name}‚ÉÚG",
+            $"{targetHealth.name}‚ÉÚG " +
+            $"•â³={currentDamageMultiplier:P0}",
             this
         );
     }
+
 
     private void OnDisable()
     {
@@ -157,8 +207,12 @@ public sealed class AttackHitbox : MonoBehaviour
         currentMove = null;
         ownerHealth = null;
 
+        currentAttackDirection = 1;
+        currentDamageMultiplier = 1f;
+
         hitTargets.Clear();
     }
+
 
     private void OnDrawGizmos()
     {
@@ -172,7 +226,8 @@ public sealed class AttackHitbox : MonoBehaviour
             return;
         }
 
-        Gizmos.color = Color.red;
+        Gizmos.color =
+            Color.red;
 
         Matrix4x4 previousMatrix =
             Gizmos.matrix;

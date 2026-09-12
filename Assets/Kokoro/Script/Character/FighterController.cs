@@ -40,7 +40,9 @@ public sealed class FighterController : MonoBehaviour
     private bool heavyAttackQueued;
     private bool assistComboQueued;
     private bool specialAttackQueued;
+    private bool spAttackQueued;
     private bool grabQueued;
+    private bool comboResetQeued;
 
     private int simulationFrame;
 
@@ -191,6 +193,11 @@ public sealed class FighterController : MonoBehaviour
         if (input.assistComboPressed)
             assistComboQueued = true;
 
+        if(input.spAttackPressed)
+        {
+            spAttackQueued = true;
+        }
+
         if(input.specialAttackPressed)
         {
             specialAttackQueued = true;
@@ -199,6 +206,11 @@ public sealed class FighterController : MonoBehaviour
         if(input.grabPressed)
         {
             grabQueued = true;
+        }
+
+        if(input.comboResetPressed)
+        {
+            comboResetQeued = true;
         }
     }
 
@@ -226,6 +238,12 @@ public sealed class FighterController : MonoBehaviour
         input.grabPressed=
             grabQueued;
 
+        input.comboResetPressed=
+            comboResetQeued;
+
+        input.spAttackPressed =
+            spAttackQueued;
+
         return input;
     }
 
@@ -237,6 +255,8 @@ public sealed class FighterController : MonoBehaviour
         assistComboQueued = false;
         specialAttackQueued = false;
         grabQueued = false;
+        comboResetQeued = false;
+        spAttackQueued = false;
 
         simulationFrame++;
     }

@@ -33,6 +33,14 @@ public sealed class LocalFighterInputSource :
     private string assistComboActionName =
         "AssistCombo";
 
+    [SerializeField]
+    private string comboResetActionName =
+        "ComboReset";
+
+    [SerializeField]
+    private string SpAttackActionName =
+        "SPAttack";
+
     [Header("ï˚å¸ì¸óÕê›íË")]
     [SerializeField, Range(0.1f, 0.95f)]
     private float directionPressThreshold = 0.55f;
@@ -56,6 +64,8 @@ public sealed class LocalFighterInputSource :
     private InputAction assistComboAction;
     private InputAction specialAttackAction;
     private InputAction grabAction;
+    private InputAction comboresetAction;
+    private InputAction spAttackAction;
 
     private bool isInitialized;
 
@@ -160,6 +170,18 @@ public sealed class LocalFighterInputSource :
                 grabActionName
             );
 
+        comboresetAction =
+            FindAction(
+                actionMap,
+                comboResetActionName
+            );
+
+        spAttackAction =
+            FindAction(
+                actionMap,
+                SpAttackActionName
+            );
+
         isInitialized =
             moveAction != null &&
             jumpAction != null &&
@@ -167,7 +189,9 @@ public sealed class LocalFighterInputSource :
             heavyAttackAction != null &&
             assistComboAction != null &&
             specialAttackAction != null &&
-            grabAction != null;
+            grabAction != null && 
+            comboresetAction!=null &&
+            spAttackAction !=null;
 
         if (isInitialized)
         {
@@ -255,7 +279,15 @@ public sealed class LocalFighterInputSource :
 
                 grabPressed=
                     grabAction.
-                         WasPressedThisFrame()
+                         WasPressedThisFrame(),
+
+                comboResetPressed=
+                    comboresetAction
+                        .WasPressedThisFrame(),
+
+                spAttackPressed=
+                   spAttackAction.WasPressedThisFrame(),
+
                 
             };
 

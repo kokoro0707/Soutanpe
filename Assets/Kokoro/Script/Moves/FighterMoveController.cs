@@ -29,6 +29,24 @@ public sealed class FighterMoveController : MonoBehaviour
     [SerializeField]
     private AttackHitbox attackHitbox;
 
+    [Header("コンボリセット")]
+    [SerializeField, Range(0.1f, 1f)]
+    private float comboResetDamageRate = 0.8f;
+
+    [SerializeField, Range(0.1f, 1f)]
+    private float minimumDamageRate = 0.5f;
+
+    private int comboResetCount;
+
+    [Header("SP")]
+    [SerializeField]
+    private FighterSPGauge spGauge;
+
+    [Header("コンボリセットSP")]
+    [SerializeField, Min(0)]
+    private int comboResetSPCost = 25;
+
+
     [SerializeField]
     private FighterHealth ownerHealth;
 
@@ -112,19 +130,41 @@ public sealed class FighterMoveController : MonoBehaviour
         }
     }
 
+    public float CurrentDamageMultiplier
+    {
+        get
+        {
+            float multiplier =
+                Mathf.Pow(
+                    comboResetDamageRate,
+                    comboResetCount
+                );
+
+            return Mathf.Max(
+                    minimumDamageRate,
+                    multiplier
+            );
+        }
+    }
+
     /// <summary>
     /// 1フレーム分の攻撃処理。
     /// </summary>
     public void SimulateCommand(
-        FighterCommandData command,
-        int facingDirection,
-        bool isGrounded
-    )
+    FighterCommandData command,
+    int facingDirection,
+    bool isGrounded
+)
     {
-        // 着地していたら空中攻撃を再使用可能にする
         if (isGrounded)
         {
             airAttackUsed = false;
+        }
+
+        
+        if (TryComboReset(command))
+        {
+            return;
         }
 
         if (currentMove == null)
@@ -147,6 +187,7 @@ public sealed class FighterMoveController : MonoBehaviour
 
         UpdateCurrentMove();
     }
+
 
 
     /// <summary>
@@ -219,6 +260,13 @@ public sealed class FighterMoveController : MonoBehaviour
             !stateMachine.CanStartAttack)
         {
             return;
+        }
+
+        if(command.spAttackPressed)
+        {
+            StartSPAttack(
+                moveSet.SPAttack,
+                facingDirection);
         }
 
         // 下 + 必殺技
@@ -308,6 +356,58 @@ public sealed class FighterMoveController : MonoBehaviour
 
         Debug.Log(
             $"{name}：必殺技 {move.MoveName} 開始",
+            this
+        );
+    }
+
+    private void StartSPAttack(
+    MoveData move,
+    int facingDirection
+)
+    {
+        if (move == null)
+        {
+            Debug.LogWarning(
+                $"{name}のSP攻撃が設定されていません。",
+                this
+            );
+
+            return;
+        }
+
+        if (spGauge == null)
+        {
+            Debug.LogWarning(
+                $"{name}にSPGaugeがありません。",
+                this
+            );
+
+            return;
+        }
+
+        // SP不足
+        if (!spGauge.TryConsume(move.SPCost))
+        {
+            Debug.Log(
+                $"{name}：SP不足 " +
+                $"必要SP={move.SPCost} " +
+                $"現在SP={spGauge.CurrentSP}",
+                this
+            );
+
+            return;
+        }
+
+        ResetCombo();
+
+        StartMoveInternal(
+            move,
+            facingDirection
+        );
+
+        Debug.Log(
+            $"{name}：SP攻撃 {move.MoveName} " +
+            $"残りSP={spGauge.CurrentSP}",
             this
         );
     }
@@ -584,7 +684,8 @@ public sealed class FighterMoveController : MonoBehaviour
                 attackHitbox.Activate(
                     currentMove,
                     attackFacingDirection,
-                    ownerHealth
+                    ownerHealth,
+                    CurrentDamageMultiplier
                 );
             }
         }
@@ -773,6 +874,8 @@ public sealed class FighterMoveController : MonoBehaviour
 
         ResetCombo();
 
+        comboResetCount = 0;
+
         if (stateMachine != null &&
             stateMachine.CurrentState !=
                 FighterState.KO)
@@ -808,6 +911,8 @@ public sealed class FighterMoveController : MonoBehaviour
         currentMoveFrame = 0;
 
         ResetCombo();
+
+        comboResetCount = 0;
     }
 
     /// <summary>
@@ -860,6 +965,130 @@ public sealed class FighterMoveController : MonoBehaviour
             shouldShow
         );
     }
+
+    private bool CanUseComboReset()
+    {
+        if (currentMove == null)
+        {
+            return false;
+        }
+
+        // 弱・強コンボだけ
+        if (currentComboType != FighterComboType.Light &&
+            currentComboType != FighterComboType.Heavy)
+        {
+            return false;
+        }
+
+        NormalComboData combo = null;
+
+        if (currentComboType ==
+            FighterComboType.Light)
+        {
+            combo = moveSet.LightCombo;
+        }
+        else if (currentComboType ==
+                 FighterComboType.Heavy)
+        {
+            combo = moveSet.HeavyCombo;
+        }
+
+        if (combo == null)
+        {
+            return false;
+        }
+
+        // 最終段でなければ使えない
+        if (currentComboIndex !=
+            combo.StepCount - 1)
+        {
+            return false;
+        }
+
+        // 最終段のRecovery中だけ
+        return currentMove.IsRecoveryFrame(
+            currentMoveFrame
+        );
+    }
+    private bool TryComboReset(
+     FighterCommandData command
+ )
+    {
+        if (!command.comboResetPressed)
+        {
+            return false;
+        }
+
+        // 最終段Recovery中か
+        if (!CanUseComboReset())
+        {
+            return false;
+        }
+
+
+        // =========================
+        // SP確認
+        // =========================
+
+        if (spGauge == null)
+        {
+            Debug.LogWarning(
+                $"{name}にSPGaugeがありません。",
+                this
+            );
+
+            return false;
+        }
+
+        if (!spGauge.TryConsume(
+                comboResetSPCost
+            ))
+        {
+            Debug.Log(
+                $"{name}：SP不足でコンボリセット失敗",
+                this
+            );
+
+            return false;
+        }
+
+
+        // =========================
+        // コンボリセット成功
+        // =========================
+
+        attackHitbox?.Deactivate();
+
+        currentMove = null;
+        currentMoveFrame = 0;
+
+        ResetCombo();
+
+        // ダメージ補正
+        comboResetCount++;
+
+
+        if (stateMachine != null &&
+            stateMachine.CurrentState !=
+            FighterState.KO)
+        {
+            stateMachine.ForceChangeState(
+                FighterState.Idle
+            );
+        }
+
+
+        Debug.Log(
+            $"{name}：コンボリセット成功 " +
+            $"SP={spGauge.CurrentSP}/{spGauge.MaxSP} " +
+            $"補正={CurrentDamageMultiplier:P0}",
+            this
+        );
+
+        return true;
+    }
+
+
 
 }
 

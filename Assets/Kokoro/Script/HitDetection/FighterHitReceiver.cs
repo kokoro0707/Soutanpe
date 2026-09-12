@@ -116,11 +116,13 @@ public sealed class FighterHitReceiver : MonoBehaviour
 
     /// <summary>
     /// 相手の攻撃を受け取る。
+    /// damageMultiplierはコンボ補正。
     /// </summary>
     public void ReceiveAttack(
         MoveData move,
         int attackDirection,
-        Transform attacker
+        Transform attacker,
+        float damageMultiplier = 1f
     )
     {
         if (move == null ||
@@ -133,7 +135,7 @@ public sealed class FighterHitReceiver : MonoBehaviour
         attackDirection =
             attackDirection >= 0 ? 1 : -1;
 
-        // 攻撃やステップ中なら中断する
+        // 攻撃やステップ中なら中断
         if (moveController != null)
         {
             moveController.CancelCurrentMove();
@@ -146,6 +148,7 @@ public sealed class FighterHitReceiver : MonoBehaviour
 
         if (CanGuardAttack(attacker))
         {
+            // ガードにはダメージ補正を使わない
             ReceiveBlock(
                 move,
                 attackDirection
@@ -153,12 +156,15 @@ public sealed class FighterHitReceiver : MonoBehaviour
         }
         else
         {
+            //ヒット時だけ補正値を渡す
             ReceiveHit(
                 move,
-                attackDirection
+                attackDirection,
+                damageMultiplier
             );
         }
     }
+
 
     /// <summary>
     /// ガード不能の投げダメージを受ける。
@@ -304,16 +310,44 @@ public sealed class FighterHitReceiver : MonoBehaviour
     }
 
     private void ReceiveHit(
-        MoveData move,
-        int attackDirection
-    )
+    MoveData move,
+    int attackDirection,
+    float damageMultiplier
+)
     {
-        health.TakeDamage(move.Damage);
+        // =========================
+        // コンボダメージ補正
+        // =========================
+
+        damageMultiplier =
+            Mathf.Max(
+                0f,
+                damageMultiplier
+            );
+
+        int finalDamage =
+            Mathf.Max(
+                1,
+                Mathf.RoundToInt(
+                    move.Damage *
+                    damageMultiplier
+                )
+            );
+
+        health.TakeDamage(
+            finalDamage
+        );
+
+
+        // =========================
+        // ノックバック
+        // =========================
 
         ApplyKnockback(
             move.HitKnockback,
             attackDirection
         );
+
 
         // FighterHealth側でKO状態に変更される
         if (health.IsKnockedOut)
@@ -322,6 +356,11 @@ public sealed class FighterHitReceiver : MonoBehaviour
             return;
         }
 
+
+        // =========================
+        // ヒット硬直
+        // =========================
+
         reactionFramesRemaining =
             move.HitStunFrames;
 
@@ -329,12 +368,16 @@ public sealed class FighterHitReceiver : MonoBehaviour
             FighterState.HitStun
         );
 
+
         Debug.Log(
-            $"{name}がヒット硬直 " +
-            $"残り：{reactionFramesRemaining}",
+            $"{name}が{move.MoveName}を受けた " +
+            $"Damage={finalDamage} " +
+            $"補正={damageMultiplier:P0} " +
+            $"HitStun={reactionFramesRemaining}",
             this
         );
     }
+
 
     private void ApplyKnockback(
         Vector2 knockback,

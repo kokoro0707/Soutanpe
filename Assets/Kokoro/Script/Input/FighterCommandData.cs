@@ -16,6 +16,8 @@ public struct FighterCommandData
     public bool forwardSpecialPressed;
     public bool downSpecialPressed;
 
+    public bool spAttackPressed;
+
     //‚Â‚©‚Ý
     public bool grabPressed;
 
@@ -24,4 +26,6 @@ public struct FighterCommandData
     public bool forwardStepPressed;
     public bool backStepPressed;
     public bool dashHeld;
+
+    public bool comboResetPressed;
 }
