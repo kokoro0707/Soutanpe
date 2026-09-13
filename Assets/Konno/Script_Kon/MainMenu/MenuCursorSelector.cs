@@ -6,6 +6,25 @@ using TMPro;
 
 namespace PersonaMenuUI
 {
+    /// <summary>
+    /// 縦・横どちらに並んだメニュー項目にも使える「選択カーソル(斜めハイライト)」を制御する。
+    /// カーソルは各項目のRectTransformのanchoredPosition(X・Y両方)へ移動するので、
+    /// 縦リストにも横並びメニューにもそのまま使える。
+    ///
+    /// メニュー項目そのもの(テキストの配置など)は既に用意されている前提で、
+    /// このコンポーネントは
+    ///   ・選択位置へカーソル(SlantedRectを付けたImage的オブジェクト)を移動させる
+    ///   ・移動中に斜めスラッシュが走るワイプ演出を再生する
+    ///   ・(任意)選択中/非選択の項目テキストの色・太さを切り替える
+    ///   ・(任意)Cursorの中だけ文字色が反転して見える、ペルソナ3風の演出を行う
+    ///   ・(任意)選択項目の左右の矢印を、Cursorに追従させつつ小刻みにバウンドさせる
+    ///   ・(任意)Cursorを1つ動かす代わりに、項目ごとに個別のカーソル画像を用意しておいて
+    ///     選択中のものだけを表示する「個別カーソル」モードで動作する
+    /// を担当する。
+    ///
+    /// 既存のメニュー入力ロジックがある場合は useInternalInput を false にして、
+    /// 自前のコードから Select(index) を呼び出すだけで組み込める。
+    /// </summary>
     public class MenuCursorSelector : MonoBehaviour
     {
         [System.Serializable]
@@ -24,6 +43,18 @@ namespace PersonaMenuUI
 
         [Tooltip("切替の瞬間だけ光らせるスラッシュ演出用のSlantedRect。未設定でも動作する(その場合は移動アニメのみ)。")]
         [SerializeField] private SlantedRect slashFlash;
+
+        [Header("項目ごとに別々のカーソルを使う場合 (任意)")]
+        [Tooltip("Cursor Rectを1つ移動させる代わりに、項目ごとに個別に用意したカーソル(SlantedRectでも、丸い赤枠のようなImageでも、形も大きさも項目ごとに自由に変えてよい)を切り替えて表示したい場合に使う。\n" +
+            "menuItemsと同じ順番・同じ要素数で設定すると、CursorRectの移動アニメーションの代わりに、選択中の項目のオブジェクトだけを表示(それ以外は非表示)する「個別カーソル」モードに自動で切り替わる。\n" +
+            "各要素は、あらかじめその項目にぴったり合う位置・大きさ・傾き・色で個別に作っておく(実行中に座標を動かしたりはしない)。未設定(要素数0)なら今まで通りCursor Rectが移動する。")]
+        [SerializeField] private RectTransform[] itemCursors;
+
+        [Tooltip("個別カーソルモードで選択が切り替わった瞬間、一瞬拡大してから等倍に戻る「ポン」というポップアニメーションの時間(秒)。0にすると即座に切り替わる。")]
+        [SerializeField] private float itemCursorPopDuration = 0.12f;
+
+        [Tooltip("個別カーソルモードのポップアニメーションで、切り替わった瞬間に一瞬拡大する倍率。")]
+        [SerializeField] private float itemCursorPopScale = 1.15f;
 
         [Header("移動アニメーション")]
         [SerializeField] private float moveDuration = 0.18f;
@@ -46,6 +77,29 @@ namespace PersonaMenuUI
         [Tooltip("Cursorの子にした、色反転表示専用のTMP_Text。CursorにMaskコンポーネントを付けて、この文字をカーソルの斜め形状で切り抜く。\n選択中の項目と同じ文字列・フォントサイズ・スタイルを自動でコピーし、Color欄で設定した色(白など)だけがカーソルの中に見える。未設定なら反転演出なしで動作する。")]
         [SerializeField] private TMP_Text invertedLabel;
 
+        [Header("矢印アニメーション (ペルソナ3風・任意)")]
+        [Tooltip("選択中の項目の左右に表示する矢印(▸ ◂ のようなImage/TMP_Text)のRectTransform。\n" +
+            "毎フレーム Cursor Rect の位置 + Arrow Side Offset の座標へ自動で追従させるので、Cursorの子にする必要はない" +
+            "(むしろCursorにMaskを付けている場合、子にすると矢印までCursorの斜め形状で切り抜かれて見えなくなるので、" +
+            "CursorではなくCursorと同じ親の下に置くこと)。未設定なら矢印演出なしで動作する。")]
+        [SerializeField] private RectTransform arrowLeft;
+        [SerializeField] private RectTransform arrowRight;
+
+        [Tooltip("カーソル中心から左右の矢印までの距離(px)。")]
+        [SerializeField] private float arrowSideOffset = 140f;
+
+        [Tooltip("矢印を、カーソルの上下中央からどれだけずらすか(px)。0でカーソルの中心の高さに揃う。")]
+        [SerializeField] private float arrowVerticalOffset = 0f;
+
+        [Tooltip("矢印が左右に小刻みに動く幅(px)。")]
+        [SerializeField] private float arrowBounceDistance = 6f;
+
+        [Tooltip("矢印が1秒間に往復する回数の目安(大きいほど素早くピコピコ動く)。")]
+        [SerializeField] private float arrowBounceSpeed = 3f;
+
+        [Tooltip("ONだと左右の矢印が逆方向に(選択項目に近づいたり離れたりするように)動く「呼吸」のような見た目になる。OFFだと両方とも同じ向きに揃って動く。")]
+        [SerializeField] private bool mirrorArrows = true;
+
         [Header("入力 (簡易デモ用。既存の入力処理がある場合はOFFにする)")]
         [SerializeField] private bool useInternalInput = true;
         [SerializeField] private KeyCode upKey = KeyCode.UpArrow;
@@ -64,7 +118,15 @@ namespace PersonaMenuUI
 
         private Coroutine moveRoutine;
         private Coroutine slashRoutine;
+        private Coroutine itemCursorRoutine;
         private float nextInputTime;
+
+        /// <summary>
+        /// 項目ごとに個別のカーソルオブジェクトが(menuItemsと同じ数だけ)設定されているかどうか。
+        /// ONの場合、Cursor Rectの移動アニメーションの代わりに、選択中の項目のオブジェクトだけを
+        /// 表示する「個別カーソル」モードで動作する。
+        /// </summary>
+        private bool UseItemCursors => itemCursors != null && itemCursors.Length > 0 && menuItems != null && itemCursors.Length == menuItems.Length;
 
         private void Start()
         {
@@ -76,7 +138,10 @@ namespace PersonaMenuUI
             }
 
             CurrentIndex = Mathf.Clamp(CurrentIndex, 0, menuItems.Length - 1);
-            SnapCursorTo(CurrentIndex);
+
+            if (UseItemCursors) ShowItemCursorImmediate(CurrentIndex);
+            else SnapCursorTo(CurrentIndex);
+
             UpdateLabelStyles();
         }
 
@@ -91,6 +156,8 @@ namespace PersonaMenuUI
             {
                 SyncToEventSystemSelection();
             }
+
+            UpdateArrowBounce();
         }
 
         private void HandleInternalInput()
@@ -111,6 +178,11 @@ namespace PersonaMenuUI
             }
         }
 
+        /// <summary>
+        /// EventSystemの現在の選択オブジェクトを見て、menuItemsに含まれていれば
+        /// そのインデックスをSelect()する。Selectable(Button等)で上下ナビゲーションを
+        /// 組んでいる既存メニューに、見た目のカーソルだけ後付けしたい場合に使う。
+        /// </summary>
         public void SyncToEventSystemSelection()
         {
             if (EventSystem.current == null) return;
@@ -127,10 +199,15 @@ namespace PersonaMenuUI
             }
         }
 
+        /// <summary>
+        /// 指定インデックスへ選択を切り替える。外部の入力/選択ロジックから
+        /// 直接呼び出してよい公開メソッド。
+        /// </summary>
         public void Select(int index)
         {
             if (menuItems == null || menuItems.Length == 0) return;
 
+            // 端でループさせる(最上段でさらに上へ行くと最下段へ)
             index = ((index % menuItems.Length) + menuItems.Length) % menuItems.Length;
 
             bool changed = index != CurrentIndex;
@@ -139,14 +216,23 @@ namespace PersonaMenuUI
 
             if (!changed)
             {
-                SnapCursorTo(CurrentIndex);
+                if (UseItemCursors) ShowItemCursorImmediate(CurrentIndex);
+                else SnapCursorTo(CurrentIndex);
                 return;
             }
 
             onSelectionChanged?.Invoke(CurrentIndex);
 
-            if (moveRoutine != null) StopCoroutine(moveRoutine);
-            moveRoutine = StartCoroutine(MoveCursorRoutine(menuItems[CurrentIndex]));
+            if (UseItemCursors)
+            {
+                if (itemCursorRoutine != null) StopCoroutine(itemCursorRoutine);
+                itemCursorRoutine = StartCoroutine(ItemCursorPopRoutine(CurrentIndex));
+            }
+            else
+            {
+                if (moveRoutine != null) StopCoroutine(moveRoutine);
+                moveRoutine = StartCoroutine(MoveCursorRoutine(menuItems[CurrentIndex]));
+            }
 
             if (slashFlash != null)
             {
@@ -161,10 +247,89 @@ namespace PersonaMenuUI
             cursorRect.anchoredPosition = menuItems[index].anchoredPosition;
         }
 
+        /// <summary>
+        /// 個別カーソルモードで、アニメーションなしに選択中の項目のオブジェクトだけを即座に表示する
+        /// (それ以外は非表示にする)。Start()時の初期表示や、同じ項目を選び直した時に使う。
+        /// </summary>
+        private void ShowItemCursorImmediate(int index)
+        {
+            for (int i = 0; i < itemCursors.Length; i++)
+            {
+                if (itemCursors[i] == null) continue;
+                itemCursors[i].gameObject.SetActive(i == index);
+                itemCursors[i].localScale = Vector3.one;
+            }
+        }
+
+        /// <summary>
+        /// 個別カーソルモードで選択が切り替わった時に、選択中の項目のオブジェクトだけを表示し、
+        /// 「一瞬拡大してから等倍に戻る」ポップアニメーションを再生する。
+        /// 項目ごとに位置・大きさ・形・色が違っていても、表示/非表示を切り替えるだけなので
+        /// そのまま使える。
+        /// </summary>
+        private IEnumerator ItemCursorPopRoutine(int index)
+        {
+            for (int i = 0; i < itemCursors.Length; i++)
+            {
+                if (itemCursors[i] == null) continue;
+                itemCursors[i].gameObject.SetActive(i == index);
+            }
+
+            RectTransform target = itemCursors[index];
+            if (target == null) yield break;
+
+            if (itemCursorPopDuration <= 0f)
+            {
+                target.localScale = Vector3.one;
+                yield break;
+            }
+
+            float t = 0f;
+            while (t < itemCursorPopDuration)
+            {
+                t += Time.unscaledDeltaTime;
+                float u = Mathf.Clamp01(t / itemCursorPopDuration);
+                float scale = Mathf.Lerp(itemCursorPopScale, 1f, u);
+                target.localScale = new Vector3(scale, scale, 1f);
+                yield return null;
+            }
+
+            target.localScale = Vector3.one;
+        }
+
+        /// <summary>
+        /// 選択中の項目を挟む左右の矢印を、Cursorの現在位置(移動アニメ中も含む)を
+        /// 基準に毎フレーム追従させつつ、左右に小刻みにバウンドさせる。
+        /// ペルソナ3のメニューで矢印がピコピコ動いているような見た目を狙ったもの。
+        /// arrowLeft/arrowRightはCursorの子にしない前提(Maskで切り抜かれてしまうため)なので、
+        /// ここで座標を直接計算して追従させている。
+        /// </summary>
+        private void UpdateArrowBounce()
+        {
+            if (cursorRect == null) return;
+            if (arrowLeft == null && arrowRight == null) return;
+
+            float wave = Mathf.Sin(Time.unscaledTime * arrowBounceSpeed * Mathf.PI * 2f) * arrowBounceDistance;
+            Vector2 center = cursorRect.anchoredPosition;
+
+            if (arrowLeft != null)
+            {
+                float bounce = mirrorArrows ? -wave : wave;
+                arrowLeft.anchoredPosition = new Vector2(center.x - arrowSideOffset + bounce, center.y + arrowVerticalOffset);
+            }
+
+            if (arrowRight != null)
+            {
+                arrowRight.anchoredPosition = new Vector2(center.x + arrowSideOffset + wave, center.y + arrowVerticalOffset);
+            }
+        }
+
         private IEnumerator MoveCursorRoutine(RectTransform target)
         {
             if (cursorRect == null || target == null) yield break;
 
+            // 縦並びメニュー(Y移動のみ)・横並びメニュー(X移動のみ)の
+            // どちらでも使えるよう、XY両方を対象の座標へ補間する。
             Vector2 startPos = cursorRect.anchoredPosition;
             Vector2 endPos = target.anchoredPosition;
             float t = 0f;
@@ -180,11 +345,19 @@ namespace PersonaMenuUI
             cursorRect.anchoredPosition = endPos;
         }
 
+        /// <summary>
+        /// 選択切替の瞬間に、斜めの白いバー(slashFlash)を
+        /// 幅0→最大まで一気に走らせてからフェードアウトさせる演出。
+        /// 「斜めスラッシュが切り込むような」ペルソナ風の切替感を出す。
+        /// </summary>
         private IEnumerator SlashFlashRoutine(RectTransform target)
         {
             RectTransform rt = slashFlash.rectTransform;
             float baseWidth = slashFullWidth;
 
+            // SlashFlashは自分では選択位置を追いかけないので、
+            // 再生の直前に選択先の項目の座標へ瞬間移動させておく。
+            // (これをしないと、エディタで最初に置いた位置に固定されたままになる)
             if (target != null)
             {
                 rt.anchoredPosition = target.anchoredPosition;
@@ -200,6 +373,7 @@ namespace PersonaMenuUI
             float half = Mathf.Max(0.0001f, slashDuration * 0.5f);
             float t = 0f;
 
+            // 幅0→最大まで一気に広がる(スラッシュが走り抜ける)
             while (t < half)
             {
                 t += Time.unscaledDeltaTime;
@@ -210,6 +384,7 @@ namespace PersonaMenuUI
 
             rt.sizeDelta = new Vector2(baseWidth, rt.sizeDelta.y);
 
+            // 広がりきったら、フェードアウトしながら消える
             t = 0f;
             while (t < half)
             {
@@ -246,6 +421,12 @@ namespace PersonaMenuUI
             UpdateInvertedLabel();
         }
 
+        /// <summary>
+        /// 選択中の項目と同じ文字列・フォントサイズ・スタイルをinvertedLabelにコピーする。
+        /// invertedLabelはCursorの子にして、Cursor側のMaskで斜め形状に切り抜いておくことで、
+        /// 「カーソルの中だけ文字色が反転して見える」というペルソナ3風の見た目になる。
+        /// (invertedLabel自体の色はInspectorで設定した固定色のまま変更しない)
+        /// </summary>
         private void UpdateInvertedLabel()
         {
             if (invertedLabel == null) return;
