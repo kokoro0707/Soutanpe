@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
 using UnityEngine.SceneManagement;
+using PersonaMenuUI;
 
 public class GameModePanel : MonoBehaviour
 {
@@ -20,6 +21,10 @@ public class GameModePanel : MonoBehaviour
     [SerializeField] private AudioClip moveSe;   // カーソル移動音
     [SerializeField] private AudioClip decideSe; // 決定音
     [SerializeField] private AudioClip cancelSe; // 戻る音(MainMenuへ)
+
+    [Header("斜めカーソル")]
+    [Tooltip("SlantedRectで作った斜めカーソルを制御するコンポーネント。未設定でも動作する(その場合はカーソル演出なし)。")]
+    [SerializeField] private MenuCursorSelector cursor;
 
     [Header("キーボード操作")]
     [Tooltip("移動キー(上)")]
@@ -168,6 +173,11 @@ public class GameModePanel : MonoBehaviour
             menuTexts[i].color =
                 (i == currentIndex) ? selectColor : normalColor;
         }
+
+        // 斜めカーソルを現在の選択位置へ移動させる。
+        // MenuCursorSelector側の Use Internal Input / Follow Event System Selection は
+        // OFFにしておき、選択の主導権はこのGameModePanelが持つ。
+        if (cursor != null) cursor.Select(currentIndex);
     }
 
     private void Decide()
