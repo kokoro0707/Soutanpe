@@ -323,6 +323,7 @@ public class TutorialManager02 : MonoBehaviour
                 {
                     Debug.Log("弱攻撃チュートリアルOK！");
 
+                    Debug.Log("saiso0");
                     minitext.text = "  強攻撃\n  3段まで";
 
                     strongThirdActive = false;
@@ -335,7 +336,17 @@ public class TutorialManager02 : MonoBehaviour
                     xbuttonimage2.SetActive(false);
                     xbuttonimage3.SetActive(false);
 
+
+
+                    Debug.Log("X1: " + xbuttonimage.name + " / " + xbuttonimage.activeSelf);
+                    Debug.Log("X2: " + xbuttonimage2.name + " / " + xbuttonimage2.activeSelf);
+                    Debug.Log("X3: " + xbuttonimage3.name + " / " + xbuttonimage3.activeSelf);
+
+                    Debug.Log("saiso");
+
                     tutorialstep = TutorialStep.strongattack;
+
+                    Debug.Log("saiso2");
                 }
 
                 break;
@@ -346,6 +357,15 @@ public class TutorialManager02 : MonoBehaviour
                 {
                     break;
                 }
+
+                Debug.Log("saiso3");
+
+                Debug.Log(
+        "強攻撃確認：" +
+        " ComboType=" + player01MoveController.CurrentComboType +
+        " ComboIndex=" + player01MoveController.CurrentComboIndex +
+        " CurrentMove=" + player01MoveController.CurrentMove
+    );
 
                 // 現在、本当に強攻撃3段目の攻撃判定が出ているか
                 bool isThirdStrongActive =
@@ -592,7 +612,7 @@ public class TutorialManager02 : MonoBehaviour
                     if (player01Health.CurrentHP <= 0 || player02Health.CurrentHP <= 0)
                     {
                         tutorialstep = TutorialStep.result;
-
+                        text.text = "再戦";
                         Debug.Log("どちらかのHPが0になりました。RESULTへ移行します。");
                         HideMiniPanel();
                         InPanel();
