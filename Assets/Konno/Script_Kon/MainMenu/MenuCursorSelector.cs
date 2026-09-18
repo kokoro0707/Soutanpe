@@ -20,6 +20,8 @@ namespace PersonaMenuUI
     ///   ・(任意)選択項目の左右の矢印を、Cursorに追従させつつ小刻みにバウンドさせる
     ///   ・(任意)Cursorを1つ動かす代わりに、項目ごとに個別のカーソル画像を用意しておいて
     ///     選択中のものだけを表示する「個別カーソル」モードで動作する
+    ///   ・(任意)スラッシュ演出も、項目ごとに個別のオブジェクトを用意しておいて
+    ///     選択中の項目に対応するものだけを再生する「個別スラッシュ」モードで動作する
     /// を担当する。
     ///
     /// 既存のメニュー入力ロジックがある場合は useInternalInput を false にして、
@@ -38,10 +40,10 @@ namespace PersonaMenuUI
         [SerializeField] private TMP_Text[] menuLabels;
 
         [Header("カーソル本体")]
-        [Tooltip("移動させるカーソルのRectTransform。SlantedRect(またはImage)を付けたオブジェクト。")]
+        [Tooltip("移動させるカーソルのRectTransform。SlantedRect(またはImage)を付けたオブジェクト。Item Cursorsを使う場合は未設定でもよい。")]
         [SerializeField] private RectTransform cursorRect;
 
-        [Tooltip("切替の瞬間だけ光らせるスラッシュ演出用のSlantedRect。未設定でも動作する(その場合は移動アニメのみ)。")]
+        [Tooltip("切替の瞬間だけ光らせるスラッシュ演出用のSlantedRect。未設定でも動作する(その場合は移動アニメのみ)。Item Slash Flashesを使う場合は未設定でもよい。")]
         [SerializeField] private SlantedRect slashFlash;
 
         [Header("項目ごとに別々のカーソルを使う場合 (任意)")]
@@ -55,6 +57,12 @@ namespace PersonaMenuUI
 
         [Tooltip("個別カーソルモードのポップアニメーションで、切り替わった瞬間に一瞬拡大する倍率。")]
         [SerializeField] private float itemCursorPopScale = 1.15f;
+
+        [Tooltip("Slash Flashも、Item Cursorsと同じように項目ごとに個別のオブジェクトを用意して切り替えたい場合に使う。\n" +
+            "menuItems / itemCursorsと同じ順番・同じ要素数で設定すると、共通のSlash Flashを毎回移動させる代わりに、" +
+            "選択された項目に対応するスラッシュだけを、そのオブジェクト自身の位置・角度のまま再生する「個別スラッシュ」モードに自動で切り替わる。\n" +
+            "各要素は、あらかじめ対応するItem Cursorと同じ位置・角度になるよう個別に配置しておく(このスクリプトが座標を動かすことはない)。未設定(要素数0)なら今まで通り共通のSlash Flashが使われる。")]
+        [SerializeField] private SlantedRect[] itemSlashFlashes;
 
         [Header("移動アニメーション")]
         [SerializeField] private float moveDuration = 0.18f;
@@ -128,6 +136,13 @@ namespace PersonaMenuUI
         /// </summary>
         private bool UseItemCursors => itemCursors != null && itemCursors.Length > 0 && menuItems != null && itemCursors.Length == menuItems.Length;
 
+        /// <summary>
+        /// 項目ごとに個別のスラッシュ演出オブジェクトが(menuItemsと同じ数だけ)設定されているかどうか。
+        /// ONの場合、共通のSlash Flashを毎回移動させる代わりに、選択された項目に対応するスラッシュだけを
+        /// そのオブジェクト自身の位置・角度のまま再生する「個別スラッシュ」モードで動作する。
+        /// </summary>
+        private bool UseItemSlashFlashes => itemSlashFlashes != null && itemSlashFlashes.Length > 0 && menuItems != null && itemSlashFlashes.Length == menuItems.Length;
+
         private void Start()
         {
             if (menuItems == null || menuItems.Length == 0)
@@ -141,6 +156,8 @@ namespace PersonaMenuUI
 
             if (UseItemCursors) ShowItemCursorImmediate(CurrentIndex);
             else SnapCursorTo(CurrentIndex);
+
+            HideAllSlashFlashesImmediate();
 
             UpdateLabelStyles();
         }
@@ -234,10 +251,58 @@ namespace PersonaMenuUI
                 moveRoutine = StartCoroutine(MoveCursorRoutine(menuItems[CurrentIndex]));
             }
 
+            PlaySlashFlash(CurrentIndex);
+        }
+
+        /// <summary>
+        /// 選択切替の瞬間に再生するスラッシュ演出を選び、再生する。
+        /// 個別スラッシュモード(UseItemSlashFlashes)なら、選択中の項目に対応する
+        /// オブジェクトをそのままの位置・角度で光らせる(座標移動はしない)。
+        /// そうでなければ、従来通り共通のslashFlashを選択先の座標へ移動させてから光らせる。
+        /// </summary>
+        private void PlaySlashFlash(int index)
+        {
+            SlantedRect flash;
+            RectTransform repositionTarget;
+
+            if (UseItemSlashFlashes)
+            {
+                flash = itemSlashFlashes[index];
+                repositionTarget = null; // 個別スラッシュはあらかじめ正しい位置に置いてある前提なので動かさない
+            }
+            else
+            {
+                flash = slashFlash;
+                repositionTarget = menuItems[index];
+            }
+
+            if (flash == null) return;
+
+            if (slashRoutine != null) StopCoroutine(slashRoutine);
+            slashRoutine = StartCoroutine(SlashFlashRoutine(flash, repositionTarget));
+        }
+
+        /// <summary>
+        /// 起動直後、スラッシュ演出をすべて非表示にしておく。
+        /// slashFlash / itemSlashFlashes は「選択が切り替わった瞬間だけ」光る演出なので、
+        /// Select()が一度も呼ばれていない起動直後の状態でシーン上にアクティブなまま
+        /// 置かれていると、そのまま(アニメーションなしの完全表示で)見えてしまう。
+        /// それを防ぐため、Start()時点で一旦すべて非表示にしておく。
+        /// </summary>
+        private void HideAllSlashFlashesImmediate()
+        {
             if (slashFlash != null)
             {
-                if (slashRoutine != null) StopCoroutine(slashRoutine);
-                slashRoutine = StartCoroutine(SlashFlashRoutine(menuItems[CurrentIndex]));
+                slashFlash.gameObject.SetActive(false);
+            }
+
+            if (itemSlashFlashes != null)
+            {
+                for (int i = 0; i < itemSlashFlashes.Length; i++)
+                {
+                    if (itemSlashFlashes[i] == null) continue;
+                    itemSlashFlashes[i].gameObject.SetActive(false);
+                }
             }
         }
 
@@ -346,28 +411,35 @@ namespace PersonaMenuUI
         }
 
         /// <summary>
-        /// 選択切替の瞬間に、斜めの白いバー(slashFlash)を
+        /// 選択切替の瞬間に、斜めの白いバー(flash)を
         /// 幅0→最大まで一気に走らせてからフェードアウトさせる演出。
         /// 「斜めスラッシュが切り込むような」ペルソナ風の切替感を出す。
+        ///
+        /// repositionTargetがnullでなければ、再生の直前にflashをその座標へ瞬間移動させる
+        /// (共通のslashFlashを使い回す場合に必要な処理)。
+        /// repositionTargetがnullの場合は座標を一切変更しない
+        /// (個別スラッシュモードで、あらかじめ項目ごとに正しい位置へ置いてある場合)。
         /// </summary>
-        private IEnumerator SlashFlashRoutine(RectTransform target)
+        private IEnumerator SlashFlashRoutine(SlantedRect flash, RectTransform repositionTarget)
         {
-            RectTransform rt = slashFlash.rectTransform;
+            RectTransform rt = flash.rectTransform;
             float baseWidth = slashFullWidth;
 
-            // SlashFlashは自分では選択位置を追いかけないので、
+            // 共通のslashFlashは自分では選択位置を追いかけないので、
             // 再生の直前に選択先の項目の座標へ瞬間移動させておく。
             // (これをしないと、エディタで最初に置いた位置に固定されたままになる)
-            if (target != null)
+            // 個別スラッシュモードの場合はrepositionTargetがnullなので、ここはスキップされる
+            // (あらかじめ対応する項目にぴったり合う位置・角度で個別に配置してある前提のため)。
+            if (repositionTarget != null)
             {
-                rt.anchoredPosition = target.anchoredPosition;
+                rt.anchoredPosition = repositionTarget.anchoredPosition;
             }
 
             Color startColor = slashColor;
             startColor.a = 1f;
 
-            slashFlash.color = startColor;
-            slashFlash.gameObject.SetActive(true);
+            flash.color = startColor;
+            flash.gameObject.SetActive(true);
             rt.sizeDelta = new Vector2(0f, rt.sizeDelta.y);
 
             float half = Mathf.Max(0.0001f, slashDuration * 0.5f);
@@ -392,11 +464,11 @@ namespace PersonaMenuUI
                 float u = Mathf.Clamp01(t / half);
                 Color c = startColor;
                 c.a = Mathf.Lerp(1f, 0f, u);
-                slashFlash.color = c;
+                flash.color = c;
                 yield return null;
             }
 
-            slashFlash.gameObject.SetActive(false);
+            flash.gameObject.SetActive(false);
             rt.sizeDelta = new Vector2(baseWidth, rt.sizeDelta.y);
         }
 
