@@ -81,6 +81,17 @@ namespace PersonaMenuUI
         [SerializeField] private Color selectedColor = Color.black;
         [SerializeField] private bool boldWhenSelected = true;
 
+        [Header("選択時テキスト拡大 (ペルソナ3風・任意)")]
+        [Tooltip("ONにすると、選択中の項目のMenu Labelだけを少し拡大表示する(ペルソナ3のメニューで選択中の文字が一回り大きくなる、あの見た目)。Manage Label Colorsとは独立してON/OFFできる。\n" +
+            "対象のTMP_TextのRectTransformのPivotは(0.5, 0.5)にしておくこと(そうしないと中心以外を基準に拡大されて位置がズレて見える)。")]
+        [SerializeField] private bool scaleSelectedLabel = false;
+
+        [Tooltip("選択中の項目のテキストの拡大倍率。1.1〜1.2あたりがちょうど良い見た目になりやすい。")]
+        [SerializeField] private float selectedLabelScale = 1.15f;
+
+        [Tooltip("拡大・縮小の切り替えにかかる時間(秒)。0にすると即座に切り替わる。")]
+        [SerializeField] private float labelScaleDuration = 0.12f;
+
         [Header("反転テキスト演出 (ペルソナ3風・任意)")]
         [Tooltip("Cursorの子にした、色反転表示専用のTMP_Text。CursorにMaskコンポーネントを付けて、この文字をカーソルの斜め形状で切り抜く。\n選択中の項目と同じ文字列・フォントサイズ・スタイルを自動でコピーし、Color欄で設定した色(白など)だけがカーソルの中に見える。未設定なら反転演出なしで動作する。")]
         [SerializeField] private TMP_Text invertedLabel;
@@ -127,6 +138,8 @@ namespace PersonaMenuUI
         private Coroutine moveRoutine;
         private Coroutine slashRoutine;
         private Coroutine itemCursorRoutine;
+        private Coroutine labelScaleRoutine;
+        private int previousLabelIndex = -1;
         private float nextInputTime;
 
         /// <summary>
@@ -158,6 +171,8 @@ namespace PersonaMenuUI
             else SnapCursorTo(CurrentIndex);
 
             HideAllSlashFlashesImmediate();
+
+            if (scaleSelectedLabel) ShowLabelScaleImmediate(CurrentIndex);
 
             UpdateLabelStyles();
         }
@@ -252,6 +267,13 @@ namespace PersonaMenuUI
             }
 
             PlaySlashFlash(CurrentIndex);
+
+            if (scaleSelectedLabel)
+            {
+                if (labelScaleRoutine != null) StopCoroutine(labelScaleRoutine);
+                labelScaleRoutine = StartCoroutine(LabelScaleRoutine(CurrentIndex, previousLabelIndex));
+                previousLabelIndex = CurrentIndex;
+            }
         }
 
         /// <summary>
@@ -304,6 +326,71 @@ namespace PersonaMenuUI
                     itemSlashFlashes[i].gameObject.SetActive(false);
                 }
             }
+        }
+
+        /// <summary>
+        /// アニメーションなしに、選択中の項目のMenu Labelだけを即座に拡大倍率にし、
+        /// それ以外は等倍に戻す。Start()時の初期表示に使う。
+        /// </summary>
+        private void ShowLabelScaleImmediate(int index)
+        {
+            if (menuLabels == null) return;
+
+            for (int i = 0; i < menuLabels.Length; i++)
+            {
+                if (menuLabels[i] == null) continue;
+                float s = i == index ? selectedLabelScale : 1f;
+                menuLabels[i].rectTransform.localScale = new Vector3(s, s, 1f);
+            }
+
+            previousLabelIndex = index;
+        }
+
+        /// <summary>
+        /// 選択が切り替わった時、新しく選ばれた項目のテキストをselectedLabelScaleまで拡大し、
+        /// 直前まで選ばれていた項目のテキストは等倍(1.0)まで縮小する。
+        /// ペルソナ3のメニューで、選択中の文字だけ一回り大きく見える演出を狙ったもの。
+        /// </summary>
+        private IEnumerator LabelScaleRoutine(int newIndex, int oldIndex)
+        {
+            if (menuLabels == null) yield break;
+
+            RectTransform newRt = (newIndex >= 0 && newIndex < menuLabels.Length && menuLabels[newIndex] != null) ? menuLabels[newIndex].rectTransform : null;
+            RectTransform oldRt = (oldIndex >= 0 && oldIndex < menuLabels.Length && menuLabels[oldIndex] != null) ? menuLabels[oldIndex].rectTransform : null;
+
+            if (labelScaleDuration <= 0f)
+            {
+                if (newRt != null) newRt.localScale = new Vector3(selectedLabelScale, selectedLabelScale, 1f);
+                if (oldRt != null) oldRt.localScale = Vector3.one;
+                yield break;
+            }
+
+            float newStart = newRt != null ? newRt.localScale.x : 1f;
+            float oldStart = oldRt != null ? oldRt.localScale.x : 1f;
+            float t = 0f;
+
+            while (t < labelScaleDuration)
+            {
+                t += Time.unscaledDeltaTime;
+                float u = Mathf.Clamp01(t / labelScaleDuration);
+
+                if (newRt != null)
+                {
+                    float s = Mathf.Lerp(newStart, selectedLabelScale, u);
+                    newRt.localScale = new Vector3(s, s, 1f);
+                }
+
+                if (oldRt != null)
+                {
+                    float s = Mathf.Lerp(oldStart, 1f, u);
+                    oldRt.localScale = new Vector3(s, s, 1f);
+                }
+
+                yield return null;
+            }
+
+            if (newRt != null) newRt.localScale = new Vector3(selectedLabelScale, selectedLabelScale, 1f);
+            if (oldRt != null) oldRt.localScale = Vector3.one;
         }
 
         private void SnapCursorTo(int index)

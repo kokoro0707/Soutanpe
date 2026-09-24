@@ -9,6 +9,8 @@ public class CharacterSelectManager : MonoBehaviour
 {
     [Header("キャラクターアイコン")]
     [SerializeField] private Image[] characterIcons; // キャラクターアイコンのImageコンポーネントを配列で設定する
+    [Tooltip("各アイコンに付けたOutlineコンポーネント(characterIconsと同じ順番・同じ数)。選択中は色を塗るのではなく、この枠線で囲んで表示する。")]
+    [SerializeField] private Outline[] characterIconOutlines;
 
     [Header("カラー設定")]
     [SerializeField] private Color normalColor = Color.white;
@@ -504,10 +506,18 @@ Color.green
     }
     private void UpdateSelectionColor()
     {
-        // 全員白
+        // 全員、色は通常のまま。枠線もいったん全部消す
         foreach (Image icon in characterIcons)
         {
             icon.color = normalColor;
+        }
+
+        if (characterIconOutlines != null)
+        {
+            foreach (Outline outline in characterIconOutlines)
+            {
+                if (outline != null) outline.enabled = false;
+            }
         }
 
         // ===== PLAYER1 =====
@@ -519,10 +529,7 @@ Color.green
         player1Label.rectTransform.position =
             characterIcons[player1Index].rectTransform.position + new Vector3(0, 80, 0);
 
-        if (player1Decided)
-            characterIcons[player1Index].color = decidedColor;
-        else
-            characterIcons[player1Index].color = player1Color;
+        SetIconOutline(player1Index, player1Decided ? decidedColor : player1Color);
 
         // ===== PLAYER2 / CPU =====
         if (cpuMode)
@@ -536,10 +543,7 @@ Color.green
                 player2Label.rectTransform.position =
                     characterIcons[player2Index].rectTransform.position + new Vector3(0, 80, 0);
 
-                if (player2Decided)
-                    characterIcons[player2Index].color = decidedColor;
-                else
-                    characterIcons[player2Index].color = Color.yellow;
+                SetIconOutline(player2Index, player2Decided ? decidedColor : Color.yellow);
             }
             else
             {
@@ -555,10 +559,7 @@ Color.green
             player2Label.rectTransform.position =
                 characterIcons[player2Index].rectTransform.position + new Vector3(0, 80, 0);
 
-            if (player2Decided)
-                characterIcons[player2Index].color = decidedColor;
-            else
-                characterIcons[player2Index].color = player2Color;
+            SetIconOutline(player2Index, player2Decided ? decidedColor : player2Color);
         }
         else
         {
@@ -568,6 +569,25 @@ Color.green
         UpdatePreview();
 
         CheckBothPlayersDecided();
+    }
+
+    /// <summary>
+    /// 指定したIndexのアイコンに、指定色のOutline(囲み枠)を表示する。
+    /// Player1/Player2(またはCPU)が同じキャラを選んでいる場合は、
+    /// 後から呼ばれた方の色で上書きされる(元のicon.color上書き方式と同じ挙動)。
+    /// </summary>
+    private void SetIconOutline(int index, Color color)
+    {
+        if (characterIconOutlines == null ||
+            index < 0 ||
+            index >= characterIconOutlines.Length ||
+            characterIconOutlines[index] == null)
+        {
+            return;
+        }
+
+        characterIconOutlines[index].enabled = true;
+        characterIconOutlines[index].effectColor = color;
     }
     private IEnumerator WaitReleaseButton()
     {
@@ -629,8 +649,8 @@ Color.green
     private void UpdatePreview()
     {
         // ===== PLAYER1 =====
-        if (player1Decided &&
-            player1Index >= 0 &&
+        // 決定を待たず、カーソルが乗っているキャラの立ち絵を即座に表示する
+        if (player1Index >= 0 &&
             player1Index < characterPreviewSprites.Length)
         {
             player1Preview.gameObject.SetActive(true);
@@ -649,7 +669,14 @@ Color.green
 
 
         // ===== PLAYER2 / CPU =====
-        if (player2Decided &&
+        // Player1が決定してPlayer2/CPUの選択フェーズに入ったら、
+        // 決定を待たずカーソル移動と同時に立ち絵を表示する
+        bool player2SelectionStarted =
+            selectState == SelectState.Player2 ||
+            selectState == SelectState.CPU ||
+            player2Decided;
+
+        if (player2SelectionStarted &&
             player2Index >= 0 &&
             player2Index < characterPreviewSprites.Length)
         {
