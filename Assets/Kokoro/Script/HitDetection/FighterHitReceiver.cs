@@ -1,8 +1,10 @@
+using System;
 using UnityEngine;
 
 /// <summary>
 /// 攻撃を受けたときのガード判定、
 /// ダメージ、硬直、ノックバックを管理する。
+/// コンボ数(連続ヒット数)のカウントもここで行う。
 /// </summary>
 public sealed class FighterHitReceiver : MonoBehaviour
 {
@@ -44,6 +46,21 @@ public sealed class FighterHitReceiver : MonoBehaviour
 
     public FighterHealth OwnerHealth =>
         health;
+
+    [Header("コンボ数")]
+    [Tooltip("コンボ数の上限。ここで頭打ちになり、それ以上は増えない")]
+    [SerializeField, Range(1, 999)] private int maxComboCount = 50;
+
+    /// <summary>
+    /// このキャラクターが現在何ヒット連続で受けているか(コンボ数)。
+    /// ヒットで+1、ニュートラルに戻る・ガードされると0にリセットされる。
+    /// </summary>
+    public int ComboCount { get; private set; }
+
+    /// <summary>
+    /// ComboCountが変化するたびに呼ばれる(UI表示用)。
+    /// </summary>
+    public event Action<int> OnComboCountChanged;
 
     private void Reset()
     {
@@ -197,6 +214,8 @@ public sealed class FighterHitReceiver : MonoBehaviour
 
         health.TakeDamage(damage);
 
+        SetComboCount(ComboCount + 1);
+
         ApplyKnockback(
             knockback,
             direction
@@ -290,6 +309,9 @@ public sealed class FighterHitReceiver : MonoBehaviour
         int attackDirection
     )
     {
+        // ガードされたのでコンボは途切れる
+        SetComboCount(0);
+
         reactionFramesRemaining =
             move.BlockStunFrames;
 
@@ -338,6 +360,12 @@ public sealed class FighterHitReceiver : MonoBehaviour
             finalDamage
         );
 
+        // =========================
+        // コンボ数カウント
+        // =========================
+
+        SetComboCount(ComboCount + 1);
+
 
         // =========================
         // ノックバック
@@ -373,9 +401,23 @@ public sealed class FighterHitReceiver : MonoBehaviour
             $"{name}が{move.MoveName}を受けた " +
             $"Damage={finalDamage} " +
             $"補正={damageMultiplier:P0} " +
-            $"HitStun={reactionFramesRemaining}",
+            $"HitStun={reactionFramesRemaining} " +
+            $"Combo={ComboCount}",
             this
         );
+    }
+
+    /// <summary>
+    /// ComboCountを更新し、変化した時だけイベントを発火する。
+    /// </summary>
+    private void SetComboCount(int value)
+    {
+        value = Mathf.Clamp(value, 0, maxComboCount);
+
+        if (ComboCount == value) return;
+
+        ComboCount = value;
+        OnComboCountChanged?.Invoke(ComboCount);
     }
 
 
@@ -445,6 +487,9 @@ public sealed class FighterHitReceiver : MonoBehaviour
     private void EndReaction()
     {
         reactionFramesRemaining = 0;
+
+        // ニュートラルに戻った = コンボ終了
+        SetComboCount(0);
 
         if (rigidBody2D != null)
         {
