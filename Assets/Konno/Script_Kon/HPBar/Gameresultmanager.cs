@@ -243,7 +243,7 @@ public class GameResultManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("FadeManager‚ªŒ©‚Â‚©‚ç‚È‚¢");
+            Debug.LogError("FadeManager‚ªŒ©‚Â‚©‚ç‚È‚¢(‹C‚É‚µ‚È‚¢‚Å‚Ë)");
 
             SceneManager.LoadScene("MainMenu");
         }
