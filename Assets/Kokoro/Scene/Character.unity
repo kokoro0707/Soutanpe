@@ -850,7 +850,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ComboCounterUI
   targetReceiver: {fileID: 351946276}
   comboText: {fileID: 1613944540}
-  suffix: C
+  suffix: 
   holdDuration: 0.6
   fadeDuration: 0.4
   popScale: 1.4
@@ -4743,7 +4743,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ComboCounterUI
   targetReceiver: {fileID: 1320457842}
   comboText: {fileID: 277929990}
-  suffix: C
+  suffix: 
   holdDuration: 0.6
   fadeDuration: 0.4
   popScale: 1.4

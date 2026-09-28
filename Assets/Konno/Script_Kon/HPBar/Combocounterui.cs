@@ -14,6 +14,10 @@ using TMPro;
 ///   ・ヒットのたびに数字がポップ(拡大→戻る)する
 ///   ・コンボが途切れても即座に消さず、少し維持してからフェードアウトする
 ///   ・フェードアウト中に新しいヒットが入ったら、フェードを中断して1から表示し直す
+///
+/// 注意: 表示/非表示はGameObjectのON/OFFではなく透明度(アルファ)で切り替える。
+///       このスクリプトが付いているGameObject自体は常にアクティブのままにしておくこと
+///       (非アクティブにするとコルーチンが動かず、イベント購読も解除されてしまうため)。
 /// </summary>
 public class ComboCounterUI : MonoBehaviour
 {
@@ -48,12 +52,9 @@ public class ComboCounterUI : MonoBehaviour
             targetReceiver.OnComboCountChanged += HandleComboCountChanged;
         }
 
-        // 開始時は非表示
-        if (comboText != null)
-        {
-            comboText.gameObject.SetActive(false);
-            SetAlpha(0f);
-        }
+        // 開始時は透明にしておく(GameObjectはアクティブのまま)
+        SetAlpha(0f);
+        if (comboText != null) comboText.transform.localScale = Vector3.one;
     }
 
     private void OnDisable()
@@ -63,25 +64,35 @@ public class ComboCounterUI : MonoBehaviour
             targetReceiver.OnComboCountChanged -= HandleComboCountChanged;
         }
 
-        if (fadeRoutine != null) StopCoroutine(fadeRoutine);
-        if (popRoutine != null) StopCoroutine(popRoutine);
+        fadeRoutine = null;
+        popRoutine = null;
     }
 
     private void HandleComboCountChanged(int count)
     {
         if (comboText == null) return;
 
+        // 非アクティブだとコルーチンを開始できないので、警告だけ出して終了
+        if (!isActiveAndEnabled)
+        {
+            Debug.LogWarning(
+                $"[ComboCounterUI] {name} が非アクティブのため表示できません。" +
+                "このオブジェクトと親オブジェクトのチェックを入れてアクティブにしてください。",
+                this
+            );
+            return;
+        }
+
         if (count > 0)
         {
             // 攻撃継続中、またはコンボ再スタート
-            // → フェード中だったら中断し、1(または現在のcount)から表示し直す
+            // → フェード中だったら中断し、現在のcountから表示し直す
             if (fadeRoutine != null)
             {
                 StopCoroutine(fadeRoutine);
                 fadeRoutine = null;
             }
 
-            comboText.gameObject.SetActive(true);
             comboText.text = count + suffix;
             SetAlpha(1f);
 
@@ -134,8 +145,8 @@ public class ComboCounterUI : MonoBehaviour
             yield return null;
         }
 
+        // GameObjectは非アクティブにせず、透明にするだけにする
         SetAlpha(0f);
-        comboText.gameObject.SetActive(false);
         fadeRoutine = null;
     }
 
