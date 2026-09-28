@@ -36,6 +36,12 @@ public class ComboCounterUI : MonoBehaviour
     [Tooltip("維持時間が終わったあと、フェードアウトする時間(秒)")]
     [SerializeField, Min(0.01f)] private float fadeDuration = 0.4f;
 
+    [Header("コンボ数に応じた拡大")]
+    [Tooltip("scaleMaxAtCountヒット時点での最大サイズ倍率(1ヒット目は等倍)")]
+    [SerializeField, Min(1f)] private float maxScale = 2.5f;
+    [Tooltip("この数のコンボで最大サイズになる")]
+    [SerializeField, Min(2)] private int scaleMaxAtCount = 50;
+
     [Header("ヒット時のポップ演出")]
     [Tooltip("ヒットした瞬間に拡大する倍率")]
     [SerializeField] private float popScale = 1.4f;
@@ -45,6 +51,9 @@ public class ComboCounterUI : MonoBehaviour
     private Coroutine fadeRoutine;
     private Coroutine popRoutine;
 
+    // KO演出中など、表示を更新させたくないときにtrue
+    private bool suppressed;
+
     private void OnEnable()
     {
         if (targetReceiver != null)
@@ -53,6 +62,7 @@ public class ComboCounterUI : MonoBehaviour
         }
 
         // 開始時は透明にしておく(GameObjectはアクティブのまま)
+        suppressed = false;
         SetAlpha(0f);
         if (comboText != null) comboText.transform.localScale = Vector3.one;
     }
@@ -71,6 +81,9 @@ public class ComboCounterUI : MonoBehaviour
     private void HandleComboCountChanged(int count)
     {
         if (comboText == null) return;
+
+        // KO後などは表示を更新しない
+        if (suppressed) return;
 
         // 非アクティブだとコルーチンを開始できないので、警告だけ出して終了
         if (!isActiveAndEnabled)
@@ -96,8 +109,12 @@ public class ComboCounterUI : MonoBehaviour
             comboText.text = count + suffix;
             SetAlpha(1f);
 
+            // コンボ数が増えるほどベースサイズを大きくする(1ヒット=等倍、scaleMaxAtCount=最大)
+            float t01 = Mathf.Clamp01((count - 1f) / (scaleMaxAtCount - 1f));
+            float baseScale = Mathf.Lerp(1f, maxScale, t01);
+
             if (popRoutine != null) StopCoroutine(popRoutine);
-            popRoutine = StartCoroutine(PopRoutine());
+            popRoutine = StartCoroutine(PopRoutine(baseScale));
         }
         else
         {
@@ -110,7 +127,7 @@ public class ComboCounterUI : MonoBehaviour
     /// <summary>
     /// 数字がポンと拡大してから通常サイズへ戻る演出。
     /// </summary>
-    private IEnumerator PopRoutine()
+    private IEnumerator PopRoutine(float baseScale)
     {
         Transform t = comboText.transform;
         float timer = 0f;
@@ -119,12 +136,13 @@ public class ComboCounterUI : MonoBehaviour
         {
             timer += Time.deltaTime;
             float ratio = Mathf.Clamp01(timer / popDuration);
-            float scale = Mathf.Lerp(popScale, 1f, ratio);
+            // ベースサイズ x ポップ倍率 から、ベースサイズへ戻る
+            float scale = Mathf.Lerp(baseScale * popScale, baseScale, ratio);
             t.localScale = Vector3.one * scale;
             yield return null;
         }
 
-        t.localScale = Vector3.one;
+        t.localScale = Vector3.one * baseScale;
         popRoutine = null;
     }
 
@@ -148,6 +166,30 @@ public class ComboCounterUI : MonoBehaviour
         // GameObjectは非アクティブにせず、透明にするだけにする
         SetAlpha(0f);
         fadeRoutine = null;
+    }
+
+    /// <summary>
+    /// コンボ表示を即座に消し、以降のコンボ更新も無視する(KO時などに呼ぶ)。
+    /// GameObjectは非アクティブにせず、透明にするだけ。
+    /// </summary>
+    public void Suppress()
+    {
+        suppressed = true;
+
+        if (fadeRoutine != null)
+        {
+            StopCoroutine(fadeRoutine);
+            fadeRoutine = null;
+        }
+
+        if (popRoutine != null)
+        {
+            StopCoroutine(popRoutine);
+            popRoutine = null;
+        }
+
+        SetAlpha(0f);
+        if (comboText != null) comboText.transform.localScale = Vector3.one;
     }
 
     private void SetAlpha(float alpha)
