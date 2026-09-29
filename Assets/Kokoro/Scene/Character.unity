@@ -2215,6 +2215,21 @@ MonoBehaviour:
   onFightStart:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 834616048}
+        m_TargetAssemblyTypeName: RoundAnnouncementController, Assembly-CSharp
+        m_MethodName: Play
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 3
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onSequenceEnd:
+    m_PersistentCalls:
+      m_Calls:
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: 
         m_MethodName: 
@@ -2227,9 +2242,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  onSequenceEnd:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!224 &863513100 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6632210943560677757, guid: 748303f81f8d2784681245709e785d4f, type: 3}
