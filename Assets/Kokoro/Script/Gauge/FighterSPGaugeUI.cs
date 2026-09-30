@@ -19,12 +19,18 @@ public sealed class FighterSPGaugeUI : MonoBehaviour
     {
         if (spGauge == null)
         {
+            Debug.LogError(
+                $"{name}：SPGaugeが設定されていません。",
+                this
+            );
+
             return;
         }
 
-        spGauge.OnSPChanged +=
-            UpdateGauge;
+        // SP変更イベントを受け取る
+        spGauge.OnSPChanged += UpdateGauge;
 
+        // 最初の表示
         UpdateGauge(
             spGauge.CurrentSP,
             spGauge.MaxSP
@@ -36,8 +42,7 @@ public sealed class FighterSPGaugeUI : MonoBehaviour
     {
         if (spGauge != null)
         {
-            spGauge.OnSPChanged -=
-                UpdateGauge;
+            spGauge.OnSPChanged -= UpdateGauge;
         }
     }
 
@@ -47,18 +52,30 @@ public sealed class FighterSPGaugeUI : MonoBehaviour
         int max
     )
     {
+        Debug.Log(
+            $"{name}：SP UI更新 " +
+            $"Current={current} / Max={max}",
+            this
+        );
+
         for (int i = 0;
              i < gaugeImages.Length;
              i++)
         {
             if (gaugeImages[i] == null)
             {
+                Debug.LogWarning(
+                    $"{name}：GaugeImages[{i}]がNULL",
+                    this
+                );
+
                 continue;
             }
 
-            // 現在SPより小さい番号だけ表示
-            gaugeImages[i].enabled =
-                i < current;
+            // SPに応じてFill自体を表示・非表示
+            gaugeImages[i].gameObject.SetActive(
+                i < current
+            );
         }
     }
 }

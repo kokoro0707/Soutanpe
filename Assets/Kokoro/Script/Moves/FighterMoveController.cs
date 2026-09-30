@@ -44,7 +44,7 @@ public sealed class FighterMoveController : MonoBehaviour
 
     [Header("コンボリセットSP")]
     [SerializeField, Min(0)]
-    private int comboResetSPCost = 25;
+    private int comboResetSPCost = 1;
 
 
     [SerializeField]
@@ -128,6 +128,11 @@ public sealed class FighterMoveController : MonoBehaviour
         {
             attackHitbox.Deactivate();
         }
+
+        if (spGauge == null)
+        {
+            spGauge = GetComponent<FighterSPGauge>();
+        }
     }
 
     public float CurrentDamageMultiplier
@@ -161,7 +166,7 @@ public sealed class FighterMoveController : MonoBehaviour
             airAttackUsed = false;
         }
 
-        
+
         if (TryComboReset(command))
         {
             return;
@@ -199,6 +204,20 @@ public sealed class FighterMoveController : MonoBehaviour
      bool isGrounded
  )
     {
+
+        if (command.comboResetPressed)
+        {
+            Debug.Log(
+                $"{name}：LB入力 " +
+                $"Combo={currentComboType} " +
+                $"段={currentComboIndex} " +
+                $"Frame={currentMoveFrame} " +
+                $"SP={(spGauge != null ? spGauge.CurrentSP : -1)}",
+                this
+            );
+        }
+
+
         Debug.Log(
        $"{name} AttackCheck " +
        $"Ground={isGrounded} " +
@@ -262,11 +281,13 @@ public sealed class FighterMoveController : MonoBehaviour
             return;
         }
 
-        if(command.spAttackPressed)
+        if (command.spAttackPressed)
         {
             StartSPAttack(
                 moveSet.SPAttack,
                 facingDirection);
+
+            return;
         }
 
         // 下 + 必殺技
@@ -980,31 +1001,6 @@ public sealed class FighterMoveController : MonoBehaviour
             return false;
         }
 
-        NormalComboData combo = null;
-
-        if (currentComboType ==
-            FighterComboType.Light)
-        {
-            combo = moveSet.LightCombo;
-        }
-        else if (currentComboType ==
-                 FighterComboType.Heavy)
-        {
-            combo = moveSet.HeavyCombo;
-        }
-
-        if (combo == null)
-        {
-            return false;
-        }
-
-        // 最終段でなければ使えない
-        if (currentComboIndex !=
-            combo.StepCount - 1)
-        {
-            return false;
-        }
-
         // 最終段のRecovery中だけ
         return currentMove.IsRecoveryFrame(
             currentMoveFrame
@@ -1014,44 +1010,66 @@ public sealed class FighterMoveController : MonoBehaviour
      FighterCommandData command
  )
     {
+        // LBを押していない
         if (!command.comboResetPressed)
         {
             return false;
         }
 
-        // 最終段Recovery中か
-        if (!CanUseComboReset())
-        {
-            return false;
-        }
-
+        Debug.Log($"{name}：LB入力を確認");
 
         // =========================
-        // SP確認
+        // SPゲージ確認
         // =========================
 
         if (spGauge == null)
         {
             Debug.LogWarning(
-                $"{name}にSPGaugeがありません。",
+                $"{name}：SPGaugeが設定されていません",
                 this
             );
 
             return false;
         }
 
-        if (!spGauge.TryConsume(
-                comboResetSPCost
-            ))
+        Debug.Log(
+            $"{name}：消費前SP={spGauge.CurrentSP}"
+        );
+
+        // =========================
+        // LBを押した時点でSP消費
+        // =========================
+
+        if (!spGauge.TryConsume(comboResetSPCost))
         {
             Debug.Log(
-                $"{name}：SP不足でコンボリセット失敗",
+                $"{name}：SP不足 " +
+                $"SP={spGauge.CurrentSP}/{spGauge.MaxSP}",
                 this
             );
 
             return false;
         }
 
+        Debug.Log(
+            $"{name}：SP消費成功 " +
+            $"SP={spGauge.CurrentSP}/{spGauge.MaxSP}"
+        );
+
+        // =========================
+        // リセット成功判定
+        // =========================
+
+        if (!CanUseComboReset())
+        {
+            Debug.Log(
+                $"{name}：コンボリセット失敗 " +
+                $"SPは消費済み",
+                this
+            );
+
+            return false;
+        }
 
         // =========================
         // コンボリセット成功
@@ -1064,19 +1082,15 @@ public sealed class FighterMoveController : MonoBehaviour
 
         ResetCombo();
 
-        // ダメージ補正
         comboResetCount++;
 
-
         if (stateMachine != null &&
-            stateMachine.CurrentState !=
-            FighterState.KO)
+            stateMachine.CurrentState != FighterState.KO)
         {
             stateMachine.ForceChangeState(
                 FighterState.Idle
             );
         }
-
 
         Debug.Log(
             $"{name}：コンボリセット成功 " +
@@ -1087,8 +1101,9 @@ public sealed class FighterMoveController : MonoBehaviour
 
         return true;
     }
-
-
-
 }
+
+
+
+
 

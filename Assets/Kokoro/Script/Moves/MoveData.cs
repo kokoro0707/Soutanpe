@@ -63,7 +63,7 @@ public sealed class MoveData : ScriptableObject
 
     [Header("SP")]
     [SerializeField, Min(0)]
-    private int spCost = 0;
+    private int spCost = 1;
 
     public int SPCost => spCost;
     
