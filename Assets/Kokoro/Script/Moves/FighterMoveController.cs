@@ -46,12 +46,29 @@ public sealed class FighterMoveController : MonoBehaviour
     [SerializeField, Min(0)]
     private int comboResetSPCost = 1;
 
+    [Header("SP攻撃 貫通")]
+    [SerializeField]
+    private Transform opponentRoot;
+
+    private Collider2D[] ownColliders;
+    private Collider2D[] opponentColliders;
+
+    private bool isIgnoringOpponentCollision;
+
+
+
 
     [SerializeField]
     private FighterHealth ownerHealth;
 
     [SerializeField]
     private FighterStateMachine stateMachine;
+
+    [SerializeField]
+    private FighterMotor motor;
+
+    [SerializeField]
+    private SPCinematicController spCinematic;
 
     private MoveData currentMove;
     private int currentMoveFrame;
@@ -96,6 +113,9 @@ public sealed class FighterMoveController : MonoBehaviour
 
         attackHitbox =
             GetComponentInChildren<AttackHitbox>(true);
+
+        motor = 
+            GetComponent<FighterMotor>();
     }
 
     private void Awake()
@@ -133,6 +153,14 @@ public sealed class FighterMoveController : MonoBehaviour
         {
             spGauge = GetComponent<FighterSPGauge>();
         }
+
+        if (motor == null)
+        {
+            motor = GetComponent<FighterMotor>();
+        }
+
+        ownColliders = GetComponentsInChildren<Collider2D>(true);
+
     }
 
     public float CurrentDamageMultiplier
@@ -362,9 +390,9 @@ public sealed class FighterMoveController : MonoBehaviour
     }
 
     private void StartSPAttack(
-    MoveData move,
-    int facingDirection
-)
+        MoveData move,
+        int facingDirection
+    )
     {
         if (move == null)
         {
@@ -386,7 +414,7 @@ public sealed class FighterMoveController : MonoBehaviour
             return;
         }
 
-        // SP不足
+        // SP消費
         if (!spGauge.TryConsume(move.SPCost))
         {
             Debug.Log(
@@ -401,10 +429,32 @@ public sealed class FighterMoveController : MonoBehaviour
 
         ResetCombo();
 
+
+        // =========================
+        // SPAttackを先に開始
+        // =========================
+
         StartMoveInternal(
             move,
             facingDirection
         );
+
+
+        // 相手を貫通可能にする
+        StartOpponentPassThrough();
+
+
+        // =========================
+        // アニメ開始後に暗転停止
+        // =========================
+
+        if (spCinematic != null)
+        {
+            StartCoroutine(
+                spCinematic.PlaySPFreeze()
+            );
+        }
+
 
         Debug.Log(
             $"{name}：SP攻撃 {move.MoveName} " +
@@ -412,6 +462,8 @@ public sealed class FighterMoveController : MonoBehaviour
             this
         );
     }
+
+
 
 
     /// <summary>
@@ -599,6 +651,9 @@ public sealed class FighterMoveController : MonoBehaviour
         int facingDirection
     )
     {
+        // ★前の技の特殊移動を解除
+        motor?.ClearAttackMoveVelocity();
+
         if (move == null)
         {
             ResetCombo();
@@ -632,12 +687,15 @@ public sealed class FighterMoveController : MonoBehaviour
         );
     }
 
+
     private void UpdateCurrentMove()
     {
         if (currentMove == null)
         {
             return;
         }
+
+        UpdateAttackMovement();
 
         UpdateAttackHitbox();
 
@@ -865,6 +923,16 @@ public sealed class FighterMoveController : MonoBehaviour
     /// </summary>
     private void EndMove()
     {
+        // ★SP攻撃だったかを先に保存
+        bool wasSPAttack =
+            moveSet != null &&
+            currentMove == moveSet.SPAttack;
+
+
+        EndOpponentPassThrough();
+
+        motor?.ClearAttackMoveVelocity();
+
         if (attackHitbox != null)
         {
             attackHitbox.Deactivate();
@@ -878,19 +946,30 @@ public sealed class FighterMoveController : MonoBehaviour
         comboResetCount = 0;
 
         if (stateMachine != null &&
-            stateMachine.CurrentState !=
-                FighterState.KO)
+            stateMachine.CurrentState != FighterState.KO)
         {
             stateMachine.TryChangeState(
                 FighterState.Idle
             );
         }
+
         if (forwardSpecialHitVisual != null)
         {
             forwardSpecialHitVisual.SetActive(false);
         }
 
+
+        // =========================
+        // ★SP攻撃終了
+        // =========================
+
+        if (wasSPAttack &&
+            spCinematic != null)
+        {
+            spCinematic.EndSPCinematic();
+        }
     }
+
 
     /// <summary>
     /// 被弾などで攻撃を強制終了する。
@@ -907,6 +986,8 @@ public sealed class FighterMoveController : MonoBehaviour
             forwardSpecialHitVisual.SetActive(false);
         }
 
+        EndOpponentPassThrough() ;
+        motor?.ClearAttackMoveVelocity();
 
         currentMove = null;
         currentMoveFrame = 0;
@@ -1057,6 +1138,8 @@ public sealed class FighterMoveController : MonoBehaviour
 
         attackHitbox?.Deactivate();
 
+        motor?.ClearAttackMoveVelocity();
+
         currentMove = null;
         currentMoveFrame = 0;
 
@@ -1081,9 +1164,148 @@ public sealed class FighterMoveController : MonoBehaviour
 
         return true;
     }
+
+    private void UpdateAttackMovement()
+    {
+        if (motor == null)
+        {
+            return;
+        }
+
+        if (currentMove == null)
+        {
+            motor.ClearAttackMoveVelocity();
+            return;
+        }
+
+        // 移動フレーム中
+        if (currentMove.IsMoveFrame(currentMoveFrame))
+        {
+            float velocityX =
+                currentMove.MoveSpeed *
+                attackFacingDirection;
+
+            motor.SetAttackMoveVelocity(
+                velocityX
+            );
+        }
+        else
+        {
+            motor.ClearAttackMoveVelocity();
+        }
+    }
+    /// <summary>
+    /// SP攻撃中、相手の本体Colliderを貫通できるようにする。
+    /// </summary>
+    private void StartOpponentPassThrough()
+    {
+        if (opponentRoot == null)
+        {
+            Debug.LogWarning(
+                $"{name}：Opponent Rootが設定されていません。",
+                this
+            );
+
+            return;
+        }
+
+        if (ownColliders == null ||
+            ownColliders.Length == 0)
+        {
+            ownColliders =
+                GetComponentsInChildren<Collider2D>(true);
+        }
+
+        opponentColliders =
+            opponentRoot.GetComponentsInChildren<Collider2D>(true);
+
+        foreach (Collider2D own in ownColliders)
+        {
+            if (own == null)
+            {
+                continue;
+            }
+
+            foreach (Collider2D opponent in opponentColliders)
+            {
+                if (opponent == null)
+                {
+                    continue;
+                }
+
+                // Triggerは物理的に邪魔しないので無視
+                if (own.isTrigger ||
+                    opponent.isTrigger)
+                {
+                    continue;
+                }
+
+                Physics2D.IgnoreCollision(
+                    own,
+                    opponent,
+                    true
+                );
+            }
+        }
+
+        isIgnoringOpponentCollision = true;
+
+        Debug.Log(
+            $"{name}：SP攻撃 貫通開始",
+            this
+        );
+    }
+
+
+
+    /// <summary>
+    /// 相手との物理衝突を元に戻す。
+    /// </summary>
+    private void EndOpponentPassThrough()
+    {
+        if (!isIgnoringOpponentCollision)
+        {
+            return;
+        }
+
+        if (ownColliders != null &&
+            opponentColliders != null)
+        {
+            foreach (Collider2D own in ownColliders)
+            {
+                if (own == null)
+                {
+                    continue;
+                }
+
+                foreach (Collider2D opponent in opponentColliders)
+                {
+                    if (opponent == null)
+                    {
+                        continue;
+                    }
+
+                    if (own.isTrigger ||
+                        opponent.isTrigger)
+                    {
+                        continue;
+                    }
+
+                    Physics2D.IgnoreCollision(
+                        own,
+                        opponent,
+                        false
+                    );
+                }
+            }
+        }
+
+        isIgnoringOpponentCollision = false;
+
+        Debug.Log(
+            $"{name}：SP攻撃 貫通終了",
+            this
+        );
+    }
+
 }
-
-
-
-
-

@@ -63,6 +63,9 @@ public sealed class FighterMotor : MonoBehaviour
     private float lockedAirVelocityX;
     private int movementFrame;
 
+    private bool attackMoveActive;
+    private float attackMoveVelocityX;
+
     public FighterLocomotionMode CurrentMode
     {
         get;
@@ -125,8 +128,20 @@ public sealed class FighterMotor : MonoBehaviour
         int facingDirection
     )
     {
+        // Rigidbody2D確認を最初にする
         if (rigidBody2D == null)
         {
+            return;
+        }
+
+        // 攻撃中の特殊移動
+        if (attackMoveActive)
+        {
+            rigidBody2D.linearVelocity = new Vector2(
+                attackMoveVelocityX,
+                rigidBody2D.linearVelocity.y
+            );
+
             return;
         }
 
@@ -137,6 +152,7 @@ public sealed class FighterMotor : MonoBehaviour
             rigidBody2D.linearVelocity;
 
         bool groundedNow = IsGrounded;
+
 
         // ステージ端などから落下した場合
         if (!groundedNow &&
@@ -530,4 +546,24 @@ public sealed class FighterMotor : MonoBehaviour
             groundCheckRadius
         );
     }
+
+    /// <summary>
+    /// 攻撃中の特殊な横移動を開始する。
+    /// </summary>
+    public void SetAttackMoveVelocity(float velocityX)
+    {
+        attackMoveActive = true;
+        attackMoveVelocityX = velocityX;
+    }
+
+
+    /// <summary>
+    /// 攻撃中の特殊移動を終了する。
+    /// </summary>
+    public void ClearAttackMoveVelocity()
+    {
+        attackMoveActive = false;
+        attackMoveVelocityX = 0f;
+    }
+
 }
