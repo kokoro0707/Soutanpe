@@ -13,6 +13,8 @@ using TMPro;
 /// Unity側でImage/TMP_Textとして事前に用意しておく(グラフィック素材はこのスクリプトの範囲外)。
 /// このスクリプトが担当するのは「動き」だけ:
 ///   ・画面外から斜めにスライドイン(Ease.OutExpo)
+///   ・(TextPopInを設定していれば)スライドインと同時に文字を1文字ずつ出現させる。
+///     速度はTMPCharacterPopInのStagger Delayに従う
 ///   ・着地の瞬間にオーバーシュート(弾む、Ease.OutBack)+画面揺れ(DOShakePosition)
 ///     +放射状の閃光バースト(着地の衝撃を強調する光のエフェクト)
 ///   ・少し保持してからフェードアウトで消える(bannerFadeGroupを設定した場合。
@@ -49,6 +51,9 @@ public class RoundAnnouncementController : MonoBehaviour
     [SerializeField] private BannerPart roundBanner;
     [SerializeField] private TMP_Text roundText;
     [SerializeField] private string roundFormat = "ROUND{0}";
+    [Tooltip("設定すると、roundTextに直接文字を入れる代わりに1文字ずつポップインさせる。" +
+             "未設定なら従来通りroundTextに即座に全文字を表示する")]
+    [SerializeField] private TMPCharacterPopIn textPopIn;
 
     [Header("タイミング")]
     [SerializeField, Min(0.05f)] private float slideInDuration = 0.35f;
@@ -62,12 +67,15 @@ public class RoundAnnouncementController : MonoBehaviour
     [Header("衝撃演出")]
     [Tooltip("バナーが着地した瞬間、一瞬このサイズまで膨らんでから通常に戻る")]
     [SerializeField] private float overshootScale = 1.25f;
-    [Tooltip("画面(またはCanvas等)を揺らす対象。未設定なら揺らさない")]
+    [Tooltip("画面(またはCanvas等)を揺らす対象。未設定なら揺らさない。" +
+             "文字だけを揺らしたい場合は、これは未設定にしてTextShakeの方を使う")]
     [SerializeField] private Transform shakeTarget;
-    [SerializeField] private float shakeStrength = 18f;
-    [SerializeField, Min(0.01f)] private float shakeDuration = 0.25f;
-    [SerializeField] private int shakeVibrato = 20;
-    [SerializeField, Range(0f, 90f)] private float shakeRandomness = 90f;
+    [SerializeField] private float shakeStrength = 6f;
+    [SerializeField, Min(0.01f)] private float shakeDuration = 0.18f;
+    [SerializeField] private int shakeVibrato = 12;
+    [SerializeField, Range(0f, 90f)] private float shakeRandomness = 60f;
+    [Tooltip("設定すると、画面全体ではなく「ROUND1」の文字自体をガタガタ揺らす(ROUND Textに付けたTMPCharacterShake)")]
+    [SerializeField] private TMPCharacterShake textShake;
 
     [Header("背景フラッシュ(任意)")]
     [Tooltip("バナー登場の瞬間だけパッと光らせる帯や全画面Image。CanvasGroupを付けておく")]
@@ -82,10 +90,10 @@ public class RoundAnnouncementController : MonoBehaviour
     [Tooltip("バーストが始まる瞬間の小さいスケール")]
     [SerializeField] private float burstStartScale = 0.3f;
     [Tooltip("バーストが広がりきった時の大きいスケール")]
-    [SerializeField] private float burstEndScale = 2.4f;
-    [SerializeField, Min(0.05f)] private float burstDuration = 0.35f;
+    [SerializeField] private float burstEndScale = 1.3f;
+    [SerializeField, Min(0.05f)] private float burstDuration = 0.3f;
     [Tooltip("広がりながら少しだけ回転させると勢いが出る(度)")]
-    [SerializeField] private float burstSpinAmount = 20f;
+    [SerializeField] private float burstSpinAmount = 10f;
 
     [Header("退場フェード(任意)")]
     [Tooltip("バナー全体(Image+Text)にまとめて付けたCanvasGroup。設定するとスライドアウトの代わりにフェードアウトで消える")]
@@ -109,14 +117,29 @@ public class RoundAnnouncementController : MonoBehaviour
     /// </summary>
     public void Play(int roundNumber)
     {
+        Debug.Log($"[RoundAnnouncementController] Play({roundNumber}) が呼ばれました。", this);
+
+        if (!HasBanner(roundBanner))
+        {
+            Debug.LogWarning(
+                "[RoundAnnouncementController] Round Banner > Rect が未設定です。" +
+                "Inspectorで「Round Banner」を展開し、Rect に RoundBanner の RectTransform をドラッグしてください。" +
+                "これが未設定だとスライド/バウンド/フェードのアニメーションは一切再生されません。",
+                this);
+        }
+
         // 連打・多重呼び出し対策: 前の演出が残っていたら破棄してから作り直す
         sequence?.Kill(true);
 
         gameObject.SetActive(true);
 
-        if (roundText != null)
+        string formattedText = string.Format(roundFormat, roundNumber);
+
+        // textPopInが未設定の場合だけ、従来通り即座に全文字を表示する
+        // (textPopIn使用時は、AppendSlideIn開始と同時にPlay()で1文字ずつ出す)
+        if (textPopIn == null && roundText != null)
         {
-            roundText.text = string.Format(roundFormat, roundNumber);
+            roundText.text = formattedText;
         }
 
         PlaySe(roundSe);
@@ -126,7 +149,28 @@ public class RoundAnnouncementController : MonoBehaviour
         sequence.SetUpdate(true);
 
         AppendFlash(sequence);
-        AppendSlideIn(sequence, roundBanner);
+        AppendSlideIn(sequence, roundBanner, formattedText);
+
+        // タイプライター(1文字ずつ表示)が、バナーの着地(slideInDuration+punchDuration)より
+        // 長くかかってしまう場合だけ、衝撃演出(揺れ・バースト)をその分だけ待たせる。
+        // Stagger Delayが適切な値(着地までに全文字出終わる速さ)なら、この待機は0になる。
+        if (textPopIn != null)
+        {
+            float bannerLandTime = slideInDuration + punchDuration;
+            float typewriterDuration = textPopIn.GetDuration(formattedText);
+            float extraWait = typewriterDuration - bannerLandTime;
+            if (extraWait > 0f)
+            {
+                Debug.LogWarning(
+                    $"[RoundAnnouncementController] 文字表示(Stagger Delay={textPopIn.StaggerDelay}s × {formattedText.Length}文字" +
+                    $"={typewriterDuration:F2}s)がバナーの着地({bannerLandTime:F2}s)より長いため、" +
+                    $"衝撃演出を{extraWait:F2}秒待たせています。気になる場合はTMPCharacterPopInのStagger Delayを" +
+                    "小さくするか、SlideInDuration/PunchDurationを長くしてください。",
+                    this);
+                sequence.AppendInterval(extraWait);
+            }
+        }
+
         AppendImpactEffects(sequence);
 
         sequence.AppendInterval(holdDuration);
@@ -148,7 +192,7 @@ public class RoundAnnouncementController : MonoBehaviour
     /// 画面外(startOffset)から endPosition まで、回転しながらスライドインし、
     /// 着地の瞬間にオーバーシュート(膨らみ)を入れる。
     /// </summary>
-    private void AppendSlideIn(Sequence seq, BannerPart part)
+    private void AppendSlideIn(Sequence seq, BannerPart part, string formattedText)
     {
         if (!HasBanner(part)) return;
 
@@ -160,6 +204,14 @@ public class RoundAnnouncementController : MonoBehaviour
             rect.localScale = Vector3.one;
             rect.anchoredPosition = part.endPosition + part.startOffset;
             rect.localRotation = Quaternion.Euler(0f, 0f, part.startRotation);
+
+            // Stagger Delay(Inspectorで設定した1文字あたりの間隔)の速度でそのまま再生する。
+            // (以前はslideInDurationに強制的に合わせていたが、文字数で割った間隔が短すぎて
+            //  1フレームの処理の重さで2文字分が一気に進んでしまい、「RとOが同時に出る」原因になっていた)
+            if (textPopIn != null)
+            {
+                textPopIn.Play(formattedText);
+            }
         });
 
         // スライドと回転を同時に、勢いよく飛び込ませてから最後でスッと止まる(OutExpo)
@@ -212,11 +264,12 @@ public class RoundAnnouncementController : MonoBehaviour
     {
         bool hasShake = shakeTarget != null;
         bool hasBurst = impactBurst != null;
-        if (!hasShake && !hasBurst) return;
+        bool hasTextShake = textShake != null;
+        if (!hasShake && !hasBurst && !hasTextShake) return;
 
         Vector3 originalShakePos = hasShake ? shakeTarget.localPosition : Vector3.zero;
 
-        // 両方の初期化を同じタイミングで行う(このAppendCallbackが"着地の瞬間"の基準点になる)
+        // 全ての初期化を同じタイミングで行う(このAppendCallbackが"着地の瞬間"の基準点になる)
         seq.AppendCallback(() =>
         {
             if (hasBurst)
@@ -232,6 +285,11 @@ public class RoundAnnouncementController : MonoBehaviour
                     c.a = 1f;
                     impactBurstGraphic.color = c;
                 }
+            }
+
+            if (hasTextShake)
+            {
+                textShake.Play();
             }
         });
 
