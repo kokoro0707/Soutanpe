@@ -23,4 +23,9 @@ MonoBehaviour:
   blockKnockback: {x: 3, y: 0}
   hitboxOffset: {x: 1.6, y: 1.5}
   animationIndex: 13
+  spCost: 0
+  useMove: 0
+  moveSpeed: 15
+  moveStartFrame: 0
+  moveEndFrame: 0
   hitboxSize: {x: 4, y: 1}

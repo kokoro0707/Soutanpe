@@ -63,7 +63,36 @@ public sealed class MoveData : ScriptableObject
 
     [Header("SP")]
     [SerializeField, Min(0)]
-    private int spCost = 1;
+    private int spCost = 0;
+
+    [Header("UŒ‚’†‚ÌˆÚ“®")]
+    [SerializeField]
+    private bool useMove;
+
+    [SerializeField]
+    private float moveSpeed = 15f;
+
+    [SerializeField, Min(0)]
+    private int moveStartFrame = 0;
+
+    [SerializeField, Min(0)]
+    private int moveEndFrame = 0;
+
+
+    public bool UseMove => useMove;
+    public float MoveSpeed => moveSpeed;
+
+    public bool IsMoveFrame(int frame)
+    {
+        if (!useMove)
+        {
+            return false;
+        }
+
+        return frame >= moveStartFrame &&
+               frame <= moveEndFrame;
+    }
+
 
     public int SPCost => spCost;
     
