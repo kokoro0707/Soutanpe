@@ -54,6 +54,10 @@ public class RoundAnnouncementController : MonoBehaviour
     [Tooltip("設定すると、roundTextに直接文字を入れる代わりに1文字ずつポップインさせる。" +
              "未設定なら従来通りroundTextに即座に全文字を表示する")]
     [SerializeField] private TMPCharacterPopIn textPopIn;
+    [Tooltip("設定すると、ラウンド数字(例:「1」)だけをROUNDの文字とは別に、" +
+             "上から落ちてくる演出で表示する(衝撃演出と同時に発生)。" +
+             "未設定なら従来通りroundFormatの{0}に数字を埋め込んでROUNDと一緒に表示する")]
+    [SerializeField] private RoundNumberDropIn roundNumberDrop;
 
     [Header("タイミング")]
     [SerializeField, Min(0.05f)] private float slideInDuration = 0.35f;
@@ -133,7 +137,13 @@ public class RoundAnnouncementController : MonoBehaviour
 
         gameObject.SetActive(true);
 
-        string formattedText = string.Format(roundFormat, roundNumber);
+        string numberText = roundNumber.ToString();
+
+        // RoundNumberDropが設定されている場合は、数字をROUND側のテキストに含めない
+        // (数字は別演出(上から落ちてくる)で表示するため)。未設定なら従来通りroundFormatの{0}に埋め込む。
+        string formattedText = roundNumberDrop != null
+            ? roundFormat.Replace("{0}", string.Empty)
+            : string.Format(roundFormat, roundNumber);
 
         // textPopInが未設定の場合だけ、従来通り即座に全文字を表示する
         // (textPopIn使用時は、AppendSlideIn開始と同時にPlay()で1文字ずつ出す)
@@ -171,7 +181,7 @@ public class RoundAnnouncementController : MonoBehaviour
             }
         }
 
-        AppendImpactEffects(sequence);
+        AppendImpactEffects(sequence, numberText);
 
         sequence.AppendInterval(holdDuration);
 
@@ -235,7 +245,13 @@ public class RoundAnnouncementController : MonoBehaviour
 
         if (bannerFadeGroup != null)
         {
-            seq.AppendCallback(() => bannerFadeGroup.alpha = 1f);
+            seq.AppendCallback(() =>
+            {
+                bannerFadeGroup.alpha = 1f;
+                // RoundNumberDropの数字はバナー本体と別物なので、消えずに残ってしまう。
+                // バナーの退場と同時にフェードアウトさせる
+                roundNumberDrop?.Hide(slideOutDuration);
+            });
             seq.Append(bannerFadeGroup.DOFade(0f, slideOutDuration).SetEase(Ease.InQuad));
             seq.Join(rect.DOScale(fadeOutEndScale, slideOutDuration).SetEase(Ease.InQuad));
             seq.AppendCallback(() =>
@@ -247,6 +263,8 @@ public class RoundAnnouncementController : MonoBehaviour
         else
         {
             Vector2 end = part.endPosition + slideOutOffset;
+
+            seq.AppendCallback(() => roundNumberDrop?.Hide(slideOutDuration));
 
             // 勢いをつけて画面外へ吹き飛ぶように(InBack: 一瞬タメてから加速)
             seq.Append(rect.DOAnchorPos(end, slideOutDuration).SetEase(Ease.InBack));
@@ -260,12 +278,13 @@ public class RoundAnnouncementController : MonoBehaviour
     ///   ・中心から光が放射状に広がって消えるバースト(動画の「文字が出る瞬間に光の線が飛び散る」表現の簡易版)
     /// 両方を同じタイミングでJoinし、"着地の一撃"として一体感を持たせる。
     /// </summary>
-    private void AppendImpactEffects(Sequence seq)
+    private void AppendImpactEffects(Sequence seq, string numberText)
     {
         bool hasShake = shakeTarget != null;
         bool hasBurst = impactBurst != null;
         bool hasTextShake = textShake != null;
-        if (!hasShake && !hasBurst && !hasTextShake) return;
+        bool hasNumberDrop = roundNumberDrop != null;
+        if (!hasShake && !hasBurst && !hasTextShake && !hasNumberDrop) return;
 
         Vector3 originalShakePos = hasShake ? shakeTarget.localPosition : Vector3.zero;
 
@@ -290,6 +309,11 @@ public class RoundAnnouncementController : MonoBehaviour
             if (hasTextShake)
             {
                 textShake.Play();
+            }
+
+            if (hasNumberDrop)
+            {
+                roundNumberDrop.Play(numberText);
             }
         });
 
