@@ -2357,6 +2357,7 @@ GameObject:
   - component: {fileID: 879171752}
   - component: {fileID: 879171751}
   - component: {fileID: 879171756}
+  - component: {fileID: 879171757}
   m_Layer: 0
   m_Name: UIManger
   m_TagString: Untagged
@@ -2408,7 +2409,7 @@ MonoBehaviour:
   slideOutOffset: {x: 1400, y: 0}
   overshootScale: 1.6
   shakeTarget: {fileID: 1216502989}
-  shakeStrength: 12
+  shakeStrength: 15
   shakeDuration: 1
   shakeVibrato: 12
   shakeRandomness: 60
@@ -2476,6 +2477,22 @@ MonoBehaviour:
   dropDuration: 0.12
   overshootScale: 1.15
   settleDuration: 0.12
+--- !u!114 &879171757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 879171750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fd2bbc01b4ff0444bf53153526ccc23, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TMPPerspectiveSkew
+  text: {fileID: 1216502990}
+  heightScaleAtEnd: 0.875
+  riseAmount: 30
+  horizontalShiftAtEnd: 0
 --- !u!1 &940169550
 GameObject:
   m_ObjectHideFlags: 0
@@ -3245,13 +3262,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1216502988}
-  m_LocalRotation: {x: -0.026554229, y: -0.35422963, z: -0.10881549, w: 0.9284264}
-  m_LocalPosition: {x: 0, y: 0, z: 36.013485}
+  m_LocalRotation: {x: 0.07486899, y: 0.26187792, z: -0.12371675, w: 0.9542059}
+  m_LocalPosition: {x: 0, y: 0, z: -15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1465834084}
-  m_LocalEulerAnglesHint: {x: -7.262, y: -41.09, z: -10.645}
+  m_LocalEulerAnglesHint: {x: 11.986, y: 29.47, z: -11.612}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -19.241077, y: 23.153381}
@@ -3370,7 +3387,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TMPCharacterPopIn
   text: {fileID: 1216502990}
-  staggerDelay: 0.95
+  staggerDelay: 0.8
+  perspectiveSkew: {fileID: 879171757}
 --- !u!114 &1216502993
 MonoBehaviour:
   m_ObjectHideFlags: 0

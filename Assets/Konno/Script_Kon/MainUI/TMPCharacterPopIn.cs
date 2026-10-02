@@ -27,6 +27,9 @@ public class TMPCharacterPopIn : MonoBehaviour
              "Play(string, float)で呼ぶ場合はこの値は使われない(指定した時間に合わせて自動計算される)")]
     [SerializeField, Min(0.001f)] private float staggerDelay = 0.045f;
 
+    [Tooltip("設定すると、文字を表示した直後に斜め奥行き変形(TMPPerspectiveSkew)を適用する")]
+    [SerializeField] private TMPPerspectiveSkew perspectiveSkew;
+
     private Sequence sequence;
     private int visibleCount;
 
@@ -77,6 +80,10 @@ public class TMPCharacterPopIn : MonoBehaviour
         text.text = newText;
         text.ForceMeshUpdate();
 
+        // 斜め奥行き変形は、文字の中身を確定させた直後(ここ)で一度だけ適用する。
+        // これより後でForceMeshUpdate()を呼ぶ処理があると変形が消えてしまうので注意。
+        perspectiveSkew?.Apply();
+
         int totalCount = text.textInfo.characterCount;
 
         visibleCount = 0;
@@ -98,6 +105,11 @@ public class TMPCharacterPopIn : MonoBehaviour
                 {
                     visibleCount = v;
                     text.maxVisibleCharacters = v;
+
+                    // maxVisibleCharactersを変更すると、TMPが内部でメッシュを再生成してしまい、
+                    // 最初に一度だけ適用した斜め奥行き変形が毎フレーム消されてしまう。
+                    // そのため、表示文字数が変わるたびに(=毎フレーム)変形を再適用し直す。
+                    perspectiveSkew?.Apply();
                 },
                 totalCount,
                 totalDuration

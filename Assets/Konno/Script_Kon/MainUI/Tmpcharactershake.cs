@@ -52,7 +52,9 @@ public class TMPCharacterShake : MonoBehaviour
             return;
         }
 
-        text.ForceMeshUpdate();
+        // ここでForceMeshUpdate()を呼ぶと、TMPCharacterPopIn(斜め奥行き変形)が
+        // 加えた変形がリセットされて消えてしまうため、呼ばない。
+        // Play()が呼ばれる時点では、既にテキストは表示済み(textInfoは有効)なので問題ない。
         TMP_TextInfo info = text.textInfo;
 
         // 「元の形」を複製して保存(揺れの計算は常にこれを基準にする)
