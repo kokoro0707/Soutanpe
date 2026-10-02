@@ -35,6 +35,14 @@ public class TMPPerspectiveSkew : MonoBehaviour
     [Tooltip("右端の文字を、左端に対して横方向にどれだけ詰める/広げるか(0=変化なし)")]
     [SerializeField] private float horizontalShiftAtEnd = 0f;
 
+    [Tooltip("右端の文字ほど、どれだけ傾ける(度)。イタリックのように文字の上側だけ横にずれる(シェア変形)。" +
+             "「Sample text」のように、奥へ向かうほど倒れ込んでいくような見た目を作れる")]
+    [SerializeField] private float shearDegreesAtEnd = 20f;
+
+    [Tooltip("右端の文字ほど、文字そのものをどれだけ回転させるか(度)。シェアと組み合わせると" +
+             "より自然に「倒れて奥へ向かう」感じになる")]
+    [SerializeField] private float rotationDegreesAtEnd = 0f;
+
     /// <summary>
     /// 現在text.textに入っている文字列に対して、斜め変形を適用する。
     /// 文字を差し替えた直後(ForceMeshUpdate済みの状態)で呼ぶこと。
@@ -62,6 +70,8 @@ public class TMPPerspectiveSkew : MonoBehaviour
             float scale = Mathf.Lerp(1f, heightScaleAtEnd, t);
             float rise = Mathf.Lerp(0f, riseAmount, t);
             float shiftX = Mathf.Lerp(0f, horizontalShiftAtEnd, t);
+            float shearFactor = Mathf.Tan(Mathf.Lerp(0f, shearDegreesAtEnd, t) * Mathf.Deg2Rad);
+            float rotationRad = Mathf.Lerp(0f, rotationDegreesAtEnd, t) * Mathf.Deg2Rad;
 
             int materialIndex = cInfo.materialReferenceIndex;
             int vertexIndex = cInfo.vertexIndex;
@@ -75,12 +85,28 @@ public class TMPPerspectiveSkew : MonoBehaviour
                 verts[vertexIndex + 1].y
             );
 
+            // 回転の中心(文字の中心点)。シェア適用前の形から求める
+            Vector3 charCenter = Vector3.zero;
+            for (int v = 0; v < 4; v++) charCenter += verts[vertexIndex + v];
+            charCenter /= 4f;
+
+            float cosR = Mathf.Cos(rotationRad);
+            float sinR = Mathf.Sin(rotationRad);
+
             for (int v = 0; v < 4; v++)
             {
                 Vector3 p = verts[vertexIndex + v];
                 p.y = baseY + (p.y - baseY) * scale; // 高さを縮める
-                p.y += rise;                          // 持ち上げる
-                p.x += shiftX;                         // 横方向の詰め
+                p.x += shearFactor * (p.y - baseY);  // イタリックのようにシェア変形(上側ほど横にずれる)
+
+                // 文字の中心を軸にして回転(倒れ込むような見た目)
+                float dx = p.x - charCenter.x;
+                float dy = p.y - charCenter.y;
+                p.x = charCenter.x + dx * cosR - dy * sinR;
+                p.y = charCenter.y + dx * sinR + dy * cosR;
+
+                p.y += rise;    // 持ち上げる
+                p.x += shiftX;  // 横方向の詰め
                 verts[vertexIndex + v] = p;
             }
         }

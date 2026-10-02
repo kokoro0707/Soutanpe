@@ -41,10 +41,14 @@ public class RoundAnnouncementController : MonoBehaviour
         public Vector2 startOffset = new Vector2(-1400f, 0f);
         [Tooltip("最終的に止まる位置(anchoredPosition)")]
         public Vector2 endPosition = Vector2.zero;
-        [Tooltip("飛び込んでくる際の開始回転(度)")]
+        [Tooltip("飛び込んでくる際の開始回転(Z軸、度)")]
         public float startRotation = -25f;
-        [Tooltip("最終的な回転(度)")]
+        [Tooltip("最終的な回転(Z軸、度)")]
         public float endRotation = -12f;
+        [Tooltip("飛び込んでくる際の開始回転(Y軸、度)。縦の軸を中心に奥へ傾けることで奥行き感を出す")]
+        public float startRotationY = 0f;
+        [Tooltip("最終的な回転(Y軸、度)。マイナスにすると右側が奥へ傾く")]
+        public float endRotationY = 0f;
     }
 
     [Header("ラウンドバナー(例: ROUND1)")]
@@ -213,7 +217,7 @@ public class RoundAnnouncementController : MonoBehaviour
             rect.gameObject.SetActive(true);
             rect.localScale = Vector3.one;
             rect.anchoredPosition = part.endPosition + part.startOffset;
-            rect.localRotation = Quaternion.Euler(0f, 0f, part.startRotation);
+            rect.localRotation = Quaternion.Euler(0f, part.startRotationY, part.startRotation);
 
             // Stagger Delay(Inspectorで設定した1文字あたりの間隔)の速度でそのまま再生する。
             // (以前はslideInDurationに強制的に合わせていたが、文字数で割った間隔が短すぎて
@@ -226,7 +230,7 @@ public class RoundAnnouncementController : MonoBehaviour
 
         // スライドと回転を同時に、勢いよく飛び込ませてから最後でスッと止まる(OutExpo)
         seq.Append(rect.DOAnchorPos(part.endPosition, slideInDuration).SetEase(Ease.OutExpo));
-        seq.Join(rect.DOLocalRotate(new Vector3(0f, 0f, part.endRotation), slideInDuration).SetEase(Ease.OutExpo));
+        seq.Join(rect.DOLocalRotate(new Vector3(0f, part.endRotationY, part.endRotation), slideInDuration).SetEase(Ease.OutExpo));
 
         // 着地の瞬間に大きく弾んで(OutBack)元のサイズに収まる
         seq.Append(rect.DOScale(overshootScale, punchDuration * 0.35f).SetEase(Ease.OutQuad));
