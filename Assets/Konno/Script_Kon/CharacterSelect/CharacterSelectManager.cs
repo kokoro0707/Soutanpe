@@ -22,6 +22,11 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private TMP_Text player1Label;
     [SerializeField] private TMP_Text player2Label;
 
+    [Header("戻るボタン")]
+    [Tooltip("Escape/Bボタンを押した時の挙動を示すテキスト。" +
+             "キャラ選択前(メインメニューに戻る)と選択後(決定の取消)で表示を切り替える")]
+    [SerializeField] private TMP_Text backButtonLabel;
+
     [Header("立ち絵")]
     [SerializeField] private Image player1Preview;
     [SerializeField] private Image player2Preview;
@@ -567,8 +572,27 @@ Color.green
         }
         //UpdateSelectionColor();
         UpdatePreview();
+        UpdateBackButtonLabel();
 
         CheckBothPlayersDecided();
+    }
+
+    /// <summary>
+    /// Escape/Bボタンを押した時に「メインメニューに戻る」のか「選択をキャンセル」なのかを
+    /// 表すテキストを、現在の選択状態に合わせて切り替える。
+    /// (実際の判定ロジックはUpdate()/Player1Input()側にあるので、ここは表示を合わせるだけ)
+    /// </summary>
+    private void UpdateBackButtonLabel()
+    {
+        if (backButtonLabel == null) return;
+
+        // Player1がまだキャラを決定していない間だけ、Escape/Bでメインメニューに戻る(BackToGameMode)。
+        // それ以降は、Escape/Bを押しても各決定の取消にしかならない。
+        bool canReturnToMainMenu = selectState == SelectState.Player1 && !player1Decided;
+
+        backButtonLabel.text = canReturnToMainMenu
+            ? "モードに戻る"
+            : "選択をキャンセル";
     }
 
     /// <summary>

@@ -107,12 +107,12 @@ public class MainMenuManager : MonoBehaviour
             if (i == currentIndex)
             {
                 menuTexts[i].color = Color.black;
-                menuTexts[i].fontSize = 48;
+                menuTexts[i].fontSize = 70;
             }
             else
             {
                 menuTexts[i].color = Color.white;
-                menuTexts[i].fontSize = 40;
+                menuTexts[i].fontSize = 50;
             }
         }
 
