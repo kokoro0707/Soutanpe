@@ -45,6 +45,10 @@ public class TMPPerspectiveTextEffect : MonoBehaviour
     [Tooltip("右端の文字ほど、文字そのものをどれだけ回転させるか(度)")]
     [SerializeField] private float rotationDegreesAtEnd = 0f;
 
+    [Tooltip("ONにすると、変形の向きを逆にする(右端が基準の「左端ほど小さく・傾く」になる)。" +
+             "OFF(デフォルト)は今まで通り右端ほど変形が強くなる")]
+    [SerializeField] private bool reverseDirection = false;
+
     [Header("自動適用")]
     [Tooltip("ONの場合、毎フレーム自動で効果を再適用する。" +
              "文字列が動的に変わるテキストにはON推奨。" +
@@ -85,8 +89,10 @@ public class TMPPerspectiveTextEffect : MonoBehaviour
             TMP_CharacterInfo cInfo = info.characterInfo[i];
             if (!cInfo.isVisible) continue;
 
-            // t=0(左端の文字) ~ t=1(右端の文字)
-            float t = (float)i / (count - 1);
+            // t=0(変形なし側の端) ~ t=1(変形が最大になる側の端)
+            // reverseDirectionがOFFなら右端(i=count-1)がt=1、ONなら左端(i=0)がt=1になる
+            float rawT = (float)i / (count - 1);
+            float t = reverseDirection ? 1f - rawT : rawT;
             float scale = Mathf.Lerp(1f, heightScaleAtEnd, t);
             float rise = Mathf.Lerp(0f, riseAmount, t);
             float shiftX = Mathf.Lerp(0f, horizontalShiftAtEnd, t);
