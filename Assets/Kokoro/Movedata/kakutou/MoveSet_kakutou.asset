@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac23ae645826ddb41b9af4950898c3e4, type: 3}
+  m_Name: MoveSet_kakutou
+  m_EditorClassIdentifier: Assembly-CSharp::FighterMoveSet
+  lightCombo: {fileID: 0}
+  heavyCombo: {fileID: 0}
+  assistCombo: {fileID: 0}
+  forwardSpecial: {fileID: 0}
+  downSpecial: {fileID: 0}
+  spAttack: {fileID: 0}
+  jumpAttack: {fileID: 0}
