@@ -1981,7 +1981,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 275864c5743f86740bfa92c081aebf95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalTwoPlayerDeviceSetup
-  deviceMode: 0
+  deviceMode: 1
   player1Input: {fileID: 351946263}
   player2Input: {fileID: 1320457833}
   keyboardSchemeName: Keyboard
@@ -2850,7 +2850,7 @@ Animator:
   m_GameObject: {fileID: 1008845133}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 2b73b28a36c88e141b492448c84bf001, type: 2}
+  m_Controller: {fileID: 9100000, guid: 9bf591964a00f2045ac0e36256ca3bfe, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -3290,7 +3290,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 1.398, y: -40.96, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -19.241089, y: 23.153381}
+  m_AnchoredPosition: {x: -19.24121, y: 23.15332}
   m_SizeDelta: {x: -920, y: -930}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1216502990
