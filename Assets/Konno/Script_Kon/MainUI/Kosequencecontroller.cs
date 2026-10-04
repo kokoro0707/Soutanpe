@@ -10,8 +10,14 @@ using UnityEngine.EventSystems;
 ///   KO発生
 ///    → スローモーション(slowDuration秒 ※実時間)
 ///    → 通常速度に戻して「K.O」を画面中央に表示(ポップ演出つき)
-///    → koDisplayDuration秒後に、同じシーン内のリザルトパネルを表示
-///       (勝者テキストの設定、フェードイン、ボタンの初期選択まで行う)
+///    → koDisplayDuration秒後、
+///         MatchScoreManagerが設定されていればラウンド結果を登録し、
+///           ・まだ試合が決着していなければ次ラウンド(ROUND2/3)を開始
+///           ・2ラウンド先取していれば、同じシーン内のリザルトパネルを表示
+///         MatchScoreManagerが未設定なら、従来通りKOで即リザルトパネルを表示
+///
+/// 相打ち(両者が同じタイミングでKO)は、1フレームだけ待って両方のKOイベントが
+/// 来ていないか確認することで検出し、引き分け(Draw)としてMatchScoreManagerに登録する。
 ///
 /// 注意: このスクリプトは「K.O表示用オブジェクト(koRoot)」や「リザルトパネル」とは別の、
 ///       常にアクティブなオブジェクト(例: KoSequenceManagerなど)に付けること。
@@ -40,8 +46,14 @@ public class KoSequenceController : MonoBehaviour
     [SerializeField] private GameObject koRoot;
     [SerializeField] private float koPopScale = 2.5f;
     [SerializeField, Min(0.01f)] private float koPopDuration = 0.25f;
-    [Tooltip("K.O表示後、リザルトを出すまでの時間(秒)")]
+    [Tooltip("K.O表示後、次の処理(次ラウンド開始 or リザルト表示)に進むまでの時間(秒)")]
     [SerializeField, Min(0f)] private float koDisplayDuration = 2f;
+
+    [Header("ラウンド制スコア(任意)")]
+    [Tooltip("設定すると、KOごとにラウンド結果(P1勝ち/P2勝ち/引き分け)を登録し、" +
+             "2ラウンド先取/1-1ならラウンド3まで、というスコア制で試合を進行する。" +
+             "未設定の場合は従来通り、KO即リザルト表示の挙動になる")]
+    [SerializeField] private MatchScoreManager matchScoreManager;
 
     [Header("リザルト(同じシーン内のパネル)")]
     [Tooltip("表示するリザルトパネル(ResultPanelなど)。最初は非表示のままでよい")]
@@ -50,6 +62,9 @@ public class KoSequenceController : MonoBehaviour
     [SerializeField] private TMP_Text resultText;
     [Tooltip("勝者テキストの書式。{0}に勝者名が入る")]
     [SerializeField] private string winnerFormat = "{0} WIN!";
+    [Tooltip("試合全体が引き分けで終わった場合に表示するテキスト" +
+             "(MatchScoreManagerの安全装置で、引き分けが続いた末に同点で終了した場合のみ使われる)")]
+    [SerializeField] private string drawText = "DRAW";
     [SerializeField] private string player1Name = "PLAYER 1";
     [SerializeField] private string player2Name = "PLAYER 2";
     [Tooltip("CPU戦のとき、Player2側の名前として使う")]
@@ -68,10 +83,17 @@ public class KoSequenceController : MonoBehaviour
     /// <summary>KOシーケンスが始まっているか</summary>
     public bool IsRunning { get; private set; }
 
-    /// <summary>勝ったのがPlayer1側か</summary>
+    /// <summary>このラウンドで勝ったのがPlayer1側か(引き分けの場合は意味を持たない)</summary>
     public bool Player1Won { get; private set; }
 
+    /// <summary>このラウンドが引き分け(相打ちなど)だったか</summary>
+    public bool RoundWasDraw { get; private set; }
+
     private bool timeScaleChanged;
+
+    // 相打ち(両者同時KO)判定用
+    private bool? firstKnockoutIsPlayer1;
+    private bool doubleKnockoutDetected;
 
     private void OnEnable()
     {
@@ -98,26 +120,55 @@ public class KoSequenceController : MonoBehaviour
 
     private void HandlePlayer1KnockedOut()
     {
-        // Player1が倒された = Player2の勝ち
-        StartSequence(player1Won: false);
+        // Player1が倒された
+        RegisterKnockout(player1IsLoser: true);
     }
 
     private void HandlePlayer2KnockedOut()
     {
-        StartSequence(player1Won: true);
+        RegisterKnockout(player1IsLoser: false);
     }
 
-    private void StartSequence(bool player1Won)
+    private void RegisterKnockout(bool player1IsLoser)
     {
-        // 相打ちなどで2回呼ばれても、最初の1回だけ処理する
         if (IsRunning) return;
 
+        if (firstKnockoutIsPlayer1 == null)
+        {
+            firstKnockoutIsPlayer1 = player1IsLoser;
+            StartCoroutine(WaitForDoubleKnockoutRoutine());
+        }
+        else if (firstKnockoutIsPlayer1.Value != player1IsLoser)
+        {
+            // 既に一方のKOを受け付けた直後に、反対側のKOも来た = 相打ち(両者同時KO)
+            doubleKnockoutDetected = true;
+        }
+    }
+
+    /// <summary>
+    /// 両者が同じタイミング(相打ち)でKOされた場合を判定するため、1フレームだけ待って
+    /// もう片方のKOイベントが来ていないか確認してから、実際のシーケンスを開始する。
+    /// </summary>
+    private IEnumerator WaitForDoubleKnockoutRoutine()
+    {
+        yield return null;
+
+        if (IsRunning) yield break;
+
         IsRunning = true;
-        Player1Won = player1Won;
 
-        // KOの瞬間にコンボ表示を消す(この直後のコンボ更新でも再表示されないようにする)
+        if (doubleKnockoutDetected)
+        {
+            RoundWasDraw = true;
+            Player1Won = false;
+        }
+        else
+        {
+            RoundWasDraw = false;
+            Player1Won = !firstKnockoutIsPlayer1.Value; // player1IsLoser=true → Player2の勝ち
+        }
+
         HideComboCounters();
-
         StartCoroutine(SequenceRoutine());
     }
 
@@ -146,8 +197,29 @@ public class KoSequenceController : MonoBehaviour
 
         yield return new WaitForSecondsRealtime(koDisplayDuration);
 
-        // ---- 同じシーン内でリザルト表示 ----
-        yield return ShowResultRoutine();
+        // ---- ラウンドスコアを使う場合は、次ラウンドへ進むか試合終了かをここで判定 ----
+        if (matchScoreManager != null)
+        {
+            MatchScoreManager.RoundResult result = RoundWasDraw
+                ? MatchScoreManager.RoundResult.Draw
+                : (Player1Won ? MatchScoreManager.RoundResult.Player1Win : MatchScoreManager.RoundResult.Player2Win);
+
+            matchScoreManager.RegisterRoundResult(result);
+
+            if (matchScoreManager.MatchIsOver)
+            {
+                yield return ShowResultRoutine();
+            }
+            else
+            {
+                ContinueToNextRound();
+            }
+        }
+        else
+        {
+            // MatchScoreManager未設定の場合は従来通り、KOで即リザルト表示
+            yield return ShowResultRoutine();
+        }
     }
 
     /// <summary>
@@ -171,6 +243,44 @@ public class KoSequenceController : MonoBehaviour
     }
 
     /// <summary>
+    /// ラウンドの決着はついたが、まだ試合全体は決着していない場合に呼ばれる。
+    /// K.O表示を消し、このコンポーネントの内部状態をリセットして次ラウンドに備える。
+    /// 体力・キャラクターの立ち位置のリセットは、MatchScoreManagerのOnRoundContinue
+    /// イベント側で行う(このスクリプトはKOシーケンス自体の管理に専念する)。
+    /// 次ラウンドの「ROUND2」「ROUND3」演出はMatchScoreManagerがBattleStartControllerを
+    /// 通じて再生し、その演出が終わるタイミング(RoundAnnouncementControllerのOnFightStart)
+    /// でUnlockInputs()を呼ぶようにInspectorで登録しておくこと。
+    /// </summary>
+    private void ContinueToNextRound()
+    {
+        if (koRoot != null) koRoot.SetActive(false);
+
+        IsRunning = false;
+        RoundWasDraw = false;
+        firstKnockoutIsPlayer1 = null;
+        doubleKnockoutDetected = false;
+
+        // 入力は、次ラウンドのROUND演出が終わるタイミング(OnFightStart)で
+        // UnlockInputs()が呼ばれるまでロックしたままにしておく
+    }
+
+    /// <summary>
+    /// 次ラウンドのROUND演出が終わったタイミングで呼ぶ。LockInputs()で止めていた
+    /// controllersToLockの操作を再び有効にする。
+    /// RoundAnnouncementControllerのOn Fight StartイベントにこのメソッドをInspectorで
+    /// 登録しておくこと(BattleStartController.ResumeGame()と並べて登録してよい)。
+    /// </summary>
+    public void UnlockInputs()
+    {
+        if (controllersToLock == null) return;
+
+        foreach (FighterController controller in controllersToLock)
+        {
+            if (controller != null) controller.SetUseLocalInput(true);
+        }
+    }
+
+    /// <summary>
     /// リザルトパネルを表示する。K.Oはリザルトが出る直前に非表示にする。
     /// </summary>
     private IEnumerator ShowResultRoutine()
@@ -183,7 +293,9 @@ public class KoSequenceController : MonoBehaviour
 
         if (resultText != null)
         {
-            resultText.text = string.Format(winnerFormat, GetWinnerName());
+            resultText.text = IsMatchDraw()
+                ? drawText
+                : string.Format(winnerFormat, GetWinnerName());
         }
 
         if (resultPanel != null)
@@ -221,9 +333,23 @@ public class KoSequenceController : MonoBehaviour
         onShowResult?.Invoke();
     }
 
+    private bool IsMatchDraw()
+    {
+        return matchScoreManager != null
+            ? matchScoreManager.MatchEndedInDraw
+            : RoundWasDraw; // MatchScoreManager未設定時は、このラウンドの結果がそのまま試合結果
+    }
+
+    private bool DidPlayer1WinMatch()
+    {
+        return matchScoreManager != null
+            ? matchScoreManager.Player1WonMatch
+            : Player1Won;
+    }
+
     private string GetWinnerName()
     {
-        if (Player1Won) return player1Name;
+        if (DidPlayer1WinMatch()) return player1Name;
 
         bool cpuMode =
             GameModeManager.Instance != null &&

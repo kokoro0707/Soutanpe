@@ -14,7 +14,8 @@ using TMPro; // TextMeshProを使わない場合は下のTMP_Textを UnityEngine.UI.Text に
 ///   MainMenuManagerと全く同じスタイル。Buttonコンポーネントは使わず、
 ///   ただのTMP_Text(見た目はテキストのみ)を配列で持ち、
 ///   Gamepad.current / Keyboard.current を直接ポーリングして選択・決定を行う。
-///   十字キー(左右/上下どちらでも)で選択項目を切り替え、Aボタン(Gamepad.buttonSouth)で決定。
+///   十字キー(左右/上下どちらでも)、またはWASD(W/S)で選択項目を切り替え、
+///   Aボタン(Gamepad.buttonSouth)で決定。
 ///   選択中の項目は赤色(selectedColor)、それ以外は白色(normalColor)で表示する。
 /// </summary>
 public class GameResultManager : MonoBehaviour
@@ -132,15 +133,21 @@ public class GameResultManager : MonoBehaviour
     {
         if (resultMenuTexts == null || resultMenuTexts.Length == 0) return;
 
+        // 十字キー(右/下)、WASDのS、ゲームパッドの右/下で次の項目へ
         bool moveNext =
             (Keyboard.current != null &&
-                (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.downArrowKey.wasPressedThisFrame)) ||
+                (Keyboard.current.rightArrowKey.wasPressedThisFrame ||
+                 Keyboard.current.downArrowKey.wasPressedThisFrame ||
+                 Keyboard.current.sKey.wasPressedThisFrame)) ||
             (Gamepad.current != null &&
                 (Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.dpad.down.wasPressedThisFrame));
 
+        // 十字キー(左/上)、WASDのW、ゲームパッドの左/上で前の項目へ
         bool movePrev =
             (Keyboard.current != null &&
-                (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.upArrowKey.wasPressedThisFrame)) ||
+                (Keyboard.current.leftArrowKey.wasPressedThisFrame ||
+                 Keyboard.current.upArrowKey.wasPressedThisFrame ||
+                 Keyboard.current.wKey.wasPressedThisFrame)) ||
             (Gamepad.current != null &&
                 (Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.dpad.up.wasPressedThisFrame));
 

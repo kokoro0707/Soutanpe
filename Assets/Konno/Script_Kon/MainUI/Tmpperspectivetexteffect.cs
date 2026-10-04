@@ -5,7 +5,7 @@ using UnityEngine;
 /// 任意のTMP_Textに、「文字が斜めの面に沿って奥へ傾き・縮みながら続いている」ように見せる
 /// 奥行き変形をつける、汎用の単体スクリプト。
 ///
-/// RoundAnnouncementController専用の TMPPerspectiveSkew とは別物で、見出し・ロゴ・
+/// RoundAnnouncementController専用の TMPPerspectiveSkew とは別物で、見出し ロゴ 
 /// 注釈など、ゲーム内のどのTMP_Textにもそのまま使い回せるように独立させてある。
 /// こちらはTMPCharacterPopInのような特別な組み込みをしなくても、単体でそのまま動く。
 ///
@@ -45,9 +45,15 @@ public class TMPPerspectiveTextEffect : MonoBehaviour
     [Tooltip("右端の文字ほど、文字そのものをどれだけ回転させるか(度)")]
     [SerializeField] private float rotationDegreesAtEnd = 0f;
 
-    [Tooltip("ONにすると、変形の向きを逆にする(右端が基準の「左端ほど小さく・傾く」になる)。" +
+    [Tooltip("ONにすると、変形の向きを逆にする(右端が基準の「左端ほど小さく,傾く」になる)。" +
              "OFF(デフォルト)は今まで通り右端ほど変形が強くなる")]
     [SerializeField] private bool reverseDirection = false;
+
+    [Header("1文字だけの場合")]
+    [Tooltip("文字数が1文字だけ(例: ラウンド数字の「1」「2」「3」)の時は、左端/右端という基準が無いため、" +
+             "代わりにこの値(0から1)を使って変形の強さを決める。1にすると変形の最大値(Shear/Rotation等の" +
+             "AtEnd値)がそのまま適用され、0にすると変形なしになる")]
+    [SerializeField, Range(0f, 1f)] private float singleCharacterStrength = 1f;
 
     [Header("自動適用")]
     [Tooltip("ONの場合、毎フレーム自動で効果を再適用する。" +
@@ -82,17 +88,27 @@ public class TMPPerspectiveTextEffect : MonoBehaviour
         text.ForceMeshUpdate();
         TMP_TextInfo info = text.textInfo;
         int count = info.characterCount;
-        if (count <= 1) return;
+        if (count == 0) return;
 
         for (int i = 0; i < count; i++)
         {
             TMP_CharacterInfo cInfo = info.characterInfo[i];
             if (!cInfo.isVisible) continue;
 
-            // t=0(変形なし側の端) ~ t=1(変形が最大になる側の端)
-            // reverseDirectionがOFFなら右端(i=count-1)がt=1、ONなら左端(i=0)がt=1になる
-            float rawT = (float)i / (count - 1);
-            float t = reverseDirection ? 1f - rawT : rawT;
+            // t=0(変形なし側の端) ~ t=1(変形が最大になる側の端)。
+            // 文字が1文字だけの場合は左端/右端の基準が無いので、
+            // singleCharacterStrengthをそのままtとして使う。
+            float t;
+            if (count <= 1)
+            {
+                t = singleCharacterStrength;
+            }
+            else
+            {
+                float rawT = (float)i / (count - 1);
+                t = reverseDirection ? 1f - rawT : rawT;
+            }
+
             float scale = Mathf.Lerp(1f, heightScaleAtEnd, t);
             float rise = Mathf.Lerp(0f, riseAmount, t);
             float shiftX = Mathf.Lerp(0f, horizontalShiftAtEnd, t);

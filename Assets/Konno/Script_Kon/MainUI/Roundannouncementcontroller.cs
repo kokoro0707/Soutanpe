@@ -68,7 +68,7 @@ public class RoundAnnouncementController : MonoBehaviour
     [Tooltip("着地後、オーバーシュートが収まるまでの時間")]
     [SerializeField, Min(0.05f)] private float punchDuration = 0.3f;
     [Tooltip("ROUND表示を保持する時間(秒)")]
-    [SerializeField, Min(0f)] private float holdDuration = 0.9f;
+    [SerializeField, Min(0f)] private float holdDuration = 0.1f;
     [SerializeField, Min(0.05f)] private float slideOutDuration = 0.25f;
     [SerializeField] private Vector2 slideOutOffset = new Vector2(1400f, 0f);
 

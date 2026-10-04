@@ -15,11 +15,25 @@ using UnityEngine;
 ///   3. 出したいタイミングで Play("1") を呼ぶ
 ///      (RoundAnnouncementControllerにRoundNumberDropフィールドを割り当てておけば、
 ///       衝撃演出(揺れ・バースト)と同時に自動で呼ばれる)
+///
+/// 奥行き変形(TMPPerspectiveTextEffect)と組み合わせたい場合:
+///   同じGameObject(または数字のTMP_TextがあるGameObject)にTMPPerspectiveTextEffectを
+///   アタッチし、Perspective Effectフィールドに割り当てる。
+///   TMPPerspectiveTextEffect側のAuto Apply Every FrameがONになっていれば、
+///   そちらが毎フレーム自動で変形を再適用してくれるので、基本的にはそれだけでよい。
+///   ただしPlay()で文字を差し替えた直後の1フレーム目だけ変形が乗っていない状態が
+///   一瞬映り込む可能性があるため、ここでも文字を差し替えた直後に一度Apply()を呼んでおく。
 /// </summary>
 public class RoundNumberDropIn : MonoBehaviour
 {
     [SerializeField] private RectTransform rect;
     [SerializeField] private TMP_Text text;
+
+    [Header("奥行き変形(任意)")]
+    [Tooltip("設定すると、数字を差し替えた直後にこのTMPPerspectiveTextEffectのAppy()を呼び、" +
+             "奥行き変形(斜め・縮小など)を数字にも適用する。" +
+             "未設定なら従来通り、変形なしの数字がそのまま表示される")]
+    [SerializeField] private TMPPerspectiveTextEffect perspectiveEffect;
 
     [Tooltip("着地点から見て、どれだけ上の位置からスタートするか(anchoredPosition基準)")]
     [SerializeField] private Vector2 dropFromOffset = new Vector2(0f, 500f);
@@ -62,6 +76,10 @@ public class RoundNumberDropIn : MonoBehaviour
         }
 
         text.text = number;
+
+        // 奥行き変形を使う場合、文字を差し替えた直後に一度適用しておく
+        // (以降はTMPPerspectiveTextEffect側のLateUpdateが毎フレーム再適用してくれる)
+        perspectiveEffect?.Apply();
 
         rect.gameObject.SetActive(true);
         rect.anchoredPosition = endPosition + dropFromOffset;
