@@ -550,6 +550,7 @@ MonoBehaviour:
   shearDegreesAtEnd: -11
   rotationDegreesAtEnd: 0
   reverseDirection: 0
+  singleCharacterStrength: 1
   autoApplyEveryFrame: 1
 --- !u!1 &69384300
 GameObject:
@@ -6026,6 +6027,7 @@ MonoBehaviour:
   shearDegreesAtEnd: 15
   rotationDegreesAtEnd: 0
   reverseDirection: 1
+  singleCharacterStrength: 1
   autoApplyEveryFrame: 1
 --- !u!1 &2056485723
 GameObject:

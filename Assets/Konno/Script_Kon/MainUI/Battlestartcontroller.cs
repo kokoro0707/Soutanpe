@@ -22,11 +22,24 @@ public class BattleStartController : MonoBehaviour
     [Tooltip("演出中、ゲームを一時停止する(ReadyFightManagerと同じ挙動にしたい場合はON)")]
     [SerializeField] private bool pauseDuringAnnouncement = true;
 
-    [Tooltip("何ラウンド目として表示するか(ROUND{この数字})")]
+    [Tooltip("何ラウンド目として表示するか(ROUND{この数字})。" +
+             "シーン開始時(Start())にはこの値が使われる")]
     [SerializeField] private int roundNumber = 1;
 
     private void Start()
     {
+        PlayRound(roundNumber);
+    }
+
+    /// <summary>
+    /// 指定したラウンド数で「ROUND{number}」演出を再生する。
+    /// シーン開始時のRound1だけでなく、MatchScoreManagerが2ラウンド目・3ラウンド目を
+    /// 開始する際にも、このメソッドを呼び出して同じ演出を再利用する。
+    /// </summary>
+    public void PlayRound(int number)
+    {
+        roundNumber = number;
+
         if (pauseDuringAnnouncement)
         {
             Time.timeScale = 0f;

@@ -2916,7 +2916,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "X\u30DC\u30BF\u30F3\u3067\u30DF\u30E5\u30FC\u30C8ON/OFF\u53EF\u80FD"
+  m_text: "X\u30DC\u30BF\u30F3\u3067\u30DF\u30E5\u30FC\u30C8"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8bd0fca6ca642be4690b3a543f8d3ca7, type: 2}
   m_sharedMaterial: {fileID: 5579513220195528640, guid: 8bd0fca6ca642be4690b3a543f8d3ca7, type: 2}
@@ -4731,8 +4731,6 @@ MonoBehaviour:
   - {fileID: 253960315}
   tabPanels:
   - {fileID: 521099386}
-  - {fileID: 1544338723}
-  - {fileID: 1671663799}
   defaultTabIndex: 0
   menu: {fileID: 94632224}
 --- !u!1 &1170744419
@@ -6423,7 +6421,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "MASTER,BGM,SE\u306E\u4E0A\u4E0B\u5207\u308A\u66FF\u3048\u53EF\u80FD\n\u5DE6\u53F3\u3067\u306E\u97F3\u91CF\u8ABF\u6574\u53EF\u80FD"
+  m_text: "MASTER,BGM,SE\u306E\u4E0A\u4E0B\u5207\u308A\u66FF\u3048"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8bd0fca6ca642be4690b3a543f8d3ca7, type: 2}
   m_sharedMaterial: {fileID: 5579513220195528640, guid: 8bd0fca6ca642be4690b3a543f8d3ca7, type: 2}
@@ -7392,7 +7390,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1544338724
 RectTransform:
   m_ObjectHideFlags: 0

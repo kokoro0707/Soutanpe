@@ -76,6 +76,11 @@ public sealed class FighterHealth : MonoBehaviour
         OnKnockedOut?.Invoke();
     }
 
+    /// <summary>
+    /// HPを満タンに戻し、KOで止まっていたステートマシンも通常状態(Idle)に戻す。
+    /// ラウンドが切り替わる際、MatchScoreManagerのOn Round Continueイベントから
+    /// P1・P2それぞれのこのメソッドを呼び出す想定。
+    /// </summary>
     public void ResetHealth()
     {
         CurrentHP = maxHP;
@@ -84,6 +89,16 @@ public sealed class FighterHealth : MonoBehaviour
             CurrentHP,
             maxHP
         );
+
+        // KO時にForceChangeState(FighterState.KO)で止めたステートマシンを、
+        // 次のラウンドのために通常状態へ戻す。
+        // (TakeDamage側でKOにした時と対になる処理)
+        if (stateMachine != null)
+        {
+            stateMachine.ForceChangeState(
+                FighterState.Idle
+            );
+        }
     }
 
     /// <summary>
