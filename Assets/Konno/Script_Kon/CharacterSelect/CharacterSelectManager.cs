@@ -12,6 +12,19 @@ public class CharacterSelectManager : MonoBehaviour
     [Tooltip("各アイコンに付けたOutlineコンポーネント(characterIconsと同じ順番・同じ数)。選択中は色を塗るのではなく、この枠線で囲んで表示する。")]
     [SerializeField] private Outline[] characterIconOutlines;
 
+    [Header("選択フレーム(PNG)")]
+    [Tooltip("P1用フレーム画像(青)。CharFrame_P1_Blue.png をSpriteに設定したImageを1つ用意して割り当てる。" +
+             "選択中のアイコンの位置・大きさに自動で移動する。Raycast Targetはオフ推奨")]
+    [SerializeField] private Image player1Frame;
+    [Tooltip("P2/CPU用フレーム画像(赤)。CharFrame_P2_Red.png を設定したImage")]
+    [SerializeField] private Image player2Frame;
+    [Tooltip("フレームをアイコンよりどれだけ外側に広げるか(ピクセル)")]
+    [SerializeField] private float framePadding = 4f;
+    [Tooltip("P1とP2が同じキャラを選んだ時、P2のフレームをさらに外側へ広げる量(重なり防止)")]
+    [SerializeField] private float overlapExtraPadding = 14f;
+    [Tooltip("決定後のフレームの色(Imageの色として乗算される。白=元の色のまま)")]
+    [SerializeField] private Color frameDecidedTint = new Color(0.65f, 0.65f, 0.65f, 1f);
+
     [Header("カラー設定")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color player1Color = Color.red;
@@ -532,7 +545,7 @@ Color.green
 
         // 選択中のキャラの上へ移動
         player1Label.rectTransform.position =
-            characterIcons[player1Index].rectTransform.position + new Vector3(0, 80, 0);
+            characterIcons[player1Index].rectTransform.position + new Vector3(0, 100, 0);
 
         SetIconOutline(player1Index, player1Decided ? decidedColor : player1Color);
 
@@ -543,12 +556,12 @@ Color.green
             {
                 player2Label.gameObject.SetActive(true);
                 player2Label.text = "CPU";
-                player2Label.color = Color.yellow;
+                player2Label.color = Color.blue;
 
                 player2Label.rectTransform.position =
-                    characterIcons[player2Index].rectTransform.position + new Vector3(0, 80, 0);
+                    characterIcons[player2Index].rectTransform.position + new Vector3(0, 100, 0);
 
-                SetIconOutline(player2Index, player2Decided ? decidedColor : Color.yellow);
+                SetIconOutline(player2Index, player2Decided ? decidedColor : Color.blue);
             }
             else
             {
@@ -570,7 +583,7 @@ Color.green
         {
             player2Label.gameObject.SetActive(false);
         }
-        //UpdateSelectionColor();
+        UpdateFrames();
         UpdatePreview();
         UpdateBackButtonLabel();
 
@@ -593,6 +606,53 @@ Color.green
         backButtonLabel.text = canReturnToMainMenu
             ? "モードに戻る"
             : "選択をキャンセル";
+    }
+
+    /// <summary>
+    /// P1/P2(CPU)のフレーム画像を、選択中アイコンの位置・大きさに合わせる。
+    /// </summary>
+    private void UpdateFrames()
+    {
+        // P1: 常に表示
+        PlaceFrame(player1Frame, player1Index, 0f, player1Decided);
+
+        // P2 / CPU: 選択フェーズに入っている時だけ表示
+        bool showP2 = cpuMode
+            ? selectState == SelectState.CPU
+            : player2Active;
+
+        bool overlap = player1Index == player2Index;
+        PlaceFrame(showP2 ? player2Frame : null, player2Index,
+                   overlap ? overlapExtraPadding : 0f, player2Decided);
+
+        if (!showP2 && player2Frame != null)
+            player2Frame.gameObject.SetActive(false);
+    }
+
+    private void PlaceFrame(Image frame, int index, float extraPadding, bool decided)
+    {
+        if (frame == null) return;
+        if (index < 0 || index >= characterIcons.Length || characterIcons[index] == null)
+        {
+            frame.gameObject.SetActive(false);
+            return;
+        }
+
+        frame.gameObject.SetActive(true);
+
+        RectTransform icon = characterIcons[index].rectTransform;
+        RectTransform rt = frame.rectTransform;
+
+        // アイコンと同じ見た目の位置・サイズに合わせる(親が違っても対応)
+        rt.position = icon.position;
+        rt.rotation = icon.rotation;
+        float pad = (framePadding + extraPadding) * 2f;
+        rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, icon.rect.width * icon.lossyScale.x / rt.lossyScale.x + pad);
+        rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, icon.rect.height * icon.lossyScale.y / rt.lossyScale.y + pad);
+
+        frame.color = decided ? frameDecidedTint : Color.white;
+        frame.raycastTarget = false;
+        frame.transform.SetAsLastSibling();
     }
 
     /// <summary>

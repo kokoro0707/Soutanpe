@@ -2480,7 +2480,7 @@ MonoBehaviour:
   koPopDuration: 0.25
   koDisplayDuration: 2
   fadeBetweenRounds: 1
-  roundFadeDuration: 0.6
+  roundFadeDuration: 0.2
   roundBlackHoldDuration: 0.5
   fadeOverlay: {fileID: 1927040996}
   hideKoInRound1: 1
