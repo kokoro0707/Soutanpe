@@ -54,6 +54,13 @@ public class GameResultManager : MonoBehaviour
     [Tooltip("リザルト表示時にTime.timeScaleを0にしてゲームを一時停止するか")]
     [SerializeField] private bool pauseOnResult = true;
 
+    [Header("ラウンド制(任意)")]
+    [Tooltip("MatchScoreManagerを割り当てると、HP0になるたびに反応せず、" +
+             "試合が決着してリザルトパネルが出ている間だけ操作・SEが有効になる。" +
+             "リザルト表示そのものはKoSequenceControllerが行う")]
+    [SerializeField] private MatchScoreManager matchScoreManager;
+
+    private bool wasShownLastFrame = false;
     private bool isGameOver = false;
     private bool isChangingScene = false;
     private int currentIndex = 0;
@@ -85,9 +92,22 @@ public class GameResultManager : MonoBehaviour
         if (isChangingScene)
             return;
 
-        // リザルトパネルが表示されていない間は何もしない
-        if (!isGameOver || resultPanel == null || !resultPanel.activeSelf)
+        // リザルトパネルが表示されていない間は何もしない(=選択SE・決定SEも鳴らない)
+        // ラウンド制の場合はisGameOverを使わず、パネルが実際に出ているかだけで判断する
+        bool resultShown = resultPanel != null && resultPanel.activeInHierarchy;
+        bool matchFinished = matchScoreManager != null ? matchScoreManager.MatchIsOver : isGameOver;
+
+        if (!resultShown || !matchFinished)
             return;
+
+        if (matchScoreManager != null && !wasShownLastFrame)
+        {
+            // リザルトが出た最初のフレームは、直前の攻撃入力などで決定されないよう入力を無視
+            wasShownLastFrame = true;
+            currentIndex = 0;
+            UpdateSelection();
+            return;
+        }
 
         HandleNavigation();
         HandleSubmit();
@@ -98,6 +118,11 @@ public class GameResultManager : MonoBehaviour
 
     private void HandleGameOver(bool loserIsPlayer1)
     {
+        // ラウンド制(MatchScoreManager)を使う場合、リザルト表示はKoSequenceController側が
+        // 試合決着時にだけ行う。ここでHP0のたびに反応すると、ラウンド途中で
+        // timeScale=0やリザルト用の処理が裏で動いてしまうので何もしない
+        if (matchScoreManager != null) return;
+
         // 両者同時にHPが0になった場合など、二重発火を防止
         if (isGameOver) return;
         isGameOver = true;
