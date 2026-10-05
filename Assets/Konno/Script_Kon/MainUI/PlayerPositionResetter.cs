@@ -72,10 +72,55 @@ public class PlayerPositionResetter : MonoBehaviour
         [HideInInspector] public float capturedRotationZ;
         [HideInInspector] public Vector3 capturedScale;
         [HideInInspector] public bool captured;
+        [HideInInspector] public bool capturedAtFight;
     }
 
     [Tooltip("要素0=P1、要素1=P2、という想定。3人以上に増やしても動作する")]
     [SerializeField] private PlayerPositionEntry[] players = new PlayerPositionEntry[2];
+
+    [Header("カメラ")]
+    [Tooltip("ラウンド切り替え時に位置を戻したいカメラ(何個でも追加できる)。" +
+             "プレイヤーと同じタイミングで記録され、ResetPositions()で戻る。" +
+             "Orthographicカメラなら、ズーム(Orthographic Size)も一緒に戻る")]
+    [SerializeField] private Camera[] camerasToReset;
+
+    private Vector3[] cameraPositions;
+    private Quaternion[] cameraRotations;
+    private float[] cameraSizes;
+    private bool cameraCapturedAtFight;
+
+    private void CaptureCameras()
+    {
+        if (camerasToReset == null) return;
+
+        cameraPositions = new Vector3[camerasToReset.Length];
+        cameraRotations = new Quaternion[camerasToReset.Length];
+        cameraSizes = new float[camerasToReset.Length];
+
+        for (int i = 0; i < camerasToReset.Length; i++)
+        {
+            if (camerasToReset[i] == null) continue;
+
+            cameraPositions[i] = camerasToReset[i].transform.position;
+            cameraRotations[i] = camerasToReset[i].transform.rotation;
+            cameraSizes[i] = camerasToReset[i].orthographicSize;
+        }
+    }
+
+    private void ResetCameras()
+    {
+        if (camerasToReset == null || cameraPositions == null) return;
+
+        for (int i = 0; i < camerasToReset.Length && i < cameraPositions.Length; i++)
+        {
+            Camera cam = camerasToReset[i];
+            if (cam == null) continue;
+
+            cam.transform.position = cameraPositions[i];
+            cam.transform.rotation = cameraRotations[i];
+            if (cam.orthographic) cam.orthographicSize = cameraSizes[i];
+        }
+    }
 
     /// <summary>
     /// 現在のP1・P2の位置・回転・スケールを「開始位置」として記録する。
@@ -88,16 +133,45 @@ public class PlayerPositionResetter : MonoBehaviour
     /// </summary>
     public void CaptureInitialPositions()
     {
+        if (!cameraCapturedAtFight)
+        {
+            CaptureCameras();
+            cameraCapturedAtFight = true;
+        }
+
         foreach (PlayerPositionEntry entry in players)
         {
             if (entry == null || entry.target == null) continue;
             if (!entry.captureOnStart) continue;
-            if (entry.captured) continue; // 既に記録済みなら上書きしない
+            if (entry.capturedAtFight) continue; // 戦闘開始時の記録済みなら上書きしない
 
-            entry.capturedPosition = entry.target.position;
-            entry.capturedRotationZ = entry.target.eulerAngles.z;
-            entry.capturedScale = entry.target.localScale;
-            entry.captured = true;
+            Capture(entry);
+            entry.capturedAtFight = true;
+        }
+    }
+
+    private static void Capture(PlayerPositionEntry entry)
+    {
+        entry.capturedPosition = entry.target.position;
+        entry.capturedRotationZ = entry.target.eulerAngles.z;
+        entry.capturedScale = entry.target.localScale;
+        entry.captured = true;
+    }
+
+    /// <summary>
+    /// 保険: CaptureInitialPositions()が呼ばれ忘れていても、最低限シーン開始時の位置には
+    /// 戻せるように、Start()でも一度記録しておく。
+    /// (キャラの配置がStart()より後に行われる場合は、CaptureInitialPositions()で上書きされる)
+    /// </summary>
+    private void Start()
+    {
+        CaptureCameras();
+
+        foreach (PlayerPositionEntry entry in players)
+        {
+            if (entry == null || entry.target == null) continue;
+            if (!entry.captureOnStart) continue;
+            Capture(entry);
         }
     }
 
@@ -111,6 +185,8 @@ public class PlayerPositionResetter : MonoBehaviour
         {
             ResetOne(entry);
         }
+
+        ResetCameras();
     }
 
     /// <summary>
@@ -149,8 +225,16 @@ public class PlayerPositionResetter : MonoBehaviour
 
         if (entry.rigidbody2D != null)
         {
+            // Rigidbody2D側の位置も直接書き換える(Transformだけだと、
+            // 物理側の位置で次の物理更新時に上書きされて戻ってしまうことがある)
+            entry.rigidbody2D.position = position;
+            entry.rigidbody2D.rotation = rotationZ;
             entry.rigidbody2D.linearVelocity = Vector2.zero;
             entry.rigidbody2D.angularVelocity = 0f;
         }
+
+        Physics2D.SyncTransforms();
+
+        Debug.Log($"[PlayerPositionResetter] {entry.target.name} を {position} にリセットしました。", this);
     }
 }

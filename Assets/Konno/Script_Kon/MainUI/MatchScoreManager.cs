@@ -93,6 +93,18 @@ public class MatchScoreManager : MonoBehaviour
     }
 
     /// <summary>
+    /// このラウンド結果を登録したら試合が決着するか、を(登録せずに)調べる。
+    /// 「試合が続くなら暗転してからリセットする」といった事前判断に使う。
+    /// </summary>
+    public bool WouldEndMatch(RoundResult result)
+    {
+        int p1 = Player1Score + (result == RoundResult.Player1Win ? 1 : 0);
+        int p2 = Player2Score + (result == RoundResult.Player2Win ? 1 : 0);
+
+        return p1 >= roundsToWin || p2 >= roundsToWin || CurrentRound >= maxRounds;
+    }
+
+    /// <summary>
     /// 1ラウンド分の結果を登録する。KoSequenceControllerがKOを検知したタイミングで呼ぶ想定。
     /// </summary>
     public void RegisterRoundResult(RoundResult result)

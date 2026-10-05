@@ -31,6 +31,16 @@ public class KoSequenceController : MonoBehaviour
     [Tooltip("KO演出中に操作を受け付けなくしたいキャラクターのFighterController(任意)")]
     [SerializeField] private FighterController[] controllersToLock;
 
+    [Header("KO時の動き停止")]
+    [Tooltip("KOの瞬間に横方向の移動を止めたいRigidbody2D(P1/P2)。" +
+             "横の速度を0にして横移動をロックする(縦方向は止めないので、倒れる/落下はそのまま)。" +
+             "次ラウンドの開始時(UnlockInputs)に元へ戻る")]
+    [SerializeField] private Rigidbody2D[] bodiesToFreeze;
+    [Tooltip("KOの瞬間に無効化したいコンポーネント(CPUのAI、移動スクリプトなど)。" +
+             "FighterControllerとは別に勝手に動かしているスクリプトがあればここに入れる。" +
+             "次ラウンドの開始時(UnlockInputs)に再び有効になる")]
+    [SerializeField] private Behaviour[] componentsToDisable;
+
     [Header("KO時に消す表示")]
     [Tooltip("KOの瞬間に消したいコンボ表示(Player1側・Player2側のComboCounterUI)")]
     [SerializeField] private ComboCounterUI[] comboCountersToHide;
@@ -48,6 +58,17 @@ public class KoSequenceController : MonoBehaviour
     [SerializeField, Min(0.01f)] private float koPopDuration = 0.25f;
     [Tooltip("K.O表示後、次の処理(次ラウンド開始 or リザルト表示)に進むまでの時間(秒)")]
     [SerializeField, Min(0f)] private float koDisplayDuration = 2f;
+    [Tooltip("ONにすると、次のラウンドへ進む時に暗転(フェードアウト)→リセット→明転(フェードイン)する。" +
+             "キャラの位置や体力のリセットが画面に映らなくなる。FadeManagerが必要")]
+    [SerializeField] private bool fadeBetweenRounds = true;
+    [Tooltip("ラウンド間のフェードアウト/フェードインそれぞれの時間(秒)")]
+    [SerializeField, Min(0.05f)] private float roundFadeDuration = 0.4f;
+    [Tooltip("FadeManagerがシーンに無い時(このシーンを直接再生している時など)の代わりに使う、" +
+             "全画面の黒いImageに付けたCanvasGroup(任意)。最前面に置き、Alpha=0・Blocks Raycastsオフにしておく")]
+    [SerializeField] private CanvasGroup fadeOverlay;
+    [Tooltip("ONにすると、ラウンド1のKOではK.O表示(とそのSE)を出さない。" +
+             "スローモーションと待ち時間はそのまま。Match Score Managerが設定されている場合のみ有効")]
+    [SerializeField] private bool hideKoInRound1 = true;
 
     [Header("ラウンド制スコア(任意)")]
     [Tooltip("設定すると、KOごとにラウンド結果(P1勝ち/P2勝ち/引き分け)を登録し、" +
@@ -58,6 +79,10 @@ public class KoSequenceController : MonoBehaviour
     [Header("リザルト(同じシーン内のパネル)")]
     [Tooltip("表示するリザルトパネル(ResultPanelなど)。最初は非表示のままでよい")]
     [SerializeField] private GameObject resultPanel;
+    [Tooltip("リザルトパネルを表示する時に非表示にしたいオブジェクト(HPバー、スコアテキストなど)。" +
+             "何個でも追加できる。見た目だけのオブジェクトを入れること" +
+             "(このスクリプトやMatchScoreManagerが付いたオブジェクト自体は入れない)")]
+    [SerializeField] private GameObject[] hideOnResult;
     [Tooltip("勝者を表示するテキスト(任意)。ResultTextなど")]
     [SerializeField] private TMP_Text resultText;
     [Tooltip("勝者テキストの書式。{0}に勝者名が入る")]
@@ -186,7 +211,12 @@ public class KoSequenceController : MonoBehaviour
         // ---- 通常速度に戻して K.O 表示 ----
         RestoreTimeScale();
 
-        if (koRoot != null)
+        bool hideKoThisRound =
+            hideKoInRound1 &&
+            matchScoreManager != null &&
+            matchScoreManager.CurrentRound == 1;
+
+        if (koRoot != null && !hideKoThisRound)
         {
             koRoot.SetActive(true);
 
@@ -204,7 +234,43 @@ public class KoSequenceController : MonoBehaviour
                 ? MatchScoreManager.RoundResult.Draw
                 : (Player1Won ? MatchScoreManager.RoundResult.Player1Win : MatchScoreManager.RoundResult.Player2Win);
 
+            // 試合が続く場合は、リセット(位置・体力など)が見えないよう、
+            // 暗転 → リセットとROUND演出の開始 → 明転 の順で進める
+            bool fadeAroundReset =
+                fadeBetweenRounds &&
+                !matchScoreManager.WouldEndMatch(result);
+
+            bool useFadeManager = FadeManager.Instance != null;
+            bool useOverlay = !useFadeManager && fadeOverlay != null;
+
+            if (fadeAroundReset && !useFadeManager && !useOverlay)
+            {
+                Debug.LogWarning(
+                    "[KoSequenceController] 暗転できません。FadeManagerがシーンに存在しない" +
+                    "(メインメニューから開始していない)ため、Fade Overlay(CanvasGroup)を" +
+                    "割り当てるか、メインメニューから起動してください。", this);
+                fadeAroundReset = false;
+            }
+
+            if (fadeAroundReset)
+            {
+                if (useFadeManager)
+                    yield return FadeManager.Instance.StartFadeOut(roundFadeDuration);
+                else
+                    yield return FadeOverlayRoutine(0f, 1f);
+
+                if (koRoot != null) koRoot.SetActive(false);
+            }
+
             matchScoreManager.RegisterRoundResult(result);
+
+            if (fadeAroundReset)
+            {
+                if (useFadeManager)
+                    FadeManager.Instance.StartFadeIn(roundFadeDuration);
+                else
+                    StartCoroutine(FadeOverlayRoutine(1f, 0f));
+            }
 
             if (matchScoreManager.MatchIsOver)
             {
@@ -220,6 +286,21 @@ public class KoSequenceController : MonoBehaviour
             // MatchScoreManager未設定の場合は従来通り、KOで即リザルト表示
             yield return ShowResultRoutine();
         }
+    }
+
+    private IEnumerator FadeOverlayRoutine(float from, float to)
+    {
+        float timer = 0f;
+        fadeOverlay.alpha = from;
+
+        while (timer < roundFadeDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            fadeOverlay.alpha = Mathf.Lerp(from, to, timer / roundFadeDuration);
+            yield return null;
+        }
+
+        fadeOverlay.alpha = to;
     }
 
     /// <summary>
@@ -272,6 +353,8 @@ public class KoSequenceController : MonoBehaviour
     /// </summary>
     public void UnlockInputs()
     {
+        UnfreezeMovement();
+
         if (controllersToLock == null) return;
 
         foreach (FighterController controller in controllersToLock)
@@ -289,6 +372,14 @@ public class KoSequenceController : MonoBehaviour
         if (koRoot != null)
         {
             koRoot.SetActive(false);
+        }
+
+        if (hideOnResult != null)
+        {
+            foreach (GameObject target in hideOnResult)
+            {
+                if (target != null) target.SetActive(false);
+            }
         }
 
         if (resultText != null)
@@ -368,13 +459,67 @@ public class KoSequenceController : MonoBehaviour
         }
     }
 
+    private RigidbodyConstraints2D[] savedConstraints;
+
     private void LockInputs()
     {
+        FreezeMovement();
+
         if (controllersToLock == null) return;
 
         foreach (FighterController controller in controllersToLock)
         {
             if (controller != null) controller.SetUseLocalInput(false);
+        }
+    }
+
+    /// <summary>KO時にキャラの横移動と、勝手に動かすコンポーネントを止める。</summary>
+    private void FreezeMovement()
+    {
+        if (bodiesToFreeze != null)
+        {
+            savedConstraints = new RigidbodyConstraints2D[bodiesToFreeze.Length];
+
+            for (int i = 0; i < bodiesToFreeze.Length; i++)
+            {
+                Rigidbody2D body = bodiesToFreeze[i];
+                if (body == null) continue;
+
+                savedConstraints[i] = body.constraints;
+
+                Vector2 v = body.linearVelocity;
+                v.x = 0f;
+                body.linearVelocity = v;
+                body.angularVelocity = 0f;
+                body.constraints = savedConstraints[i] | RigidbodyConstraints2D.FreezePositionX;
+            }
+        }
+
+        if (componentsToDisable != null)
+        {
+            foreach (Behaviour component in componentsToDisable)
+            {
+                if (component != null) component.enabled = false;
+            }
+        }
+    }
+
+    private void UnfreezeMovement()
+    {
+        if (bodiesToFreeze != null && savedConstraints != null)
+        {
+            for (int i = 0; i < bodiesToFreeze.Length && i < savedConstraints.Length; i++)
+            {
+                if (bodiesToFreeze[i] != null) bodiesToFreeze[i].constraints = savedConstraints[i];
+            }
+        }
+
+        if (componentsToDisable != null)
+        {
+            foreach (Behaviour component in componentsToDisable)
+            {
+                if (component != null) component.enabled = true;
+            }
         }
     }
 
