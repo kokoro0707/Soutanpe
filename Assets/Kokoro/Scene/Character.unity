@@ -573,13 +573,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 126266280}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalRotation: {x: -0, y: -0, z: 0.01653364, w: 0.9998634}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1465834084}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 1.895}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 449, y: -6}
@@ -2257,7 +2257,6 @@ GameObject:
   - component: {fileID: 834616048}
   - component: {fileID: 834616049}
   - component: {fileID: 834616044}
-  - component: {fileID: 834616052}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2481,7 +2480,8 @@ MonoBehaviour:
   koPopDuration: 0.25
   koDisplayDuration: 2
   fadeBetweenRounds: 1
-  roundFadeDuration: 0.4
+  roundFadeDuration: 0.6
+  roundBlackHoldDuration: 0.5
   fadeOverlay: {fileID: 1927040996}
   hideKoInRound1: 1
   matchScoreManager: {fileID: 834616050}
@@ -2626,23 +2626,6 @@ MonoBehaviour:
     capturedAtFight: 0
   camerasToReset:
   - {fileID: 1680985392}
---- !u!114 &834616052
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 834616040}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90ec5b2e68187074f8f4aecd28efccd9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FadeManager
-  fadeImage: {fileID: 1927040994}
-  sceneFadeOutTime: 0.5
-  sceneFadeInTime: 0.5
-  fadeOutTime: 1
-  fadeInTime: 2
 --- !u!1 &863092023
 GameObject:
   m_ObjectHideFlags: 0
@@ -5414,7 +5397,6 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1927040993}
   - {fileID: 823098543}
   - {fileID: 1447710153}
   - {fileID: 376233424}
@@ -5427,6 +5409,7 @@ RectTransform:
   - {fileID: 126266281}
   - {fileID: 1096259476}
   - {fileID: 290812119}
+  - {fileID: 1927040993}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
