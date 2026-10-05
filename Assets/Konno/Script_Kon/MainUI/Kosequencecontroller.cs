@@ -63,6 +63,8 @@ public class KoSequenceController : MonoBehaviour
     [SerializeField] private bool fadeBetweenRounds = true;
     [Tooltip("ラウンド間のフェードアウト/フェードインそれぞれの時間(秒)")]
     [SerializeField, Min(0.05f)] private float roundFadeDuration = 0.4f;
+    [Tooltip("真っ暗な状態を保つ時間(秒)。この間にリセットとROUND演出の準備が行われる")]
+    [SerializeField, Min(0f)] private float roundBlackHoldDuration = 0.3f;
     [Tooltip("FadeManagerがシーンに無い時(このシーンを直接再生している時など)の代わりに使う、" +
              "全画面の黒いImageに付けたCanvasGroup(任意)。最前面に置き、Alpha=0・Blocks Raycastsオフにしておく")]
     [SerializeField] private CanvasGroup fadeOverlay;
@@ -243,6 +245,13 @@ public class KoSequenceController : MonoBehaviour
             bool useFadeManager = FadeManager.Instance != null;
             bool useOverlay = !useFadeManager && fadeOverlay != null;
 
+            Debug.Log(
+                $"[KoSequenceController] ラウンド間フェード判定: Fade Between Rounds={fadeBetweenRounds}, " +
+                $"試合が続く={!matchScoreManager.WouldEndMatch(result)}, " +
+                $"FadeManager={(useFadeManager ? "あり" : "なし")}, " +
+                $"Fade Overlay={(fadeOverlay != null ? "あり" : "なし")}, " +
+                $"現在ラウンド={matchScoreManager.CurrentRound}", this);
+
             if (fadeAroundReset && !useFadeManager && !useOverlay)
             {
                 Debug.LogWarning(
@@ -266,6 +275,10 @@ public class KoSequenceController : MonoBehaviour
 
             if (fadeAroundReset)
             {
+                // 真っ暗な状態を少し保つ(これが無いと、暗くなった瞬間に明るくなり始めて
+                // 暗転したことに気づきにくい)
+                yield return new WaitForSecondsRealtime(roundBlackHoldDuration);
+
                 if (useFadeManager)
                     FadeManager.Instance.StartFadeIn(roundFadeDuration);
                 else
