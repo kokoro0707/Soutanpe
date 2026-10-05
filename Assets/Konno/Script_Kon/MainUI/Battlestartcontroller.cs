@@ -22,6 +22,13 @@ public class BattleStartController : MonoBehaviour
     [Tooltip("演出中、ゲームを一時停止する(ReadyFightManagerと同じ挙動にしたい場合はON)")]
     [SerializeField] private bool pauseDuringAnnouncement = true;
 
+    [Header("演出中に隠す表示")]
+    [Tooltip("ROUND演出が出ている間だけ非表示にしたいオブジェクト(HPバー、スコアテキストなど)。" +
+             "何個でも追加できる。演出が終わった時(ResumeGame)に再表示される。" +
+             "注意: 処理を担当するスクリプト(MatchScoreManagerなど)が付いたオブジェクト自体は入れず、" +
+             "見た目だけのオブジェクト(HPBarの親、スコアのTMP_Textなど)を入れること")]
+    [SerializeField] private GameObject[] hideDuringAnnouncement;
+
     [Tooltip("何ラウンド目として表示するか(ROUND{この数字})。" +
              "シーン開始時(Start())にはこの値が使われる")]
     [SerializeField] private int roundNumber = 1;
@@ -39,6 +46,8 @@ public class BattleStartController : MonoBehaviour
     public void PlayRound(int number)
     {
         roundNumber = number;
+
+        SetHudVisible(false);
 
         if (pauseDuringAnnouncement)
         {
@@ -58,6 +67,18 @@ public class BattleStartController : MonoBehaviour
             {
                 Time.timeScale = 1f;
             }
+
+            SetHudVisible(true);
+        }
+    }
+
+    private void SetHudVisible(bool visible)
+    {
+        if (hideDuringAnnouncement == null) return;
+
+        foreach (GameObject target in hideDuringAnnouncement)
+        {
+            if (target != null) target.SetActive(visible);
         }
     }
 
@@ -68,5 +89,6 @@ public class BattleStartController : MonoBehaviour
     public void ResumeGame()
     {
         Time.timeScale = 1f;
+        SetHudVisible(true);
     }
 }
