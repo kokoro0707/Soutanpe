@@ -68,9 +68,11 @@ public class KoSequenceController : MonoBehaviour
     [Tooltip("FadeManagerがシーンに無い時(このシーンを直接再生している時など)の代わりに使う、" +
              "全画面の黒いImageに付けたCanvasGroup(任意)。最前面に置き、Alpha=0・Blocks Raycastsオフにしておく")]
     [SerializeField] private CanvasGroup fadeOverlay;
-    [Tooltip("ONにすると、ラウンド1のKOではK.O表示(とそのSE)を出さない。" +
+    [Tooltip("ONにすると、このKOで試合が決着しない場合(1ラウンド目、1-1になるラウンド、引き分けなど)は" +
+             "K.O表示(とそのSE)を出さない。どちらかが2点目を取って試合が決まるKOの時だけ表示する。" +
              "スローモーションと待ち時間はそのまま。Match Score Managerが設定されている場合のみ有効")]
-    [SerializeField] private bool hideKoInRound1 = true;
+    [UnityEngine.Serialization.FormerlySerializedAs("hideKoInRound1")]
+    [SerializeField] private bool hideKoUnlessMatchEnds = true;
 
     [Header("ラウンド制スコア(任意)")]
     [Tooltip("設定すると、KOごとにラウンド結果(P1勝ち/P2勝ち/引き分け)を登録し、" +
@@ -213,10 +215,16 @@ public class KoSequenceController : MonoBehaviour
         // ---- 通常速度に戻して K.O 表示 ----
         RestoreTimeScale();
 
-        bool hideKoThisRound =
-            hideKoInRound1 &&
-            matchScoreManager != null &&
-            matchScoreManager.CurrentRound == 1;
+        // このKOで試合が決着する時だけK.O表示を出す(続く場合は非表示)
+        bool hideKoThisRound = false;
+        if (hideKoUnlessMatchEnds && matchScoreManager != null)
+        {
+            MatchScoreManager.RoundResult preResult = RoundWasDraw
+                ? MatchScoreManager.RoundResult.Draw
+                : (Player1Won ? MatchScoreManager.RoundResult.Player1Win : MatchScoreManager.RoundResult.Player2Win);
+
+            hideKoThisRound = !matchScoreManager.WouldEndMatch(preResult);
+        }
 
         if (koRoot != null && !hideKoThisRound)
         {
@@ -242,8 +250,10 @@ public class KoSequenceController : MonoBehaviour
                 fadeBetweenRounds &&
                 !matchScoreManager.WouldEndMatch(result);
 
-            bool useFadeManager = FadeManager.Instance != null;
-            bool useOverlay = !useFadeManager && fadeOverlay != null;
+            // Fade Overlayが設定されていればそちらを優先する
+            // (FadeManagerの黒画面が、バトルシーンのCanvasより奥に描画されて見えないことがあるため)
+            bool useOverlay = fadeOverlay != null;
+            bool useFadeManager = !useOverlay && FadeManager.Instance != null;
 
             Debug.Log(
                 $"[KoSequenceController] ラウンド間フェード判定: Fade Between Rounds={fadeBetweenRounds}, " +
