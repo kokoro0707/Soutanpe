@@ -156,6 +156,8 @@ namespace PersonaMenuUI
         /// </summary>
         private bool UseItemSlashFlashes => itemSlashFlashes != null && itemSlashFlashes.Length > 0 && menuItems != null && itemSlashFlashes.Length == menuItems.Length;
 
+        private bool started;
+
         private void Start()
         {
             if (menuItems == null || menuItems.Length == 0)
@@ -165,16 +167,85 @@ namespace PersonaMenuUI
                 return;
             }
 
+            started = true;
+            ResetVisualState();
+        }
+
+        /// <summary>
+        /// パネルが再表示(SetActive(true))された時、Start()は呼ばれないので、
+        /// ここで表示状態を選択中の項目に合わせて作り直す。
+        /// (非表示の間にコルーチンが止まるため、演出の途中状態が残ってバグって見える対策)
+        /// </summary>
+        private void OnEnable()
+        {
+            if (started) ResetVisualState();
+        }
+
+        private void OnDisable()
+        {
+            // 非表示になるとコルーチンは止まる。途中のまま固まらないよう、きれいな状態に戻しておく
+            StopAllAnimations();
+            HideAllSlashFlashesImmediate();
+            ResetItemCursorScales();
+        }
+
+        /// <summary>
+        /// 選択中(CurrentIndex)に合わせて、カーソル・スラッシュ・文字の拡大などを
+        /// 演出の途中状態を残さず、即座にきれいな状態へ戻す。
+        /// 外部(GameModePanelなど)がモードを初期化した後に呼んでもよい公開メソッド。
+        /// </summary>
+        public void ResetVisualState()
+        {
+            if (menuItems == null || menuItems.Length == 0) return;
+
+            StopAllAnimations();
+
             CurrentIndex = Mathf.Clamp(CurrentIndex, 0, menuItems.Length - 1);
 
-            if (UseItemCursors) ShowItemCursorImmediate(CurrentIndex);
-            else SnapCursorTo(CurrentIndex);
+            if (UseItemCursors)
+            {
+                ResetItemCursorScales();
+                ShowItemCursorImmediate(CurrentIndex);
+            }
+            else
+            {
+                SnapCursorTo(CurrentIndex);
+            }
 
             HideAllSlashFlashesImmediate();
 
             if (scaleSelectedLabel) ShowLabelScaleImmediate(CurrentIndex);
 
             UpdateLabelStyles();
+        }
+
+        /// <summary>
+        /// 指定した項目を、演出なし・イベントなしで即座に選択状態にする
+        /// (画面を開き直した時の初期位置合わせ用)。
+        /// </summary>
+        public void SetIndexImmediate(int index)
+        {
+            if (menuItems == null || menuItems.Length == 0) return;
+            CurrentIndex = Mathf.Clamp(index, 0, menuItems.Length - 1);
+            ResetVisualState();
+        }
+
+        private void StopAllAnimations()
+        {
+            if (moveRoutine != null) { StopCoroutine(moveRoutine); moveRoutine = null; }
+            if (slashRoutine != null) { StopCoroutine(slashRoutine); slashRoutine = null; }
+            if (itemCursorRoutine != null) { StopCoroutine(itemCursorRoutine); itemCursorRoutine = null; }
+            if (labelScaleRoutine != null) { StopCoroutine(labelScaleRoutine); labelScaleRoutine = null; }
+        }
+
+        private void ResetItemCursorScales()
+        {
+            if (itemCursors == null) return;
+
+            for (int i = 0; i < itemCursors.Length; i++)
+            {
+                if (itemCursors[i] != null) itemCursors[i].localScale = Vector3.one;
+            }
         }
 
         private void Update()
@@ -300,7 +371,11 @@ namespace PersonaMenuUI
 
             if (flash == null) return;
 
+            // 前のスラッシュが再生途中だと、コルーチンを止めただけではそのオブジェクトが
+            // 半透明・途中の幅のまま表示され続けてしまう(画面に残る灰色の斜めボックスの原因)。
+            // 先にすべて非表示にしてから再生する
             if (slashRoutine != null) StopCoroutine(slashRoutine);
+            HideAllSlashFlashesImmediate();
             slashRoutine = StartCoroutine(SlashFlashRoutine(flash, repositionTarget));
         }
 
@@ -326,6 +401,25 @@ namespace PersonaMenuUI
                     itemSlashFlashes[i].gameObject.SetActive(false);
                 }
             }
+
+            // 途中で止まった場合の幅・透明度を元に戻しておく
+            RestoreFlashSize(slashFlash);
+            if (itemSlashFlashes != null)
+            {
+                for (int i = 0; i < itemSlashFlashes.Length; i++) RestoreFlashSize(itemSlashFlashes[i]);
+            }
+        }
+
+        private void RestoreFlashSize(SlantedRect flash)
+        {
+            if (flash == null) return;
+
+            RectTransform rt = flash.rectTransform;
+            rt.sizeDelta = new Vector2(slashFullWidth, rt.sizeDelta.y);
+
+            Color c = slashColor;
+            c.a = 0f;
+            flash.color = c;
         }
 
         /// <summary>
@@ -357,6 +451,13 @@ namespace PersonaMenuUI
 
             RectTransform newRt = (newIndex >= 0 && newIndex < menuLabels.Length && menuLabels[newIndex] != null) ? menuLabels[newIndex].rectTransform : null;
             RectTransform oldRt = (oldIndex >= 0 && oldIndex < menuLabels.Length && menuLabels[oldIndex] != null) ? menuLabels[oldIndex].rectTransform : null;
+
+            // 切替が速い時に、途中の拡大率のまま残った項目がないよう、関係ない項目は等倍に戻す
+            for (int i = 0; i < menuLabels.Length; i++)
+            {
+                if (menuLabels[i] == null || i == newIndex || i == oldIndex) continue;
+                menuLabels[i].rectTransform.localScale = Vector3.one;
+            }
 
             if (labelScaleDuration <= 0f)
             {
@@ -425,6 +526,7 @@ namespace PersonaMenuUI
             {
                 if (itemCursors[i] == null) continue;
                 itemCursors[i].gameObject.SetActive(i == index);
+                itemCursors[i].localScale = Vector3.one; // ポップ途中で切り替わった時に拡大したまま残らないように
             }
 
             RectTransform target = itemCursors[index];
