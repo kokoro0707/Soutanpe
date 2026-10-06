@@ -158,6 +158,45 @@ namespace PersonaMenuUI
 
         private bool started;
 
+        // Inspectorで設定した「元の拡大率」(例: Scale X=3 で横に伸ばしたカーソル)を覚えておく。
+        // 以前は演出のたびに Scale を (1,1,1) へ強制していたため、設計した形が崩れていた。
+        private readonly System.Collections.Generic.Dictionary<RectTransform, Vector3> baseScales =
+            new System.Collections.Generic.Dictionary<RectTransform, Vector3>();
+
+        private void Awake()
+        {
+            CaptureBaseScales();
+        }
+
+        private void CaptureBaseScales()
+        {
+            baseScales.Clear();
+
+            if (itemCursors != null)
+            {
+                foreach (RectTransform rt in itemCursors)
+                    if (rt != null) baseScales[rt] = rt.localScale;
+            }
+
+            if (menuLabels != null)
+            {
+                foreach (TMP_Text label in menuLabels)
+                    if (label != null) baseScales[label.rectTransform] = label.rectTransform.localScale;
+            }
+        }
+
+        private Vector3 BaseScale(RectTransform rt)
+        {
+            return baseScales.TryGetValue(rt, out Vector3 v) ? v : Vector3.one;
+        }
+
+        /// <summary>元の拡大率に倍率を掛けた値(元がScale X=3なら、1.15倍で X=3.45)。</summary>
+        private Vector3 ScaledFromBase(RectTransform rt, float multiplier)
+        {
+            Vector3 b = BaseScale(rt);
+            return new Vector3(b.x * multiplier, b.y * multiplier, b.z);
+        }
+
         private void Start()
         {
             if (menuItems == null || menuItems.Length == 0)
@@ -244,7 +283,7 @@ namespace PersonaMenuUI
 
             for (int i = 0; i < itemCursors.Length; i++)
             {
-                if (itemCursors[i] != null) itemCursors[i].localScale = Vector3.one;
+                if (itemCursors[i] != null) itemCursors[i].localScale = BaseScale(itemCursors[i]);
             }
         }
 
@@ -434,7 +473,7 @@ namespace PersonaMenuUI
             {
                 if (menuLabels[i] == null) continue;
                 float s = i == index ? selectedLabelScale : 1f;
-                menuLabels[i].rectTransform.localScale = new Vector3(s, s, 1f);
+                menuLabels[i].rectTransform.localScale = ScaledFromBase(menuLabels[i].rectTransform, s);
             }
 
             previousLabelIndex = index;
@@ -456,18 +495,18 @@ namespace PersonaMenuUI
             for (int i = 0; i < menuLabels.Length; i++)
             {
                 if (menuLabels[i] == null || i == newIndex || i == oldIndex) continue;
-                menuLabels[i].rectTransform.localScale = Vector3.one;
+                menuLabels[i].rectTransform.localScale = BaseScale(menuLabels[i].rectTransform);
             }
 
             if (labelScaleDuration <= 0f)
             {
-                if (newRt != null) newRt.localScale = new Vector3(selectedLabelScale, selectedLabelScale, 1f);
-                if (oldRt != null) oldRt.localScale = Vector3.one;
+                if (newRt != null) newRt.localScale = ScaledFromBase(newRt, selectedLabelScale);
+                if (oldRt != null) oldRt.localScale = BaseScale(oldRt);
                 yield break;
             }
 
-            float newStart = newRt != null ? newRt.localScale.x : 1f;
-            float oldStart = oldRt != null ? oldRt.localScale.x : 1f;
+            float newStart = newRt != null ? newRt.localScale.x / Mathf.Max(0.0001f, BaseScale(newRt).x) : 1f;
+            float oldStart = oldRt != null ? oldRt.localScale.x / Mathf.Max(0.0001f, BaseScale(oldRt).x) : 1f;
             float t = 0f;
 
             while (t < labelScaleDuration)
@@ -478,20 +517,20 @@ namespace PersonaMenuUI
                 if (newRt != null)
                 {
                     float s = Mathf.Lerp(newStart, selectedLabelScale, u);
-                    newRt.localScale = new Vector3(s, s, 1f);
+                    newRt.localScale = ScaledFromBase(newRt, s);
                 }
 
                 if (oldRt != null)
                 {
                     float s = Mathf.Lerp(oldStart, 1f, u);
-                    oldRt.localScale = new Vector3(s, s, 1f);
+                    oldRt.localScale = ScaledFromBase(oldRt, s);
                 }
 
                 yield return null;
             }
 
-            if (newRt != null) newRt.localScale = new Vector3(selectedLabelScale, selectedLabelScale, 1f);
-            if (oldRt != null) oldRt.localScale = Vector3.one;
+            if (newRt != null) newRt.localScale = ScaledFromBase(newRt, selectedLabelScale);
+            if (oldRt != null) oldRt.localScale = BaseScale(oldRt);
         }
 
         private void SnapCursorTo(int index)
@@ -510,7 +549,7 @@ namespace PersonaMenuUI
             {
                 if (itemCursors[i] == null) continue;
                 itemCursors[i].gameObject.SetActive(i == index);
-                itemCursors[i].localScale = Vector3.one;
+                itemCursors[i].localScale = BaseScale(itemCursors[i]);
             }
         }
 
@@ -526,7 +565,7 @@ namespace PersonaMenuUI
             {
                 if (itemCursors[i] == null) continue;
                 itemCursors[i].gameObject.SetActive(i == index);
-                itemCursors[i].localScale = Vector3.one; // ポップ途中で切り替わった時に拡大したまま残らないように
+                itemCursors[i].localScale = BaseScale(itemCursors[i]); // ポップ途中で切り替わった時に拡大したまま残らないように
             }
 
             RectTransform target = itemCursors[index];
@@ -534,7 +573,7 @@ namespace PersonaMenuUI
 
             if (itemCursorPopDuration <= 0f)
             {
-                target.localScale = Vector3.one;
+                target.localScale = BaseScale(target);
                 yield break;
             }
 
@@ -544,11 +583,11 @@ namespace PersonaMenuUI
                 t += Time.unscaledDeltaTime;
                 float u = Mathf.Clamp01(t / itemCursorPopDuration);
                 float scale = Mathf.Lerp(itemCursorPopScale, 1f, u);
-                target.localScale = new Vector3(scale, scale, 1f);
+                target.localScale = ScaledFromBase(target, scale);
                 yield return null;
             }
 
-            target.localScale = Vector3.one;
+            target.localScale = BaseScale(target);
         }
 
         /// <summary>
