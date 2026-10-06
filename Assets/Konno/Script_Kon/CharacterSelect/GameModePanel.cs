@@ -34,6 +34,29 @@ public class GameModePanel : MonoBehaviour
     [Tooltip("決定キー(複数指定可)")]
     [SerializeField] private Key[] keyboardDecideKeys = { Key.A, Key.Enter, Key.Space };
 
+    [System.Serializable]
+    public class ItemSceneLink
+    {
+        [Tooltip("Inspector上で分かりやすくするためのメモ(処理には使わない)")]
+        public string label;
+
+        [Tooltip("この項目を決定した時に遷移するシーン名(Build Settingsに登録済みのもの)。" +
+                 "空欄なら従来どおり(キャラクター選択パネルへ進む)")]
+        public string sceneName;
+
+        [Tooltip("ONにすると、シーン遷移の前にゲームモードをModeに設定する")]
+        public bool setGameMode;
+
+        [Tooltip("Set Game ModeがONの時に設定するモード")]
+        public GameModeManager.Mode mode = GameModeManager.Mode.PlayerVsPlayer;
+    }
+
+    [Header("項目ごとのシーン遷移 (任意)")]
+    [Tooltip("Menu Textsと同じ順番で設定する(要素0=1つ目の項目)。" +
+             "Scene Nameを入れた項目を決定すると、キャラ選択パネルではなく、そのシーンへフェードして遷移する。" +
+             "要素数が足りない/Scene Nameが空の項目は、従来どおりの動作(0=Player vs Player、それ以外=Player vs CPU)")]
+    [SerializeField] private ItemSceneLink[] itemSceneLinks;
+
     private int currentIndex = 0;
     private bool decided = false;
     private Gamepad player1Pad;
@@ -182,7 +205,64 @@ public class GameModePanel : MonoBehaviour
 
     private void Decide()
     {
+        // この項目にシーン遷移が設定されていれば、そのシーンへ移動する
+        ItemSceneLink link = GetSceneLink(currentIndex);
+        Debug.Log(
+            $"[GameModePanel] 決定: index={currentIndex}, " +
+            $"シーン設定={(link != null ? link.sceneName : "なし(キャラ選択へ進みます)")}, " +
+            $"Item Scene Links の要素数={(itemSceneLinks == null ? 0 : itemSceneLinks.Length)}", this);
+
+        if (link != null)
+        {
+            LoadLinkedScene(link);
+            return;
+        }
+
         StartCoroutine(DecideRoutine());
+    }
+
+    private ItemSceneLink GetSceneLink(int index)
+    {
+        if (itemSceneLinks == null || index < 0 || index >= itemSceneLinks.Length) return null;
+
+        ItemSceneLink link = itemSceneLinks[index];
+        if (link == null || string.IsNullOrWhiteSpace(link.sceneName)) return null;
+
+        return link;
+    }
+
+    private void LoadLinkedScene(ItemSceneLink link)
+    {
+        if (changingScene) return;
+
+        // Build Settingsに無いシーン名だと、遷移できずに止まる。原因が分かるよう先に確認する
+        if (!Application.CanStreamedLevelBeLoaded(link.sceneName))
+        {
+            Debug.LogError(
+                $"[GameModePanel] シーン '{link.sceneName}' を読み込めません。" +
+                "Build Settings(File > Build Profiles > Scene List)にシーンが登録されているか、" +
+                "Scene Nameの綴り(大文字小文字も)が正しいか確認してください。", this);
+            return;
+        }
+
+        changingScene = true;
+        decided = true;
+
+        if (link.setGameMode && GameModeManager.Instance != null)
+        {
+            GameModeManager.Instance.CurrentMode = link.mode;
+        }
+
+        Debug.Log($"モード選択 → シーン遷移: {link.sceneName}");
+
+        if (FadeManager.Instance != null)
+        {
+            FadeManager.Instance.FadeToScene(link.sceneName);
+        }
+        else
+        {
+            SceneManager.LoadScene(link.sceneName);
+        }
     }
     private IEnumerator DecideRoutine()
     {
@@ -219,6 +299,9 @@ public class GameModePanel : MonoBehaviour
         decided = false;
         changingScene = false;
         currentIndex = 0;
+
+        // 画面を開き直した時、カーソルの途中状態や前回の選択位置を残さず先頭へ合わせる
+        if (cursor != null) cursor.SetIndexImmediate(0);
 
         UpdateSelection();
 
