@@ -15,6 +15,9 @@ EditorBuildSettings:
     path: Assets/Konno/CharacterSelection.unity
     guid: 4ff673284ac6d0043ae3301fd737aa08
   - enabled: 1
+    path: Assets/Saitou/scene/Tutorial.unity
+    guid: a2e2fdc2018b7b84d9130bfc8feb8aa1
+  - enabled: 1
     path: Assets/Kokoro/Scene/Character.unity
     guid: 87e1d9479c2044a4883a7ed17b98572b
   m_configObjects:
