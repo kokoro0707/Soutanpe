@@ -65,6 +65,32 @@ public sealed class MoveData : ScriptableObject
     [SerializeField, Min(0)]
     private int spCost = 0;
 
+    [Header("技エフェクト")]
+    [SerializeField]
+    private GameObject effectPrefab;
+
+    [SerializeField]
+    private Vector2 effectOffset = Vector2.zero;
+
+    public GameObject EffectPrefab => effectPrefab;
+    public Vector2 EffectOffset => effectOffset;
+
+    [Header("攻撃中の打ち上げ移動")]
+    [SerializeField]
+    private bool useLaunch;
+
+    [SerializeField, Min(0f)]
+    private float launchVelocityY = 8f;
+
+    [SerializeField, Min(0)]
+    private int launchFrame = 3;
+
+    public bool UseLaunch => useLaunch;
+    public float LaunchVelocityY => launchVelocityY;
+    public int LaunchFrame => launchFrame;
+
+
+
     [Header("攻撃中の移動")]
     [SerializeField]
     private bool useMove;
