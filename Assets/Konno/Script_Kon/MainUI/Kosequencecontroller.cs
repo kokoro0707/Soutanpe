@@ -295,6 +295,10 @@ public class KoSequenceController : MonoBehaviour
                     StartCoroutine(FadeOverlayRoutine(1f, 0f));
             }
 
+            Debug.Log(
+                $"[KoSequenceController] ラウンド結果登録後: スコア P1={matchScoreManager.Player1Score} - P2={matchScoreManager.Player2Score}, " +
+                $"試合終了={matchScoreManager.MatchIsOver}, 現在ラウンド={matchScoreManager.CurrentRound}", this);
+
             if (matchScoreManager.MatchIsOver)
             {
                 yield return ShowResultRoutine();
@@ -391,6 +395,14 @@ public class KoSequenceController : MonoBehaviour
     /// </summary>
     private IEnumerator ShowResultRoutine()
     {
+        Debug.Log(
+            $"[KoSequenceController] リザルト表示を開始: Result Panel={(resultPanel != null ? resultPanel.name : "未設定")}", this);
+
+        if (resultPanel == null)
+        {
+            Debug.LogError("[KoSequenceController] Result Panel が未設定のため、リザルトを表示できません。", this);
+        }
+
         // K.Oの文字はリザルト画面では表示しない
         if (koRoot != null)
         {

@@ -57,6 +57,17 @@ public class GameModePanel : MonoBehaviour
              "要素数が足りない/Scene Nameが空の項目は、従来どおりの動作(0=Player vs Player、それ以外=Player vs CPU)")]
     [SerializeField] private ItemSceneLink[] itemSceneLinks;
 
+    [Header("スティック操作")]
+    [Tooltip("ONにすると、左スティックの上下でも項目を移動できる(キー・十字キーも従来どおり)")]
+    [SerializeField] private bool useStick = true;
+    [Tooltip("スティックを何割倒したら入力として扱うか(0から1)")]
+    [SerializeField, Range(0.1f, 0.95f)] private float stickThreshold = 0.6f;
+    [SerializeField] private bool stickRepeat = true;
+    [SerializeField] private float stickRepeatDelay = 0.4f;
+    [SerializeField] private float stickRepeatInterval = 0.15f;
+
+    private readonly StickNavigator stick = new StickNavigator();
+
     private int currentIndex = 0;
     private bool decided = false;
     private Gamepad player1Pad;
@@ -101,6 +112,13 @@ public class GameModePanel : MonoBehaviour
             return;
 
         player1Pad = Gamepad.current;
+
+        // スティックの状態は、決定後も含めて毎フレーム更新しておく
+        stick.Threshold = stickThreshold;
+        stick.UseRepeat = stickRepeat;
+        stick.RepeatDelay = stickRepeatDelay;
+        stick.RepeatInterval = stickRepeatInterval;
+        stick.Poll();
 
         // 戻る(キーボードはEscape、ゲームパッドはBボタン)
         if (Keyboard.current.escapeKey.wasPressedThisFrame ||
@@ -153,14 +171,14 @@ public class GameModePanel : MonoBehaviour
     {
         bool key = Keyboard.current != null && Keyboard.current[keyboardUpKey].wasPressedThisFrame;
         bool gp = player1Pad != null && player1Pad.dpad.up.wasPressedThisFrame;
-        return key || gp;
+        return key || gp || (useStick && stick.UpPressed);
     }
 
     private bool IsDownPressed()
     {
         bool key = Keyboard.current != null && Keyboard.current[keyboardDownKey].wasPressedThisFrame;
         bool gp = player1Pad != null && player1Pad.dpad.down.wasPressedThisFrame;
-        return key || gp;
+        return key || gp || (useStick && stick.DownPressed);
     }
 
     private bool IsDecidePressed()
