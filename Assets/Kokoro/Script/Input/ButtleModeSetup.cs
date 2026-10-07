@@ -1,14 +1,18 @@
 using UnityEngine;
 
 /// <summary>
-/// 選択されたゲームモードに応じて
-/// Player2の操作方法を変更する。
+/// 選択されたゲームモードとキャラクターを
+/// Battleシーンへ反映する。
 /// </summary>
 public sealed class BattleModeSetup : MonoBehaviour
 {
     [Header("Player1")]
     [SerializeField]
     private Transform player1;
+
+    [SerializeField]
+    private FighterCharacterSetup player1CharacterSetup;
+
 
     [Header("Player2")]
     [SerializeField]
@@ -20,10 +24,72 @@ public sealed class BattleModeSetup : MonoBehaviour
     [SerializeField]
     private CPUFighterInputSource player2CPUInput;
 
+    [SerializeField]
+    private FighterCharacterSetup player2CharacterSetup;
+
 
     private void Start()
     {
+        // キャラクター選択結果を反映
+        SetupCharacters();
+
+        // PvP / CPUを設定
         SetupBattleMode();
+    }
+
+
+    /// <summary>
+    /// キャラクター選択画面で選んだキャラクターを
+    /// Player1 / Player2へ反映する。
+    /// </summary>
+    private void SetupCharacters()
+    {
+        if (CharacterSelectionData.Instance == null)
+        {
+            Debug.LogWarning(
+                "CharacterSelectionDataがありません。" +
+                "InspectorのCharacterDataで開始します。",
+                this
+            );
+
+            return;
+        }
+
+        FighterCharacterData p1Data =
+            CharacterSelectionData.Instance.Player1Character;
+
+        FighterCharacterData p2Data =
+            CharacterSelectionData.Instance.Player2Character;
+
+
+        // Player1
+        if (player1CharacterSetup != null &&
+            p1Data != null)
+        {
+            player1CharacterSetup.SetCharacterData(
+                p1Data
+            );
+
+            Debug.Log(
+                $"Player1：{p1Data.CharacterName}を適用",
+                this
+            );
+        }
+
+
+        // Player2 / CPU
+        if (player2CharacterSetup != null &&
+            p2Data != null)
+        {
+            player2CharacterSetup.SetCharacterData(
+                p2Data
+            );
+
+            Debug.Log(
+                $"Player2：{p2Data.CharacterName}を適用",
+                this
+            );
+        }
     }
 
 
@@ -38,7 +104,6 @@ public sealed class BattleModeSetup : MonoBehaviour
             SetupPvP();
             return;
         }
-
 
         switch (GameModeManager.Instance.CurrentMode)
         {

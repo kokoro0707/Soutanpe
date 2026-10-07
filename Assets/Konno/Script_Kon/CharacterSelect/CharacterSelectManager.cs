@@ -48,8 +48,9 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private GameObject characterRoot;  // キャラクター選択パネルのルートオブジェクト
     [SerializeField] private GameModePanel gameModeManagerPanel;
 
-    [Header("キャラクターPrefab")]
-    [SerializeField] private GameObject[] characterPrefabs;
+    [Header("バトル用キャラクターデータ")]
+    [SerializeField]
+    private FighterCharacterData[] characterDataList;
     [Header("キャラクターアイコン画像")]
     [SerializeField] private Sprite[] characterIconSprites;
     [Header("キャラクター表示画像")]
@@ -332,21 +333,14 @@ Color.green
             player1Decided = true;
             PlaySe(decideSe);
 
-            //if (player1Index >= 0 && player1Index < characterPrefabs.Length)
-            //{
-            //    CharacterSelectionData.Instance.player1Character =
-            //        characterPrefabs[player1Index];
-            //}
-            //else
-            //{
-            //    Debug.LogError(
-            //        "Player1のPrefabが設定されていません。Index = " +
-            //        player1Index
-            //    );
-
-            //    player1Decided = false;
-            //    return;
-            //}
+            if (CharacterSelectionData.Instance != null &&
+                player1Index >= 0 &&
+                player1Index < characterDataList.Length)
+            {
+                CharacterSelectionData.Instance.SetPlayer1Character(
+                    characterDataList[player1Index]
+                );
+            }
             // 仮:Prefab保存なし
             Debug.Log("Player1 キャラクター決定 Index = " + player1Index);
 
@@ -404,21 +398,16 @@ Color.green
         {
             player2Decided = true;
             PlaySe(decideSe);
-            //if (player2Index >= 0 && player2Index < characterPrefabs.Length)
-            //{
-            //    CharacterSelectionData.Instance.player2Character =
-            //        characterPrefabs[player2Index];
-            //}
-            //else
-            //{
-            //    Debug.LogError(
-            //        "Player2のPrefabが設定されていません。Index = " +
-            //        player2Index
-            //    );
 
-            //    player2Decided = false;
-            //    return;
-            //}
+            if (CharacterSelectionData.Instance != null &&
+                player2Index >= 0 &&
+                player2Index < characterDataList.Length)
+            {
+                CharacterSelectionData.Instance.SetPlayer2Character(
+                    characterDataList[player2Index]
+                );
+            }
+
             // 仮:Prefab保存なし
             Debug.Log("Player2 キャラクター決定 Index = " + player2Index);
             UpdateSelectionColor();
@@ -472,22 +461,15 @@ Color.green
         {
             player2Decided = true;
             PlaySe(decideSe);
-            // CPUが選んだキャラクターを保存
-            //if (player2Index >= 0 && player2Index < characterPrefabs.Length)
-            //{
-            //    CharacterSelectionData.Instance.player2Character =
-            //        characterPrefabs[player2Index];
-            //}
-            //else
-            //{
-            //    Debug.LogError(
-            //        "CPUのPrefabが設定されていません。Index = " +
-            //        player2Index
-            //    );
 
-            //    player2Decided = false;
-            //    return;
-            //}
+            if (CharacterSelectionData.Instance != null &&
+                player2Index >= 0 &&
+                player2Index < characterDataList.Length)
+            {
+                CharacterSelectionData.Instance.SetPlayer2Character(
+                    characterDataList[player2Index]
+                );
+            }
             // 仮:Prefab保存なし
             Debug.Log("CPU キャラクター決定 Index = " + player2Index);
             Debug.Log("CPUキャラクター決定");
@@ -871,23 +853,44 @@ Color.green
             CloseConfirmPanel();
         }
     }
+
     private void StartBattle()
     {
         if (isChangingScene)
+        {
             return;
+        }
+
+
+        // =========================
+        // 選択キャラクター保存
+        // =========================
+
+        if (!SaveSelectedCharacters())
+        {
+            return;
+        }
+
 
         Debug.Log("決定 → バトル開始");
 
+
         isChangingScene = true;
         isConfirming = false;
+
 
         if (confirmPanel != null)
         {
             confirmPanel.SetActive(false);
         }
 
-        FadeManager.Instance.FadeToScene(battleSceneName);
+
+        FadeManager.Instance.FadeToScene(
+            battleSceneName
+        );
     }
+
+
     private void ShowConfirmPanel()
     {
         if (isConfirming)
@@ -966,4 +969,80 @@ Color.green
             }
         }
     }
+
+    /// <summary>
+    /// 現在選択されているキャラクターを保存する。
+    /// </summary>
+    private bool SaveSelectedCharacters()
+    {
+        if (CharacterSelectionData.Instance == null)
+        {
+            Debug.LogError(
+                "CharacterSelectionDataが存在しません。",
+                this
+            );
+
+            return false;
+        }
+
+
+        if (characterDataList == null ||
+            characterDataList.Length == 0)
+        {
+            Debug.LogError(
+                "Character Data Listが設定されていません。",
+                this
+            );
+
+            return false;
+        }
+
+
+        // P1
+        if (player1Index < 0 ||
+            player1Index >= characterDataList.Length ||
+            characterDataList[player1Index] == null)
+        {
+            Debug.LogError(
+                $"P1のCharacterDataがありません。Index={player1Index}",
+                this
+            );
+
+            return false;
+        }
+
+
+        // P2 / CPU
+        if (player2Index < 0 ||
+            player2Index >= characterDataList.Length ||
+            characterDataList[player2Index] == null)
+        {
+            Debug.LogError(
+                $"P2のCharacterDataがありません。Index={player2Index}",
+                this
+            );
+
+            return false;
+        }
+
+
+        CharacterSelectionData.Instance.SetPlayer1Character(
+            characterDataList[player1Index]
+        );
+
+        CharacterSelectionData.Instance.SetPlayer2Character(
+            characterDataList[player2Index]
+        );
+
+
+        Debug.Log(
+            $"キャラクター保存完了 " +
+            $"P1={characterDataList[player1Index].CharacterName} " +
+            $"P2={characterDataList[player2Index].CharacterName}",
+            this
+        );
+
+        return true;
+    }
+
 }

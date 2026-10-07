@@ -24,5 +24,5 @@ MonoBehaviour:
   backStepFrames: 12
   dashSpeed: 7
   moveSet: {fileID: 11400000, guid: 54ebdcb5b6afa454c868eecebcf2fa82, type: 2}
-  grabData: {fileID: 0}
-  animatorController: {fileID: 0}
+  grabData: {fileID: 11400000, guid: fddc191c1326e38459b21b1b527481ef, type: 2}
+  animatorController: {fileID: 9100000, guid: 9bf591964a00f2045ac0e36256ca3bfe, type: 2}

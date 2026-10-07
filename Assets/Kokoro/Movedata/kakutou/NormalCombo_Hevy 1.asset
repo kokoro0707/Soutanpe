@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e228c8bafc338f408ff1099e2b24931, type: 3}
+  m_Name: NormalCombo_Hevy 1
+  m_EditorClassIdentifier: Assembly-CSharp::NormalComboData
+  steps:
+  - move: {fileID: 11400000, guid: 6184ea48f6dc78e46b7f00756b7bc270, type: 2}
+    cancelStartFrame: 16
+    cancelEndFrame: 19
+  - move: {fileID: 11400000, guid: c4267ed94bb25644b99589401ae34ac9, type: 2}
+    cancelStartFrame: 11
+    cancelEndFrame: 14
+  - move: {fileID: 11400000, guid: abcf2b14cd0a21c49932483ca9524401, type: 2}
+    cancelStartFrame: 0
+    cancelEndFrame: 0
