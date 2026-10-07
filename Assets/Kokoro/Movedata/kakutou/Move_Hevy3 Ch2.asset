@@ -13,16 +13,16 @@ MonoBehaviour:
   m_Name: Move_Hevy3 Ch2
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
   moveName: "\u5F37\u30B3\u30F3\u30DC3"
-  startupFrames: 7
-  activeFrames: 5
-  recoveryFrames: 8
+  startupFrames: 4
+  activeFrames: 4
+  recoveryFrames: 12
   damage: 100
   hitStunFrames: 18
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
   hitboxOffset: {x: 1, y: 0}
-  animationIndex: 12
+  animationIndex: 13
   spCost: 0
   useMove: 0
   moveSpeed: 15

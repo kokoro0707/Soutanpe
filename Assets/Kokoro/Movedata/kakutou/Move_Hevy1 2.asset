@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
   moveName: "\u5F37\u30B3\u30F3\u30DC1"
   startupFrames: 5
-  activeFrames: 4
-  recoveryFrames: 6
+  activeFrames: 3
+  recoveryFrames: 10
   damage: 100
   hitStunFrames: 18
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
   hitboxOffset: {x: 1.6, y: 1}
-  animationIndex: 31
+  animationIndex: 11
   spCost: 0
   useMove: 0
   moveSpeed: 15

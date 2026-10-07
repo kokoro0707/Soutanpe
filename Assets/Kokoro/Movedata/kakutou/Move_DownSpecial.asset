@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
   moveName: "\u4E0B\u5FC5\u6BBA"
   startupFrames: 5
-  activeFrames: 3
+  activeFrames: 4
   recoveryFrames: 10
   damage: 100
   hitStunFrames: 18
@@ -24,6 +24,11 @@ MonoBehaviour:
   hitboxOffset: {x: 1, y: 0}
   animationIndex: 32
   spCost: 0
+  effectPrefab: {fileID: 0}
+  effectOffset: {x: 0, y: 0}
+  useLaunch: 1
+  launchVelocityY: 15
+  launchFrame: 6
   useMove: 0
   moveSpeed: 15
   moveStartFrame: 0

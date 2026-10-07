@@ -532,6 +532,34 @@ public sealed class FighterMotor : MonoBehaviour
             );
     }
 
+    /// <summary>
+    /// 攻撃中に上方向へ飛び上がる。
+    /// 昇竜拳などで使用する。
+    /// </summary>
+    public void ApplyAttackLaunch(
+        float velocityY
+    )
+    {
+        if (rigidBody2D == null)
+        {
+            return;
+        }
+
+        Vector2 velocity =
+            rigidBody2D.linearVelocity;
+
+        velocity.y =
+            Mathf.Max(0f, velocityY);
+
+        rigidBody2D.linearVelocity =
+            velocity;
+
+        // 空中状態へ
+        CurrentMode =
+            FighterLocomotionMode.Air;
+    }
+
+
 
 
     private void OnDrawGizmosSelected()

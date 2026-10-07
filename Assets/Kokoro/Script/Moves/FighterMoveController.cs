@@ -55,6 +55,7 @@ public sealed class FighterMoveController : MonoBehaviour
 
     private bool isIgnoringOpponentCollision;
 
+    private bool attackLaunchUsed;
 
 
 
@@ -87,6 +88,8 @@ public sealed class FighterMoveController : MonoBehaviour
 
     //1ジャンプ中に空中攻撃を使用したか
     private bool airAttackUsed;
+
+    private GameObject currentMoveEffect;
 
     public bool IsAttacking =>
         currentMove != null;
@@ -654,6 +657,8 @@ public sealed class FighterMoveController : MonoBehaviour
         // ★前の技の特殊移動を解除
         motor?.ClearAttackMoveVelocity();
 
+        attackLaunchUsed = false;
+
         if (move == null)
         {
             ResetCombo();
@@ -699,7 +704,9 @@ public sealed class FighterMoveController : MonoBehaviour
 
         UpdateAttackHitbox();
 
-        UpdateForwardSpecialVisual();
+        UpdateMoveEffect();
+
+        //UpdateForwardSpecialVisual();
 
         // 弱・強コンボ
         if (TryAdvanceNormalCombo())
@@ -923,6 +930,7 @@ public sealed class FighterMoveController : MonoBehaviour
     /// </summary>
     private void EndMove()
     {
+        HideMoveEffect();
         // ★SP攻撃だったかを先に保存
         bool wasSPAttack =
             moveSet != null &&
@@ -995,6 +1003,7 @@ public sealed class FighterMoveController : MonoBehaviour
         ResetCombo();
 
         comboResetCount = 0;
+        HideMoveEffect();
     }
 
     /// <summary>
@@ -1193,6 +1202,23 @@ public sealed class FighterMoveController : MonoBehaviour
         {
             motor.ClearAttackMoveVelocity();
         }
+
+        // =========================
+        // ★昇竜拳などの上方向移動
+        // =========================
+
+        if (currentMove.UseLaunch &&
+            !attackLaunchUsed &&
+            currentMoveFrame >=
+                currentMove.LaunchFrame)
+        {
+            motor.ApplyAttackLaunch(
+                currentMove.LaunchVelocityY
+            );
+
+            attackLaunchUsed = true;
+        }
+
     }
     /// <summary>
     /// SP攻撃中、相手の本体Colliderを貫通できるようにする。
@@ -1307,5 +1333,81 @@ public sealed class FighterMoveController : MonoBehaviour
             this
         );
     }
+
+
+
+    private void UpdateMoveEffect()
+    {
+        if (currentMove == null)
+        {
+            HideMoveEffect();
+            return;
+        }
+
+        // ActiveFrame以外は消す
+        if (!currentMove.IsActiveFrame(currentMoveFrame))
+        {
+            HideMoveEffect();
+            return;
+        }
+
+        // エフェクトが設定されていない技
+        if (currentMove.EffectPrefab == null)
+        {
+            return;
+        }
+
+        // すでに出ているなら作り直さない
+        if (currentMoveEffect != null)
+        {
+            return;
+        }
+
+        Vector2 offset =
+            currentMove.EffectOffset;
+
+        // 左向きならXを反転
+        offset.x *= attackFacingDirection;
+
+        Vector3 position =
+            transform.position +
+            new Vector3(
+                offset.x,
+                offset.y,
+                0f
+            );
+
+        currentMoveEffect =
+            Instantiate(
+                currentMove.EffectPrefab,
+                position,
+                Quaternion.identity,
+                transform
+            );
+
+        // 左向きならエフェクトも左右反転
+        Vector3 scale =
+            currentMoveEffect.transform.localScale;
+
+        scale.x =
+            Mathf.Abs(scale.x) *
+            attackFacingDirection;
+
+        currentMoveEffect.transform.localScale =
+            scale;
+    }
+
+    private void HideMoveEffect()
+    {
+        if (currentMoveEffect == null)
+        {
+            return;
+        }
+
+        Destroy(currentMoveEffect);
+
+        currentMoveEffect = null;
+    }
+
 
 }
