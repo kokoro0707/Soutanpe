@@ -60,6 +60,16 @@ public class GameResultManager : MonoBehaviour
              "リザルト表示そのものはKoSequenceControllerが行う")]
     [SerializeField] private MatchScoreManager matchScoreManager;
 
+    [Header("スティック操作")]
+    [Tooltip("ONにすると、左スティックでも項目を移動できる(左/上=前、右/下=次。キー・十字キーも従来どおり)")]
+    [SerializeField] private bool useStick = true;
+    [SerializeField, Range(0.1f, 0.95f)] private float stickThreshold = 0.6f;
+    [SerializeField] private bool stickRepeat = true;
+    [SerializeField] private float stickRepeatDelay = 0.4f;
+    [SerializeField] private float stickRepeatInterval = 0.15f;
+
+    private readonly StickNavigator stick = new StickNavigator();
+
     private bool wasShownLastFrame = false;
     private bool isGameOver = false;
     private bool isChangingScene = false;
@@ -88,6 +98,14 @@ public class GameResultManager : MonoBehaviour
 
     private void Update()
     {
+        // スティックの状態は常に更新しておく
+        // (リザルト表示の瞬間に倒しっぱなしでも、勝手に項目が動かないようにするため)
+        stick.Threshold = stickThreshold;
+        stick.UseRepeat = stickRepeat;
+        stick.RepeatDelay = stickRepeatDelay;
+        stick.RepeatInterval = stickRepeatInterval;
+        stick.Poll();
+
         // シーン遷移中は操作禁止
         if (isChangingScene)
             return;
@@ -165,7 +183,8 @@ public class GameResultManager : MonoBehaviour
                  Keyboard.current.downArrowKey.wasPressedThisFrame ||
                  Keyboard.current.sKey.wasPressedThisFrame)) ||
             (Gamepad.current != null &&
-                (Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.dpad.down.wasPressedThisFrame));
+                (Gamepad.current.dpad.right.wasPressedThisFrame || Gamepad.current.dpad.down.wasPressedThisFrame)) ||
+            (useStick && (stick.RightPressed || stick.DownPressed));
 
         // 十字キー(左/上)、WASDのW、ゲームパッドの左/上で前の項目へ
         bool movePrev =
@@ -174,7 +193,8 @@ public class GameResultManager : MonoBehaviour
                  Keyboard.current.upArrowKey.wasPressedThisFrame ||
                  Keyboard.current.wKey.wasPressedThisFrame)) ||
             (Gamepad.current != null &&
-                (Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.dpad.up.wasPressedThisFrame));
+                (Gamepad.current.dpad.left.wasPressedThisFrame || Gamepad.current.dpad.up.wasPressedThisFrame)) ||
+            (useStick && (stick.LeftPressed || stick.UpPressed));
 
         if (moveNext)
         {

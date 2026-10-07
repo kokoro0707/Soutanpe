@@ -74,6 +74,19 @@ public class CharacterSelectManager : MonoBehaviour
     [Tooltip("Player1の取消キー(決定の取り消しなど、ゲームパッドのBボタン相当)")]
     [SerializeField] private Key keyboardCancelKey = Key.Backspace;
 
+    [Header("スティック操作")]
+    [Tooltip("ONにすると、左スティックの左右でもカーソルを移動できる。" +
+             "P1(とCPU選択・確認パネル)は1台目のパッド、P2は2台目のパッドのスティックで操作する。" +
+             "キー・十字キーも従来どおり使える")]
+    [SerializeField] private bool useStick = true;
+    [SerializeField, Range(0.1f, 0.95f)] private float stickThreshold = 0.6f;
+    [SerializeField] private bool stickRepeat = true;
+    [SerializeField] private float stickRepeatDelay = 0.4f;
+    [SerializeField] private float stickRepeatInterval = 0.15f;
+
+    private readonly StickNavigator stick1 = new StickNavigator();
+    private readonly StickNavigator stick2 = new StickNavigator();
+
     [Header("バトル確認パネル")]
     [SerializeField] private GameObject confirmPanel;
     [SerializeField] private TMP_Text confirmText;
@@ -136,8 +149,29 @@ Color.green
             confirmPanel.SetActive(false);
         }
     }
+    private void PollSticks()
+    {
+        // 確認パネル表示中などは player1Pad が更新されないため、パッドはここで直接取得する
+        Gamepad pad1 = Gamepad.all.Count >= 1 ? Gamepad.all[0] : null;
+        Gamepad pad2 = Gamepad.all.Count >= 2 ? Gamepad.all[1] : null;
+
+        foreach (StickNavigator s in new[] { stick1, stick2 })
+        {
+            s.Threshold = stickThreshold;
+            s.UseRepeat = stickRepeat;
+            s.RepeatDelay = stickRepeatDelay;
+            s.RepeatInterval = stickRepeatInterval;
+        }
+
+        stick1.Poll(pad1);
+        stick2.Poll(pad2);
+    }
+
     private void Update()
     {
+        // スティックの状態は毎フレーム更新しておく(確認パネル表示中も含む)
+        PollSticks();
+
         // 確認パネルが開いている間
         // 確認パネル表示中
         if (isConfirming)
@@ -205,7 +239,8 @@ Color.green
             (Keyboard.current[keyboardLeftKey].wasPressedThisFrame ||
              Keyboard.current.aKey.wasPressedThisFrame);
         bool gp = pad != null && pad.dpad.left.wasPressedThisFrame;
-        return key || gp;
+        bool st = useStick && stick1.LeftPressed;
+        return key || gp || st;
     }
 
     private bool IsRightPressed(Gamepad pad)
@@ -214,7 +249,8 @@ Color.green
             (Keyboard.current[keyboardRightKey].wasPressedThisFrame ||
              Keyboard.current.dKey.wasPressedThisFrame);
         bool gp = pad != null && pad.dpad.right.wasPressedThisFrame;
-        return key || gp;
+        bool st = useStick && stick1.RightPressed;
+        return key || gp || st;
     }
 
     private bool IsDecidePressed(Gamepad pad)
@@ -376,7 +412,7 @@ Color.green
             return;
         }
 
-        if (player2Pad.dpad.left.wasPressedThisFrame)
+        if (player2Pad.dpad.left.wasPressedThisFrame || (useStick && stick2.LeftPressed))
         {
             player2Index--;
             if (player2Index < 0)
@@ -385,7 +421,7 @@ Color.green
             UpdateSelectionColor();
         }
 
-        if (player2Pad.dpad.right.wasPressedThisFrame)
+        if (player2Pad.dpad.right.wasPressedThisFrame || (useStick && stick2.RightPressed))
         {
             player2Index++;
             if (player2Index >= characterIcons.Length)

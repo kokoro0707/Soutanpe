@@ -36,12 +36,21 @@ public class StickNavigator
     private int heldDirection = 0;     // 0=なし 1=左 2=右 3=上 4=下
     private float nextRepeatTime;
 
-    /// <summary>毎フレーム1回、Update()内で呼ぶ。</summary>
+    /// <summary>毎フレーム1回、Update()内で呼ぶ(現在のゲームパッド=Gamepad.currentを読む)。</summary>
     public void Poll()
+    {
+        Poll(Gamepad.current);
+    }
+
+    /// <summary>
+    /// 毎フレーム1回、Update()内で呼ぶ。読み取るゲームパッドを指定する版。
+    /// 2人対戦で、P1用・P2用にそれぞれ別のパッドを読みたい時に使う
+    /// (padがnullなら入力なし扱い)。
+    /// </summary>
+    public void Poll(Gamepad pad)
     {
         LeftPressed = RightPressed = UpPressed = DownPressed = false;
 
-        Gamepad pad = Gamepad.current;
         if (pad == null)
         {
             heldDirection = 0;
