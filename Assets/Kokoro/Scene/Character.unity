@@ -2258,6 +2258,7 @@ GameObject:
   - component: {fileID: 834616049}
   - component: {fileID: 834616044}
   - component: {fileID: 834616052}
+  - component: {fileID: 834616053}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2421,9 +2422,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleModeSetup
   player1: {fileID: 351946271}
+  player1CharacterSetup: {fileID: 351946280}
   player2Controller: {fileID: 1320457834}
   player2LocalInput: {fileID: 1320457837}
   player2CPUInput: {fileID: 1320457847}
+  player2CharacterSetup: {fileID: 1320457846}
 --- !u!114 &834616047
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2725,6 +2728,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &834616053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 834616040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44830a9e729dd2b46945300af992518a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterSelectionData
+  player1Character: {fileID: 11400000, guid: 3d118f1933bac7d49a879ec1ba52c08d, type: 2}
+  player2Character: {fileID: 11400000, guid: aa796471f6926384c946163f7a2fd609, type: 2}
 --- !u!1 &863092023
 GameObject:
   m_ObjectHideFlags: 0
@@ -3409,7 +3426,7 @@ Animator:
   m_GameObject: {fileID: 1008845133}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 9bf591964a00f2045ac0e36256ca3bfe, type: 2}
+  m_Controller: {fileID: 9100000, guid: 2b73b28a36c88e141b492448c84bf001, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -3470,15 +3487,15 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -6317683001922689760, guid: bcb468a3f44446440800eef475c90ffd, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 17.609999, y: 37.210033}
+  m_Size: {x: 3.0962498, y: 4.373754}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1029604644
 GameObject:
@@ -6600,7 +6617,7 @@ MonoBehaviour:
   facingController: {fileID: 1320457832}
   moveController: {fileID: 1320457829}
   rigidBody2D: {fileID: 1320457838}
-  motor: {fileID: 0}
+  motor: {fileID: 1320457835}
   movementThreshold: 0.05
 --- !u!95 &1728460568
 Animator:
@@ -6612,7 +6629,7 @@ Animator:
   m_GameObject: {fileID: 1728460565}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 2b73b28a36c88e141b492448c84bf001, type: 2}
+  m_Controller: {fileID: 9100000, guid: 9bf591964a00f2045ac0e36256ca3bfe, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -6673,15 +6690,15 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -6317683001922689760, guid: bcb468a3f44446440800eef475c90ffd, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2.2012498, y: 4.651254}
+  m_Size: {x: 2.64, y: 4.97}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1739367895
 GameObject:

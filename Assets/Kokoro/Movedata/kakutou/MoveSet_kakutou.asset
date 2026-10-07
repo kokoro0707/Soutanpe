@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac23ae645826ddb41b9af4950898c3e4, type: 3}
   m_Name: MoveSet_kakutou
   m_EditorClassIdentifier: Assembly-CSharp::FighterMoveSet
-  lightCombo: {fileID: 0}
-  heavyCombo: {fileID: 0}
-  assistCombo: {fileID: 0}
-  forwardSpecial: {fileID: 0}
-  downSpecial: {fileID: 0}
-  spAttack: {fileID: 0}
-  jumpAttack: {fileID: 0}
+  lightCombo: {fileID: 11400000, guid: e0cf9975cbc93414f8208e3f11c852b2, type: 2}
+  heavyCombo: {fileID: 11400000, guid: ce802e2280e13c24381704e8377425ae, type: 2}
+  assistCombo: {fileID: 11400000, guid: 067147ca0b2293b468c1ab375268ccdc, type: 2}
+  forwardSpecial: {fileID: 11400000, guid: 97f2149f0526dac4093b09acb094b90b, type: 2}
+  downSpecial: {fileID: 11400000, guid: de3a0e10e3c94e54b82069807e13aa8e, type: 2}
+  spAttack: {fileID: 11400000, guid: 31450b02b3f00424b835b88203ed30c4, type: 2}
+  jumpAttack: {fileID: 11400000, guid: ded2a741293899c49851c6d5e49e6d95, type: 2}
