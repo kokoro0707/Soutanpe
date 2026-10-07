@@ -18,6 +18,19 @@ public class MainMenuManager : MonoBehaviour
     [Header("SE")]
     [SerializeField] private AudioClip moveSe;
     [SerializeField] private AudioClip decideSe;
+    [Header("スティック操作")]
+    [Tooltip("ONにすると、左スティックでも左右に項目を移動できる(キー・十字キーも従来どおり使える)")]
+    [SerializeField] private bool useStick = true;
+    [Tooltip("スティックを何割倒したら入力として扱うか(0?1)")]
+    [SerializeField, Range(0.1f, 0.95f)] private float stickThreshold = 0.6f;
+    [Tooltip("倒したままの時に連続で移動させるか")]
+    [SerializeField] private bool stickRepeat = true;
+    [Tooltip("倒してから連続移動が始まるまでの時間(秒)")]
+    [SerializeField] private float stickRepeatDelay = 0.4f;
+    [Tooltip("連続移動の間隔(秒)")]
+    [SerializeField] private float stickRepeatInterval = 0.15f;
+
+    private readonly StickNavigator stick = new StickNavigator();
     private int currentIndex = 0;
     private bool inputLock;
     private void Start()
@@ -55,13 +68,27 @@ public class MainMenuManager : MonoBehaviour
     }
     private void Move()
     {
+        // スティックの状態は、入力ロック中も毎フレーム更新しておく
+        // (設定パネルを閉じた直後に、倒しっぱなしのスティックで勝手に動かないようにするため)
+        stick.Threshold = stickThreshold;
+        stick.UseRepeat = stickRepeat;
+        stick.RepeatDelay = stickRepeatDelay;
+        stick.RepeatInterval = stickRepeatInterval;
+        stick.Poll();
+
         if (inputLock) return;
+
+        bool stickLeft = useStick && stick.LeftPressed;
+        bool stickRight = useStick && stick.RightPressed;
+
         bool left = Keyboard.current.leftArrowKey.wasPressedThisFrame ||
             Keyboard.current.aKey.wasPressedThisFrame ||
-            (Gamepad.current != null && Gamepad.current.dpad.left.wasPressedThisFrame);
+            (Gamepad.current != null && Gamepad.current.dpad.left.wasPressedThisFrame) ||
+            stickLeft;
         bool right = Keyboard.current.rightArrowKey.wasPressedThisFrame ||
             Keyboard.current.dKey.wasPressedThisFrame ||
-            (Gamepad.current != null && Gamepad.current.dpad.right.wasPressedThisFrame);
+            (Gamepad.current != null && Gamepad.current.dpad.right.wasPressedThisFrame) ||
+            stickRight;
         if (left)
         {
             currentIndex--;
