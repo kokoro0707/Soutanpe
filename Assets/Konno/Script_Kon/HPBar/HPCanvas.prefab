@@ -55,11 +55,20 @@ MonoBehaviour:
   damageSlider: {fileID: 404890666117730453}
   delay: 0.4
   speed: 0.6
-  hpFillImage: {fileID: 0}
+  hpFillImage: {fileID: 5442979224355753344}
   changeColorWhenLow: 1
   lowHpThreshold: 0.25
   normalColor: {r: 0.4980392, g: 1, b: 0, a: 1}
   lowHpColor: {r: 0.9, g: 0.2, b: 0.2, a: 1}
+  glowEnabled: 1
+  glowColor: {r: 0.028630257, g: 1, b: 0, a: 1}
+  glowLowHpColor: {r: 1, g: 0.75, b: 0.7, a: 1}
+  glowPadding: 20
+  glowIntensity: 0.8
+  glowPulseSpeed: 2
+  glowPulseAmount: 0.35
+  lowHpPulseMultiplier: 2
+  fillWhiten: 0.25
 --- !u!1 &112913556277839624
 GameObject:
   m_ObjectHideFlags: 0
@@ -226,11 +235,20 @@ MonoBehaviour:
   damageSlider: {fileID: 4253110459417071440}
   delay: 0.4
   speed: 0.6
-  hpFillImage: {fileID: 0}
+  hpFillImage: {fileID: 6372172990713831844}
   changeColorWhenLow: 1
   lowHpThreshold: 0.25
   normalColor: {r: 0, g: 1, b: 0, a: 1}
   lowHpColor: {r: 0.9, g: 0.2, b: 0.2, a: 1}
+  glowEnabled: 1
+  glowColor: {r: 0.05724919, g: 1, b: 0, a: 1}
+  glowLowHpColor: {r: 1, g: 0.75, b: 0.7, a: 1}
+  glowPadding: 20
+  glowIntensity: 0.8
+  glowPulseSpeed: 2
+  glowPulseAmount: 0.35
+  lowHpPulseMultiplier: 2
+  fillWhiten: 0.25
 --- !u!1 &1552633901619760331
 GameObject:
   m_ObjectHideFlags: 0
