@@ -1394,7 +1394,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PersonaMenuUI.SlantedRect
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.57780695, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -6744,7 +6744,7 @@ GameObject:
   - component: {fileID: 1338781025}
   - component: {fileID: 1338781024}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Menu_Drifter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7454,7 +7454,7 @@ GameObject:
   - component: {fileID: 1539511040}
   - component: {fileID: 1539511039}
   m_Layer: 0
-  m_Name: Square
+  m_Name: Moon_Menu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

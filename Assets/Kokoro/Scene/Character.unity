@@ -5340,6 +5340,10 @@ PrefabInstance:
       value: -70
       objectReference: {fileID: 0}
     - target: {fileID: 3181047687841104302, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: glowEnabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3181047687841104302, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: hpFillImage
       value: 
       objectReference: {fileID: 0}
@@ -5499,6 +5503,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 7062701907607101955, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: glowEnabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7062701907607101955, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: hpFillImage
       value: 

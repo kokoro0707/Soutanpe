@@ -45,6 +45,27 @@ public class HPBar : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float lowHpThreshold = 0.25f;
     [SerializeField] private Color normalColor = new Color(0.35f, 1f, 0.15f); // より明るい鮮やかな緑
     [SerializeField] private Color lowHpColor = new Color(1f, 0.2f, 0.15f);     // 明るい赤
+    [Header("白い発光(任意)")]
+    [Tooltip("ONにすると、HPバーの後ろに白いやわらかい光を出す(画像素材は不要。コードで自動生成)")]
+    [SerializeField] private bool glowEnabled = true;
+    [SerializeField] private Color glowColor = Color.white;
+    [Tooltip("ピンチ時の光の色(赤みを足したい場合など)。白のままなら変化なし")]
+    [SerializeField] private Color glowLowHpColor = new Color(1f, 0.75f, 0.7f);
+    [Tooltip("光がバーの外へはみ出す量(ピクセル)")]
+    [SerializeField, Min(0f)] private float glowPadding = 20f;
+    [SerializeField, Range(0f, 1f)] private float glowIntensity = 0.8f;
+    [SerializeField] private float glowPulseSpeed = 2f;
+    [Tooltip("明滅の振れ幅(0=一定の光)")]
+    [SerializeField, Range(0f, 1f)] private float glowPulseAmount = 0.35f;
+    [Tooltip("ピンチ時に、明滅を何倍速くするか(1=変えない)")]
+    [SerializeField, Min(1f)] private float lowHpPulseMultiplier = 2f;
+    [Tooltip("バー本体も、光に合わせて白っぽく明るくする量(0=しない)")]
+    [SerializeField, Range(0f, 1f)] private float fillWhiten = 0.25f;
+
+    private Image glowImage;
+    private float glowPhase;
+    private static Sprite glowSprite;
+
     private float timer;
 
     // ===== ここから追加: HP0検知用 =====
@@ -96,6 +117,8 @@ public class HPBar : MonoBehaviour
         {
             hpFillImage.color = normalColor;
         }
+
+        if (glowEnabled) BuildGlow();
     }
     /// <summary>
     /// 外部の攻撃/回復スクリプトから、HPが変化するたびに呼び出す。
@@ -164,10 +187,18 @@ public class HPBar : MonoBehaviour
     {
         // 呼び出しタイミングのズレや参照の初期化順に関係なく、
         // 毎フレーム強制的に正しい色へ合わせる(黒残り対策)
+        bool isLow = hpSlider != null && hpSlider.value <= lowHpThreshold;
+        UpdateGlow(isLow);
+
         if (changeColorWhenLow && hpFillImage != null && hpSlider != null)
         {
-            Color targetColor =
-                hpSlider.value <= lowHpThreshold ? lowHpColor : normalColor;
+            Color targetColor = isLow ? lowHpColor : normalColor;
+            // 発光中は、光の明滅に合わせてバー本体も白へ寄せる
+            if (glowImage != null && fillWhiten > 0f)
+            {
+                float wave = Mathf.Sin(glowPhase) * 0.5f + 0.5f;
+                targetColor = Color.Lerp(targetColor, Color.white, fillWhiten * wave);
+            }
             if (hpFillImage.color != targetColor)
             {
                 hpFillImage.color = targetColor;
@@ -180,4 +211,98 @@ public class HPBar : MonoBehaviour
         float newValue = Mathf.MoveTowards(damageSlider.value, hpSlider.value, speed * Time.deltaTime);
         damageSlider.SetValueWithoutNotify(newValue);
     }
+
+    // ===== ここから追加: 白い発光 =====
+    private void UpdateGlow(bool isLow)
+    {
+        if (glowImage == null) return;
+
+        // 明滅はTime.timeScale=0(ポーズ・リザルト)中も止めない
+        float speed = glowPulseSpeed * (isLow ? lowHpPulseMultiplier : 1f);
+        glowPhase += speed * Time.unscaledDeltaTime;
+
+        float wave = Mathf.Sin(glowPhase) * 0.5f + 0.5f;
+        float k = Mathf.Lerp(1f - glowPulseAmount, 1f, wave);
+
+        Color c = isLow ? glowLowHpColor : glowColor;
+        c.a *= glowIntensity * k;
+        glowImage.color = c;
+    }
+
+    /// <summary>HPバーの後ろ(ダメージバーよりさらに奥)に、光のImageを作る。</summary>
+    private void BuildGlow()
+    {
+        if (hpSlider == null) return;
+
+        RectTransform target = (RectTransform)hpSlider.transform;
+        Transform parent = target.parent;
+        if (parent == null) return;
+
+        GameObject go = new GameObject("HPBarGlow", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        go.transform.SetParent(parent, false);
+
+        RectTransform rt = (RectTransform)go.transform;
+        rt.anchorMin = target.anchorMin;
+        rt.anchorMax = target.anchorMax;
+        rt.pivot = target.pivot;
+        rt.anchoredPosition = target.anchoredPosition;
+        rt.sizeDelta = target.sizeDelta + new Vector2(glowPadding * 2f, glowPadding * 2f);
+        rt.localRotation = target.localRotation;
+        rt.localScale = target.localScale;
+
+        // HPSlider と DamageSlider のうち奥にある方より、さらに奥へ差し込む
+        int index = target.GetSiblingIndex();
+        if (damageSlider != null && damageSlider.transform.parent == parent)
+            index = Mathf.Min(index, damageSlider.transform.GetSiblingIndex());
+        go.transform.SetSiblingIndex(index);
+
+        go.AddComponent<LayoutElement>().ignoreLayout = true;
+
+        glowImage = go.GetComponent<Image>();
+        glowImage.sprite = GetGlowSprite();
+        glowImage.type = Image.Type.Sliced;
+        glowImage.raycastTarget = false;
+    }
+
+    /// <summary>やわらかい角丸の光を、コードで1枚だけ生成して使い回す(9スライス用)。</summary>
+    private static Sprite GetGlowSprite()
+    {
+        if (glowSprite != null) return glowSprite;
+
+        const int size = 64;
+        const int border = 24;
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+        {
+            wrapMode = TextureWrapMode.Clamp,
+            filterMode = FilterMode.Bilinear
+        };
+
+        float min = border, max = size - border;
+        Color[] px = new Color[size * size];
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dx = Mathf.Max(min - (x + 0.5f), 0f, (x + 0.5f) - max);
+                float dy = Mathf.Max(min - (y + 0.5f), 0f, (y + 0.5f) - max);
+                float d = Mathf.Sqrt(dx * dx + dy * dy);
+                float a = Mathf.Clamp01(1f - d / border);
+                a = a * a * (3f - 2f * a);
+                px[y * size + x] = new Color(1f, 1f, 1f, a);
+            }
+        }
+        tex.SetPixels(px);
+        tex.Apply();
+
+        glowSprite = Sprite.Create(
+            tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f),
+            100f, 0, SpriteMeshType.FullRect, new Vector4(border, border, border, border));
+        return glowSprite;
+    }
+
+    private void OnDestroy()
+    {
+        if (glowImage != null) Destroy(glowImage.gameObject);
+    }
+    // ===== 追加ここまで =====
 }
