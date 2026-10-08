@@ -1,32 +1,49 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// キャラクターのSPゲージを管理する。
-/// コンボリセット・必殺技などで共通使用する。
-/// </summary>
 public sealed class FighterSPGauge : MonoBehaviour
 {
-    [Header("SP")]
-    [SerializeField, Min(1)]
-    private int maxSP = 2;
+    [Header("最大SP")]
+    [SerializeField, Min(1f)]
+    private float maxSP = 2f;
 
+    [Header("開始時")]
     [SerializeField]
-    private bool startFull = true;
+    private bool startFull = false;
 
-    public int CurrentSP
-    {
-        get;
-        private set;
-    }
 
-    public int MaxSP => maxSP;
+    // =========================
+    // 自動回復
+    // =========================
 
-    /// <summary>
-    /// UI更新用。
-    /// CurrentSP, MaxSPを渡す。
-    /// </summary>
-    public event Action<int, int> OnSPChanged;
+    [Header("自動回復")]
+    [SerializeField]
+    private bool useAutoRecovery = true;
+
+    [Tooltip("1秒間に回復するSP量")]
+    [SerializeField, Min(0f)]
+    private float autoRecoveryPerSecond = 0.05f;
+
+
+    // =========================
+    // 攻撃ヒット時
+    // =========================
+
+    [Header("攻撃ヒット時の回復")]
+    [Tooltip("攻撃が1回当たるたびに増えるSP量")]
+    [SerializeField, Min(0f)]
+    private float hitRecoveryAmount = 0.15f;
+
+
+    // =========================
+    // 現在値
+    // =========================
+
+    public float CurrentSP { get; private set; }
+
+    public float MaxSP => maxSP;
+
+    public event Action<float, float> OnSPChanged;
 
 
     private void Awake()
@@ -34,7 +51,7 @@ public sealed class FighterSPGauge : MonoBehaviour
         CurrentSP =
             startFull
                 ? maxSP
-                : 0;
+                : 0f;
     }
 
 
@@ -44,27 +61,41 @@ public sealed class FighterSPGauge : MonoBehaviour
     }
 
 
-    /// <summary>
-    /// 指定SPを払えるか。
-    /// </summary>
-    public bool CanConsume(int amount)
+    private void Update()
     {
-        amount =
-            Mathf.Max(0, amount);
+        if (!useAutoRecovery)
+        {
+            return;
+        }
 
+        if (CurrentSP >= maxSP)
+        {
+            return;
+        }
+
+        AddSP(
+            autoRecoveryPerSecond *
+            Time.deltaTime
+        );
+    }
+
+
+    // =========================
+    // SPを使用できるか
+    // =========================
+
+    public bool CanConsume(float amount)
+    {
         return CurrentSP >= amount;
     }
 
 
-    /// <summary>
-    /// SPを消費する。
-    /// 足りなければfalse。
-    /// </summary>
-    public bool TryConsume(int amount)
-    {
-        amount =
-            Mathf.Max(0, amount);
+    // =========================
+    // SP消費
+    // =========================
 
+    public bool TryConsume(float amount)
+    {
         if (!CanConsume(amount))
         {
             return false;
@@ -72,52 +103,70 @@ public sealed class FighterSPGauge : MonoBehaviour
 
         CurrentSP -= amount;
 
+        CurrentSP =
+            Mathf.Clamp(
+                CurrentSP,
+                0f,
+                maxSP
+            );
+
         NotifySPChanged();
 
         return true;
     }
 
 
-    /// <summary>
-    /// SPを増やす。
-    /// </summary>
-    public void AddSP(int amount)
+    // =========================
+    // SP追加
+    // =========================
+
+    public void AddSP(float amount)
     {
-        if (amount <= 0)
+        if (amount <= 0f)
         {
             return;
         }
 
+        float oldSP = CurrentSP;
+
         CurrentSP =
             Mathf.Clamp(
                 CurrentSP + amount,
-                0,
+                0f,
                 maxSP
             );
 
-        NotifySPChanged();
+        // 値が変わった時だけUI更新
+        if (!Mathf.Approximately(
+                oldSP,
+                CurrentSP
+            ))
+        {
+            NotifySPChanged();
+        }
     }
 
 
-    public void SetSP(int value)
+    // =========================
+    // 攻撃ヒット時
+    // =========================
+
+    public void AddSPOnHit()
     {
-        CurrentSP =
-            Mathf.Clamp(
-                value,
-                0,
-                maxSP
-            );
-
-        NotifySPChanged();
+        AddSP(hitRecoveryAmount);
     }
 
+
+    // =========================
+    // リセット
+    // =========================
 
     public void ResetSP()
     {
         CurrentSP =
             startFull
                 ? maxSP
-                : 0;
+                : 0f;
 
         NotifySPChanged();
     }

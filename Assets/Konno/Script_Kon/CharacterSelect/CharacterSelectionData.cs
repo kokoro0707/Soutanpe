@@ -1,47 +1,49 @@
 using UnityEngine;
 
-/// <summary>
-/// キャラクター選択画面で選択したキャラクターを
-/// Battleシーンまで保持する。
-/// </summary>
 public sealed class CharacterSelectionData : MonoBehaviour
 {
-    public static CharacterSelectionData Instance
-    {
-        get;
-        private set;
-    }
+    public static CharacterSelectionData Instance { get; private set; }
 
-
-    [Header("Player1")]
     [SerializeField]
     private FighterCharacterData player1Character;
 
-
-    [Header("Player2 / CPU")]
     [SerializeField]
     private FighterCharacterData player2Character;
 
 
-    public FighterCharacterData Player1Character =>
-        player1Character;
+    public FighterCharacterData Player1Character
+        => player1Character;
 
-    public FighterCharacterData Player2Character =>
-        player2Character;
+    public FighterCharacterData Player2Character
+        => player2Character;
 
 
     private void Awake()
     {
+        Debug.Log("【CharacterSelectionData】Awake");
+
         if (Instance != null &&
             Instance != this)
         {
+            Debug.Log(
+                "【CharacterSelectionData】重複したので削除"
+            );
+
             Destroy(gameObject);
             return;
         }
 
         Instance = this;
 
+        // 念のためルートへ移動
+        transform.SetParent(null);
+
+        // シーン変更しても残す
         DontDestroyOnLoad(gameObject);
+
+        Debug.Log(
+            "【CharacterSelectionData】DontDestroyOnLoad設定完了"
+        );
     }
 
 
@@ -52,9 +54,8 @@ public sealed class CharacterSelectionData : MonoBehaviour
         player1Character = data;
 
         Debug.Log(
-            $"P1選択：" +
-            $"{(data != null ? data.CharacterName : "NULL")}",
-            this
+            $"【選択保存】P1 = " +
+            $"{(data != null ? data.name : "NULL")}"
         );
     }
 
@@ -66,9 +67,8 @@ public sealed class CharacterSelectionData : MonoBehaviour
         player2Character = data;
 
         Debug.Log(
-            $"P2選択：" +
-            $"{(data != null ? data.CharacterName : "NULL")}",
-            this
+            $"【選択保存】P2 = " +
+            $"{(data != null ? data.name : "NULL")}"
         );
     }
 }

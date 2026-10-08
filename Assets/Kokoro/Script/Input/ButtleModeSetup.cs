@@ -30,26 +30,22 @@ public sealed class BattleModeSetup : MonoBehaviour
 
     private void Start()
     {
-        // キャラクター選択結果を反映
-        SetupCharacters();
+        Debug.Log("【BattleModeSetup】Start");
 
-        // PvP / CPUを設定
+        SetupCharacters();
         SetupBattleMode();
     }
 
 
-    /// <summary>
-    /// キャラクター選択画面で選んだキャラクターを
-    /// Player1 / Player2へ反映する。
-    /// </summary>
     private void SetupCharacters()
     {
+        Debug.Log("【BattleModeSetup】キャラ反映開始");
+
+        // 選択データがバトルシーンまで残っているか
         if (CharacterSelectionData.Instance == null)
         {
-            Debug.LogWarning(
-                "CharacterSelectionDataがありません。" +
-                "InspectorのCharacterDataで開始します。",
-                this
+            Debug.LogError(
+                "【ERROR】CharacterSelectionData.Instance がありません"
             );
 
             return;
@@ -62,35 +58,73 @@ public sealed class BattleModeSetup : MonoBehaviour
             CharacterSelectionData.Instance.Player2Character;
 
 
-        // Player1
-        if (player1CharacterSetup != null &&
-            p1Data != null)
+        Debug.Log(
+            $"【選択結果】P1 = {(p1Data != null ? p1Data.name : "NULL")}"
+        );
+
+        Debug.Log(
+            $"【選択結果】P2 = {(p2Data != null ? p2Data.name : "NULL")}"
+        );
+
+
+        // =========================
+        // P1
+        // =========================
+
+        if (player1CharacterSetup == null)
         {
+            Debug.LogError(
+                "【ERROR】Player1 CharacterSetup が未設定"
+            );
+        }
+        else if (p1Data == null)
+        {
+            Debug.LogError(
+                "【ERROR】P1のCharacterDataがNULL"
+            );
+        }
+        else
+        {
+            Debug.Log(
+                $"【P1適用】{p1Data.name}"
+            );
+
             player1CharacterSetup.SetCharacterData(
                 p1Data
             );
-
-            Debug.Log(
-                $"Player1：{p1Data.CharacterName}を適用",
-                this
-            );
         }
 
 
-        // Player2 / CPU
-        if (player2CharacterSetup != null &&
-            p2Data != null)
+        // =========================
+        // P2
+        // =========================
+
+        if (player2CharacterSetup == null)
         {
+            Debug.LogError(
+                "【ERROR】Player2 CharacterSetup が未設定"
+            );
+        }
+        else if (p2Data == null)
+        {
+            Debug.LogError(
+                "【ERROR】P2のCharacterDataがNULL"
+            );
+        }
+        else
+        {
+            Debug.Log(
+                $"【P2適用】{p2Data.name}"
+            );
+
             player2CharacterSetup.SetCharacterData(
                 p2Data
             );
-
-            Debug.Log(
-                $"Player2：{p2Data.CharacterName}を適用",
-                this
-            );
         }
     }
+
+
+
 
 
     private void SetupBattleMode()

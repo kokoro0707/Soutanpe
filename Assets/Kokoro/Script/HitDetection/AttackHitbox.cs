@@ -16,6 +16,8 @@ public sealed class AttackHitbox : MonoBehaviour
 
     // コンボなどによるダメージ補正
     private float currentDamageMultiplier = 1f;
+    [SerializeField]
+    private FighterSPGauge ownerSPGauge;
 
     // 同じ技で同じ相手へ複数回当たるのを防ぐ
     private readonly HashSet<FighterHitReceiver> hitTargets =
@@ -180,6 +182,12 @@ public sealed class AttackHitbox : MonoBehaviour
             attackerTransform,
             currentDamageMultiplier
         );
+
+        //攻撃が当たったのでSP回復
+        if(ownerSPGauge!=null)
+        {
+            ownerSPGauge.AddSPOnHit();
+        }
 
 
         string attackerName =

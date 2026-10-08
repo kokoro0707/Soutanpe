@@ -1596,7 +1596,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea903dee7dabff34094170cfd1c84e8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FighterMoveController
-  moveSet: {fileID: 11400000, guid: b239a39c040a34c47a277ea093d7cf91, type: 2}
+  moveSet: {fileID: 0}
   forwardSpecialHitVisual: {fileID: 1563552567}
   attackHitbox: {fileID: 1457659157}
   comboResetDamageRate: 0.8
@@ -1704,7 +1704,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95d79c08638a14547acf23fe6b0a9eac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FighterCharacterSetup
-  characterData: {fileID: 11400000, guid: 3d118f1933bac7d49a879ec1ba52c08d, type: 2}
+  characterData: {fileID: 0}
   moveController: {fileID: 351946274}
   grabController: {fileID: 351946279}
   health: {fileID: 351946275}
@@ -1724,6 +1724,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FighterSPGauge
   maxSP: 2
   startFull: 1
+  useAutoRecovery: 1
+  autoRecoveryPerSecond: 0.05
+  hitRecoveryAmount: 0.15
 --- !u!1 &376233423
 GameObject:
   m_ObjectHideFlags: 0
@@ -1798,6 +1801,81 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 376233423}
+  m_CullTransparentMesh: 1
+--- !u!1 &395425434
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 395425435}
+  - component: {fileID: 395425437}
+  - component: {fileID: 395425436}
+  m_Layer: 5
+  m_Name: Fill_z
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &395425435
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 395425434}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1544646574}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0.25}
+  m_AnchorMax: {x: 1, y: 0.75}
+  m_AnchoredPosition: {x: -0.83999634, y: -1}
+  m_SizeDelta: {x: -1.6799, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &395425436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 395425434}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0.9570327, b: 0.0754717, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 2112547056467959747, guid: 94d5f9d6c54ecc94193869dc731028f5, type: 3}
+  m_Type: 3
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 0
+  m_FillAmount: 0
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &395425437
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 395425434}
   m_CullTransparentMesh: 1
 --- !u!1 &487425366
 GameObject:
@@ -1968,7 +2046,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eba7ccfc44e3044498221b3bd44e1c3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Hurtbox
-  ownerReceiver: {fileID: 0}
+  ownerReceiver: {fileID: 351946276}
 --- !u!1 &539351758
 GameObject:
   m_ObjectHideFlags: 0
@@ -2440,7 +2518,6 @@ GameObject:
   - component: {fileID: 834616049}
   - component: {fileID: 834616044}
   - component: {fileID: 834616052}
-  - component: {fileID: 834616053}
   - component: {fileID: 834616054}
   m_Layer: 0
   m_Name: GameManager
@@ -2476,7 +2553,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 275864c5743f86740bfa92c081aebf95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalTwoPlayerDeviceSetup
-  deviceMode: 0
+  deviceMode: 2
   player1Input: {fileID: 351946263}
   player2Input: {fileID: 1320457833}
   keyboardSchemeName: Keyboard
@@ -2916,20 +2993,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &834616053
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 834616040}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44830a9e729dd2b46945300af992518a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CharacterSelectionData
-  player1Character: {fileID: 11400000, guid: 3d118f1933bac7d49a879ec1ba52c08d, type: 2}
-  player2Character: {fileID: 11400000, guid: aa796471f6926384c946163f7a2fd609, type: 2}
 --- !u!114 &834616054
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2962,7 +3025,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &863092024
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3734,6 +3797,7 @@ GameObject:
   - component: {fileID: 1008845137}
   - component: {fileID: 1008845136}
   - component: {fileID: 1008845135}
+  - component: {fileID: 1008845138}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -3786,7 +3850,7 @@ Animator:
   m_GameObject: {fileID: 1008845133}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 2b73b28a36c88e141b492448c84bf001, type: 2}
+  m_Controller: {fileID: 0}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -3857,6 +3921,18 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1008845138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1008845133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea2d0fd75c65c3945b6fa0a65eeb83dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FighterAnimationEventRelay
 --- !u!1 &1029604644
 GameObject:
   m_ObjectHideFlags: 0
@@ -3874,7 +3950,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1029604645
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4302,7 +4378,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1250186243
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4484,7 +4560,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eba7ccfc44e3044498221b3bd44e1c3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Hurtbox
-  ownerReceiver: {fileID: 0}
+  ownerReceiver: {fileID: 1320457842}
 --- !u!61 &1298071374
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -4578,7 +4654,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea903dee7dabff34094170cfd1c84e8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FighterMoveController
-  moveSet: {fileID: 11400000, guid: b239a39c040a34c47a277ea093d7cf91, type: 2}
+  moveSet: {fileID: 0}
   forwardSpecialHitVisual: {fileID: 1583831122}
   attackHitbox: {fileID: 1901747040}
   comboResetDamageRate: 0.8
@@ -4973,7 +5049,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95d79c08638a14547acf23fe6b0a9eac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FighterCharacterSetup
-  characterData: {fileID: 11400000, guid: 3d118f1933bac7d49a879ec1ba52c08d, type: 2}
+  characterData: {fileID: 0}
   moveController: {fileID: 1320457829}
   grabController: {fileID: 1320457844}
   health: {fileID: 1320457830}
@@ -5016,6 +5092,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FighterSPGauge
   maxSP: 2
   startFull: 1
+  useAutoRecovery: 1
+  autoRecoveryPerSecond: 0.05
+  hitRecoveryAmount: 0.15
 --- !u!114 &1342578148 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7062701907607101955, guid: 748303f81f8d2784681245709e785d4f, type: 3}
@@ -5044,7 +5123,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1353951628
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5734,6 +5813,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84ecabd8fd9508543945b76426b93ea4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AttackHitbox
+  ownerSPGauge: {fileID: 351946281}
 --- !u!61 &1457659158
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -5909,6 +5989,81 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &1520952433
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1520952434}
+  - component: {fileID: 1520952436}
+  - component: {fileID: 1520952435}
+  m_Layer: 5
+  m_Name: Fill_1 (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1520952434
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1520952433}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1948436405}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0.25}
+  m_AnchorMax: {x: 1, y: 0.75}
+  m_AnchoredPosition: {x: -1, y: -0.9998779}
+  m_SizeDelta: {x: -1.2096, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1520952435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1520952433}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0.9570327, b: 0.0754717, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 2112547056467959747, guid: 94d5f9d6c54ecc94193869dc731028f5, type: 3}
+  m_Type: 3
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 0
+  m_FillAmount: 0
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1520952436
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1520952433}
+  m_CullTransparentMesh: 1
 --- !u!1 &1544646573
 GameObject:
   m_ObjectHideFlags: 0
@@ -5940,6 +6095,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 539351759}
+  - {fileID: 395425435}
   - {fileID: 1029604645}
   - {fileID: 1250186243}
   m_Father: {fileID: 863513100}
@@ -5962,9 +6118,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FighterSPGaugeUI
   spGauge: {fileID: 351946281}
-  gaugeImages:
-  - {fileID: 1029604646}
-  - {fileID: 1250186244}
+  fillImage: {fileID: 395425436}
 --- !u!114 &1544646576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7036,6 +7190,7 @@ GameObject:
   - component: {fileID: 1728460569}
   - component: {fileID: 1728460568}
   - component: {fileID: 1728460567}
+  - component: {fileID: 1728460570}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -7088,7 +7243,7 @@ Animator:
   m_GameObject: {fileID: 1728460565}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 9bf591964a00f2045ac0e36256ca3bfe, type: 2}
+  m_Controller: {fileID: 0}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -7154,11 +7309,23 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.87, y: 4.15}
+  m_Size: {x: 2.1661973, y: 2.656338}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1728460570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1728460565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea2d0fd75c65c3945b6fa0a65eeb83dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FighterAnimationEventRelay
 --- !u!1 &1739367895
 GameObject:
   m_ObjectHideFlags: 0
@@ -7497,6 +7664,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84ecabd8fd9508543945b76426b93ea4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AttackHitbox
+  ownerSPGauge: {fileID: 1320457848}
 --- !u!61 &1901747041
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -7677,6 +7845,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1179152936}
+  - {fileID: 1520952434}
   - {fileID: 1353951628}
   - {fileID: 863092024}
   m_Father: {fileID: 863513100}
@@ -7699,9 +7868,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FighterSPGaugeUI
   spGauge: {fileID: 1320457848}
-  gaugeImages:
-  - {fileID: 1353951629}
-  - {fileID: 863092025}
+  fillImage: {fileID: 1520952435}
 --- !u!114 &1948436407
 MonoBehaviour:
   m_ObjectHideFlags: 0

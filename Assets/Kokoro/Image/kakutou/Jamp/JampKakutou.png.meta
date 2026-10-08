@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 202c237836520d34083d3d0702b25270
+guid: 106b85f701e30b44497c8e8f42be7494
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 5815015064334040359
-    second: "\u30A8\u30D5\u30A7\u30AF\u30C87_0"
+      213: 8229267575597705558
+    second: JampKakutou_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -51,7 +51,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 200
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "\u30A8\u30D5\u30A7\u30AF\u30C87_0"
+      name: JampKakutou_0
       rect:
         serializedVersion: 2
-        x: 85
-        y: 325
-        width: 276
-        height: 47
-      alignment: 9
-      pivot: {x: 0.10727291, y: 0.51469}
+        x: 233
+        y: 191
+        width: 769
+        height: 943
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 72dfc29446513b050800000000000000
-      internalID: 5815015064334040359
+      spriteID: 659242d624b343270800000000000000
+      internalID: 8229267575597705558
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: e0869f1d8ed84154bb46c1d10ae61ffa
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      "\u30A8\u30D5\u30A7\u30AF\u30C87_0": 5815015064334040359
+      JampKakutou_0: 8229267575597705558
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

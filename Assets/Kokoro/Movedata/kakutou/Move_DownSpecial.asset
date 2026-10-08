@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Move_DownSpecial
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
   moveName: "\u4E0B\u5FC5\u6BBA"
-  startupFrames: 5
-  activeFrames: 4
-  recoveryFrames: 10
+  startupFrames: 4
+  activeFrames: 6
+  recoveryFrames: 14
   damage: 100
   hitStunFrames: 18
   blockStunFrames: 10
@@ -27,8 +27,8 @@ MonoBehaviour:
   effectPrefab: {fileID: 0}
   effectOffset: {x: 0, y: 0}
   useLaunch: 1
-  launchVelocityY: 15
-  launchFrame: 6
+  launchVelocityY: 20
+  launchFrame: 5
   useMove: 0
   moveSpeed: 15
   moveStartFrame: 0

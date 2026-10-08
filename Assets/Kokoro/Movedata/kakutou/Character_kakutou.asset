@@ -16,7 +16,7 @@ MonoBehaviour:
   maxHP: 1000
   forwardWalkSpeed: 5
   backwardWalkSpeed: 3.5
-  jumpPower: 12
+  jumpPower: 23
   jumpHorizontalSpeed: 4
   forwardStepSpeed: 9
   forwardStepFrames: 10
