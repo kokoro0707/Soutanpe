@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 205958360}
   - component: {fileID: 205958359}
   m_Layer: 0
-  m_Name: Square (1)
+  m_Name: Title_Moon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -893,7 +893,7 @@ GameObject:
   - component: {fileID: 1238374688}
   - component: {fileID: 1238374687}
   m_Layer: 0
-  m_Name: Square
+  m_Name: Title_Back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1240,7 +1240,7 @@ GameObject:
   - component: {fileID: 1554715908}
   - component: {fileID: 1554715907}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Title_Drifter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

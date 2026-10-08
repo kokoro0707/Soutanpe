@@ -32,6 +32,8 @@ public class SegmentedVolumeBar : MonoBehaviour
     [SerializeField] private RectTransform levelMarker;
     [Tooltip("バー上端からのオフセット(ワールド単位に近い見た目にするため、実際はCanvasのスケールに応じて自動調整される)")]
     [SerializeField] private float markerYOffset = 4f;
+    [Tooltip("ONにすると、境目ではなく「現在レベルのブロックの真ん中」を指す(レベル0は1個目のブロックの真ん中)")]
+    [SerializeField] private bool pointAtSegmentCenter = false;
     [Tooltip("ONの場合、SetFocused(true)のときだけマーカーを表示する。OFFなら常に表示")]
     [SerializeField] private bool showMarkerOnlyWhenFocused = true;
 
@@ -74,33 +76,79 @@ public class SegmentedVolumeBar : MonoBehaviour
     }
 
     /// <summary>
-    /// levelMarkerを、現在の音量レベルに応じたバー上端の位置(ワールド座標)へ移動する。
-    /// RectTransform.position(ワールド座標)を直接指定するため、
-    /// levelMarkerの親が誰であっても、Pivotが何であっても正しい位置になる。
+    /// levelMarkerを、現在の音量レベルの位置へ移動する。
+    ///
+    /// 以前は「バー全体のRectTransformの横幅 × レベル/最大」で位置を決めていたため、
+    /// バーの枠とブロックの実際の並び(余白・ブロック間の隙間・Layout Groupの余白)が
+    /// 一致していないと、ブロックの境目からずれていた。
+    /// 今回は、実際のブロック(segments)の端の位置を直接読み取って合わせる。
+    ///   ・レベル0      : 1個目のブロックの左端
+    ///   ・レベル1以上  : 赤く塗られた最後のブロックの右端(=赤とグレーの境目)
+    /// 高さは、そのブロックの上端。
+    ///
+    /// マーカーのPivotが何であっても、「マーカーの下辺の中央」が目的の点に来るように補正する。
     /// </summary>
     private void UpdateMarkerPosition()
     {
         if (levelMarker == null) return;
 
-        RectTransform barRect = transform as RectTransform;
-        if (barRect == null) return;
+        Vector3 point;
+        if (!TryGetSegmentPoint(out point))
+        {
+            // ブロックが未設定の時だけ、従来どおりバー全体の割合で位置を決める
+            RectTransform barRect = transform as RectTransform;
+            if (barRect == null) return;
 
-        // バー自身のワールド座標での四隅を取得(0:左下 1:左上 2:右上 3:右下)
-        Vector3[] corners = new Vector3[4];
-        barRect.GetWorldCorners(corners);
+            Vector3[] corners = new Vector3[4];
+            barRect.GetWorldCorners(corners);
+            float ratio = MaxLevel > 0 ? (float)currentLevel / MaxLevel : 0f;
+            point = Vector3.Lerp(corners[1], corners[2], ratio);
+        }
 
-        float ratio = MaxLevel > 0 ? (float)currentLevel / MaxLevel : 0f;
-
-        // 左上から右上を、現在レベルの割合で補間 → バー上端の該当位置(ワールド座標)
-        Vector3 topEdgePoint = Vector3.Lerp(corners[1], corners[2], ratio);
-
-        // Y方向に少しだけ上へオフセット(Canvasのスケールを考慮して変換)
+        // 目的の点から少し上へ(Canvasのスケールを考慮して変換)
         RectTransform markerParent = levelMarker.parent as RectTransform;
         Vector3 offset = markerParent != null
             ? markerParent.TransformVector(new Vector3(0f, markerYOffset, 0f))
             : new Vector3(0f, markerYOffset, 0f);
+        Vector3 target = point + offset;
 
-        levelMarker.position = topEdgePoint + offset;
+        // マーカーの「下辺の中央」を target に合わせる。
+        // position はPivotの位置を指すので、Pivot→下辺中央 のベクトルぶんだけ補正する
+        Rect r = levelMarker.rect;
+        Vector3 pivotToBottomCenterLocal = new Vector3(
+            (0.5f - levelMarker.pivot.x) * r.width,
+            (0f - levelMarker.pivot.y) * r.height,
+            0f);
+        Vector3 pivotToBottomCenterWorld = levelMarker.TransformVector(pivotToBottomCenterLocal);
+
+        levelMarker.position = target - pivotToBottomCenterWorld;
+    }
+
+    /// <summary>
+    /// 現在のレベルが指すブロックの端(ワールド座標)を返す。
+    /// X: レベル0なら1個目の左端、1以上ならレベル番目のブロックの右端。 Y: そのブロックの上端。
+    /// </summary>
+    private bool TryGetSegmentPoint(out Vector3 point)
+    {
+        point = Vector3.zero;
+        if (segments == null || segments.Length == 0) return false;
+
+        int index = Mathf.Clamp(currentLevel - 1, 0, segments.Length - 1);
+        Image seg = segments[index];
+        if (seg == null) return false;
+
+        Vector3[] c = new Vector3[4];
+        seg.rectTransform.GetWorldCorners(c); // 0:左下 1:左上 2:右上 3:右下
+
+        if (pointAtSegmentCenter)
+        {
+            point = (c[1] + c[2]) * 0.5f;
+        }
+        else
+        {
+            point = currentLevel <= 0 ? c[1] : c[2];
+        }
+        return true;
     }
 
     private void UpdateMarkerVisibility()

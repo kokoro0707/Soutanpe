@@ -60,6 +60,14 @@ public class GameResultManager : MonoBehaviour
              "リザルト表示そのものはKoSequenceControllerが行う")]
     [SerializeField] private MatchScoreManager matchScoreManager;
 
+    [Header("リザルト表示中に隠すもの (任意)")]
+    [Tooltip("リザルト画面の間だけ非表示にするImage(例: HP横の顔アイコン、HPバーの枠など)。" +
+             "Imageコンポーネントだけを無効にするので、そのオブジェクトの子(文字など)は残る。" +
+             "子ごと隠したい時は、下のObjectsを使う")]
+    [SerializeField] private UnityEngine.UI.Image[] hideImagesOnResult;
+    [Tooltip("リザルト画面の間だけ、オブジェクトごと非表示にするもの(子もすべて隠れる)")]
+    [SerializeField] private GameObject[] hideObjectsOnResult;
+
     [Header("スティック操作")]
     [Tooltip("ONにすると、左スティックでも項目を移動できる(左/上=前、右/下=次。キー・十字キーも従来どおり)")]
     [SerializeField] private bool useStick = true;
@@ -70,6 +78,7 @@ public class GameResultManager : MonoBehaviour
 
     private readonly StickNavigator stick = new StickNavigator();
 
+    private bool resultTargetsHidden = false;
     private bool wasShownLastFrame = false;
     private bool isGameOver = false;
     private bool isChangingScene = false;
@@ -117,6 +126,10 @@ public class GameResultManager : MonoBehaviour
 
         if (!resultShown || !matchFinished)
             return;
+
+        // リザルトが出ている間は、指定のImage/オブジェクトを隠す
+        // (ラウンド制ではリザルト表示をKoSequenceControllerが行うので、ここで表示を検知して隠す)
+        HideResultTargets();
 
         if (matchScoreManager != null && !wasShownLastFrame)
         {
@@ -167,9 +180,34 @@ public class GameResultManager : MonoBehaviour
             resultPanel.SetActive(true);
         }
 
+        HideResultTargets();
+
         // パッド選択状態を初期化
         currentIndex = 0;
         UpdateSelection();
+    }
+
+    /// <summary>リザルト表示中だけ隠す対象を、まとめて非表示にする(二重実行しても害はない)。</summary>
+    private void HideResultTargets()
+    {
+        if (resultTargetsHidden) return;
+        resultTargetsHidden = true;
+
+        if (hideImagesOnResult != null)
+        {
+            foreach (UnityEngine.UI.Image img in hideImagesOnResult)
+            {
+                if (img != null) img.enabled = false;
+            }
+        }
+
+        if (hideObjectsOnResult != null)
+        {
+            foreach (GameObject go in hideObjectsOnResult)
+            {
+                if (go != null) go.SetActive(false);
+            }
+        }
     }
 
     private void HandleNavigation()
