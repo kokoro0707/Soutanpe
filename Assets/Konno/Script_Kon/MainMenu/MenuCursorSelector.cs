@@ -64,6 +64,20 @@ namespace PersonaMenuUI
             "各要素は、あらかじめ対応するItem Cursorと同じ位置・角度になるよう個別に配置しておく(このスクリプトが座標を動かすことはない)。未設定(要素数0)なら今まで通り共通のSlash Flashが使われる。")]
         [SerializeField] private SlantedRect[] itemSlashFlashes;
 
+        [Header("赤いアクセント (カーソルの後ろの赤い帯・任意)")]
+        [Tooltip("カーソルの後ろに重ねる赤い帯(SlantedRectなど)。Cursor Rectと同じ座標を毎フレーム追いかけ、" +
+            "Offsetだけずらして表示する。移動アニメーションも完全に同じタイミングで動く。\n" +
+            "Cursor Rectと「同じ親」の下に置くこと(座標系を揃えるため)。Hierarchy上ではCursor Rectより上(奥)に並べる。" +
+            "CursorにMaskを付けている場合は、Maskの外(Cursorの兄弟)に置くこと。")]
+        [SerializeField] private RectTransform cursorAccent;
+
+        [Tooltip("カーソルの中心からのずれ(px)。左上へはみ出させるなら X=マイナス, Y=プラス。")]
+        [SerializeField] private Vector2 accentOffset = new Vector2(-10f, 8f);
+
+        [Tooltip("Item Cursors(項目ごとの個別カーソル)を使う場合の、赤い帯。Item Cursorsと同じ順番・同じ要素数で設定すると、" +
+            "選択中の項目のものだけを、カーソルと同時に表示(ポップも同じ)する。各要素は項目に合わせてあらかじめ配置しておく。")]
+        [SerializeField] private RectTransform[] itemCursorAccents;
+
         [Header("移動アニメーション")]
         [SerializeField] private float moveDuration = 0.18f;
         [SerializeField] private AnimationCurve moveEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -178,6 +192,12 @@ namespace PersonaMenuUI
                     if (rt != null) baseScales[rt] = rt.localScale;
             }
 
+            if (itemCursorAccents != null)
+            {
+                foreach (RectTransform rt in itemCursorAccents)
+                    if (rt != null) baseScales[rt] = rt.localScale;
+            }
+
             if (menuLabels != null)
             {
                 foreach (TMP_Text label in menuLabels)
@@ -285,6 +305,14 @@ namespace PersonaMenuUI
             {
                 if (itemCursors[i] != null) itemCursors[i].localScale = BaseScale(itemCursors[i]);
             }
+
+            if (itemCursorAccents != null)
+            {
+                for (int i = 0; i < itemCursorAccents.Length; i++)
+                {
+                    if (itemCursorAccents[i] != null) itemCursorAccents[i].localScale = BaseScale(itemCursorAccents[i]);
+                }
+            }
         }
 
         private void Update()
@@ -300,6 +328,53 @@ namespace PersonaMenuUI
             }
 
             UpdateArrowBounce();
+        }
+
+        /// <summary>
+        /// 移動アニメーション(コルーチン)はUpdateの後に進むので、赤い帯の追従はLateUpdateで行い、
+        /// 常にその時点の最新のカーソル位置へ揃える(1フレーム遅れて見えるのを防ぐ)。
+        /// </summary>
+        private void LateUpdate()
+        {
+            SyncAccentToCursor();
+        }
+
+        private void SyncAccentToCursor()
+        {
+            if (cursorAccent == null || cursorRect == null) return;
+
+            if (UseItemCursors)
+            {
+                // 個別カーソルモードでは共通の帯は使わない(Item Cursor Accentsを使う)。
+                // ただし、Item Cursor Accentsの要素と同じオブジェクトが入っている場合は、
+                // そちらの表示切替と喧嘩しないよう、ここでは触らない
+                if (!IsInItemCursorAccents(cursorAccent) && cursorAccent.gameObject.activeSelf)
+                    cursorAccent.gameObject.SetActive(false);
+                return;
+            }
+
+            if (!cursorAccent.gameObject.activeSelf) cursorAccent.gameObject.SetActive(true);
+            cursorAccent.anchoredPosition = cursorRect.anchoredPosition + accentOffset;
+        }
+
+        private bool IsInItemCursorAccents(RectTransform rt)
+        {
+            if (itemCursorAccents == null) return false;
+            for (int i = 0; i < itemCursorAccents.Length; i++)
+                if (itemCursorAccents[i] == rt) return true;
+            return false;
+        }
+
+        private void SetItemAccentActive(int index)
+        {
+            if (itemCursorAccents == null) return;
+
+            for (int i = 0; i < itemCursorAccents.Length; i++)
+            {
+                if (itemCursorAccents[i] == null) continue;
+                itemCursorAccents[i].gameObject.SetActive(i == index);
+                itemCursorAccents[i].localScale = BaseScale(itemCursorAccents[i]);
+            }
         }
 
         private void HandleInternalInput()
@@ -537,6 +612,7 @@ namespace PersonaMenuUI
         {
             if (cursorRect == null || menuItems[index] == null) return;
             cursorRect.anchoredPosition = menuItems[index].anchoredPosition;
+            SyncAccentToCursor();
         }
 
         /// <summary>
@@ -551,6 +627,8 @@ namespace PersonaMenuUI
                 itemCursors[i].gameObject.SetActive(i == index);
                 itemCursors[i].localScale = BaseScale(itemCursors[i]);
             }
+
+            SetItemAccentActive(index);
         }
 
         /// <summary>
@@ -568,7 +646,10 @@ namespace PersonaMenuUI
                 itemCursors[i].localScale = BaseScale(itemCursors[i]); // ポップ途中で切り替わった時に拡大したまま残らないように
             }
 
+            SetItemAccentActive(index);
+
             RectTransform target = itemCursors[index];
+            RectTransform accent = (itemCursorAccents != null && index < itemCursorAccents.Length) ? itemCursorAccents[index] : null;
             if (target == null) yield break;
 
             if (itemCursorPopDuration <= 0f)
@@ -584,10 +665,12 @@ namespace PersonaMenuUI
                 float u = Mathf.Clamp01(t / itemCursorPopDuration);
                 float scale = Mathf.Lerp(itemCursorPopScale, 1f, u);
                 target.localScale = ScaledFromBase(target, scale);
+                if (accent != null) accent.localScale = ScaledFromBase(accent, scale); // 赤い帯もカーソルと同じタイミングでポップ
                 yield return null;
             }
 
             target.localScale = BaseScale(target);
+            if (accent != null) accent.localScale = BaseScale(accent);
         }
 
         /// <summary>

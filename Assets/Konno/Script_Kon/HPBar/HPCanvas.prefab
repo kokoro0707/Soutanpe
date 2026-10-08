@@ -60,7 +60,7 @@ MonoBehaviour:
   lowHpThreshold: 0.25
   normalColor: {r: 0.4980392, g: 1, b: 0, a: 1}
   lowHpColor: {r: 0.9, g: 0.2, b: 0.2, a: 1}
-  glowEnabled: 1
+  glowEnabled: 0
   glowColor: {r: 0.028630257, g: 1, b: 0, a: 1}
   glowLowHpColor: {r: 1, g: 0.75, b: 0.7, a: 1}
   glowPadding: 20
@@ -240,7 +240,7 @@ MonoBehaviour:
   lowHpThreshold: 0.25
   normalColor: {r: 0, g: 1, b: 0, a: 1}
   lowHpColor: {r: 0.9, g: 0.2, b: 0.2, a: 1}
-  glowEnabled: 1
+  glowEnabled: 0
   glowColor: {r: 0.05724919, g: 1, b: 0, a: 1}
   glowLowHpColor: {r: 1, g: 0.75, b: 0.7, a: 1}
   glowPadding: 20

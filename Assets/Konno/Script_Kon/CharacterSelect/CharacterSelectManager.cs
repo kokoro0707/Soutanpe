@@ -55,6 +55,9 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private Sprite[] characterIconSprites;
     [Header("キャラクター表示画像")]
     [SerializeField] private Sprite[] characterPreviewSprites;
+    [Header("バトル画面のHP横に出す顔画像 (任意)")]
+    [Tooltip("characterDataListと同じ順番。未設定(または該当の要素がnull)なら、キャラクターアイコン画像を顔として使う")]
+    [SerializeField] private Sprite[] characterFaceSprites;
 
     [Header("バトルシーン")]
     [SerializeField] private string battleSceneName = "Character";
@@ -1006,6 +1009,20 @@ Color.green
         }
     }
 
+    /// <summary>バトル画面用の顔画像。専用の画像があればそれ、無ければアイコン画像を使う。</summary>
+    private Sprite GetFaceSprite(int index)
+    {
+        if (index < 0) return null;
+
+        if (characterFaceSprites != null && index < characterFaceSprites.Length && characterFaceSprites[index] != null)
+            return characterFaceSprites[index];
+
+        if (characterIconSprites != null && index < characterIconSprites.Length)
+            return characterIconSprites[index];
+
+        return null;
+    }
+
     /// <summary>
     /// 現在選択されているキャラクターを保存する。
     /// </summary>
@@ -1041,6 +1058,9 @@ Color.green
 
         CharacterSelectionData.Instance
             .SetPlayer2Character(p2);
+
+        // バトルシーンのHP横の顔(FighterPortrait)用に、選ばれた顔画像も渡す
+        SelectedFaceData.Set(GetFaceSprite(player1Index), GetFaceSprite(player2Index));
 
         Debug.Log(
             $"【キャラ決定】" +

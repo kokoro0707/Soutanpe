@@ -71,6 +71,8 @@ public class HPBar : MonoBehaviour
     // ===== ここから追加: HP0検知用 =====
     /// <summary>SetHealthで割合(ratio)が0になった瞬間に一度だけ発火する</summary>
     public event System.Action OnDepleted;
+    /// <summary>SetHealthのたびに、現在のHP割合(0から1)を通知する。顔アイコン(FighterPortrait)などが購読する</summary>
+    public event System.Action<float> OnRatioChanged;
     private bool hasDepleted = false;
     // ===== 追加ここまで =====
 
@@ -127,6 +129,7 @@ public class HPBar : MonoBehaviour
     {
         if (max <= 0f) max = 1f;
         float ratio = Mathf.Clamp01(current / max);
+        OnRatioChanged?.Invoke(ratio);
         Debug.Log($"[HPBar] {name} SetHealth current={current} max={max} ratio={ratio} hpSlider={(hpSlider != null ? hpSlider.name : "null")}", this);
         if (hpSlider != null)
         {
