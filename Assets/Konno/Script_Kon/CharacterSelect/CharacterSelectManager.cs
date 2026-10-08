@@ -1014,71 +1014,42 @@ Color.green
         if (CharacterSelectionData.Instance == null)
         {
             Debug.LogError(
-                "CharacterSelectionDataが存在しません。",
-                this
+                "CharacterSelectionDataがありません"
             );
 
             return false;
         }
-
 
         if (characterDataList == null ||
             characterDataList.Length == 0)
         {
             Debug.LogError(
-                "Character Data Listが設定されていません。",
-                this
+                "CharacterDataListが設定されていません"
             );
 
             return false;
         }
 
+        FighterCharacterData p1 =
+            characterDataList[player1Index];
 
-        // P1
-        if (player1Index < 0 ||
-            player1Index >= characterDataList.Length ||
-            characterDataList[player1Index] == null)
-        {
-            Debug.LogError(
-                $"P1のCharacterDataがありません。Index={player1Index}",
-                this
-            );
+        FighterCharacterData p2 =
+            characterDataList[player2Index];
 
-            return false;
-        }
+        CharacterSelectionData.Instance
+            .SetPlayer1Character(p1);
 
-
-        // P2 / CPU
-        if (player2Index < 0 ||
-            player2Index >= characterDataList.Length ||
-            characterDataList[player2Index] == null)
-        {
-            Debug.LogError(
-                $"P2のCharacterDataがありません。Index={player2Index}",
-                this
-            );
-
-            return false;
-        }
-
-
-        CharacterSelectionData.Instance.SetPlayer1Character(
-            characterDataList[player1Index]
-        );
-
-        CharacterSelectionData.Instance.SetPlayer2Character(
-            characterDataList[player2Index]
-        );
-
+        CharacterSelectionData.Instance
+            .SetPlayer2Character(p2);
 
         Debug.Log(
-            $"キャラクター保存完了 " +
-            $"P1={characterDataList[player1Index].CharacterName} " +
-            $"P2={characterDataList[player2Index].CharacterName}",
-            this
+            $"【キャラ決定】" +
+            $"P1={p1.name} / " +
+            $"P2={p2.name}"
         );
 
         return true;
     }
+
 
 }

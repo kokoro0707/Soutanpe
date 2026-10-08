@@ -89,6 +89,8 @@ public sealed class FighterMoveController : MonoBehaviour
     //1ジャンプ中に空中攻撃を使用したか
     private bool airAttackUsed;
 
+    private bool moveEffectSpawned;
+
     private GameObject currentMoveEffect;
 
     public bool IsAttacking =>
@@ -381,10 +383,7 @@ public sealed class FighterMoveController : MonoBehaviour
         // 通常コンボ状態を解除
         ResetCombo();
 
-        StartMoveInternal(
-            move,
-            facingDirection
-        );
+        StartMoveInternal(move,facingDirection);
 
         Debug.Log(
             $"{name}：必殺技 {move.MoveName} 開始",
@@ -654,6 +653,7 @@ public sealed class FighterMoveController : MonoBehaviour
         int facingDirection
     )
     {
+        moveEffectSpawned = false;
         // ★前の技の特殊移動を解除
         motor?.ClearAttackMoveVelocity();
 
@@ -930,7 +930,6 @@ public sealed class FighterMoveController : MonoBehaviour
     /// </summary>
     private void EndMove()
     {
-        HideMoveEffect();
         // ★SP攻撃だったかを先に保存
         bool wasSPAttack =
             moveSet != null &&
@@ -1003,7 +1002,6 @@ public sealed class FighterMoveController : MonoBehaviour
         ResetCombo();
 
         comboResetCount = 0;
-        HideMoveEffect();
     }
 
     /// <summary>
@@ -1338,16 +1336,9 @@ public sealed class FighterMoveController : MonoBehaviour
 
     private void UpdateMoveEffect()
     {
+        // 技がない
         if (currentMove == null)
         {
-            HideMoveEffect();
-            return;
-        }
-
-        // ActiveFrame以外は消す
-        if (!currentMove.IsActiveFrame(currentMoveFrame))
-        {
-            HideMoveEffect();
             return;
         }
 
@@ -1357,16 +1348,26 @@ public sealed class FighterMoveController : MonoBehaviour
             return;
         }
 
-        // すでに出ているなら作り直さない
-        if (currentMoveEffect != null)
+        // この技ですでにエフェクトを出している
+        if (moveEffectSpawned)
         {
             return;
         }
 
+        // ActiveFrameに入るまでは出さない
+        if (!currentMove.IsActiveFrame(currentMoveFrame))
+        {
+            return;
+        }
+
+        // =========================
+        // エフェクト生成
+        // =========================
+
         Vector2 offset =
             currentMove.EffectOffset;
 
-        // 左向きならXを反転
+        // 左向きなら位置も左右反転
         offset.x *= attackFacingDirection;
 
         Vector3 position =
@@ -1385,7 +1386,10 @@ public sealed class FighterMoveController : MonoBehaviour
                 transform
             );
 
-        // 左向きならエフェクトも左右反転
+        // =========================
+        // 左右反転
+        // =========================
+
         Vector3 scale =
             currentMoveEffect.transform.localScale;
 
@@ -1395,7 +1399,11 @@ public sealed class FighterMoveController : MonoBehaviour
 
         currentMoveEffect.transform.localScale =
             scale;
+
+        // この技ではもう生成しない
+        moveEffectSpawned = true;
     }
+
 
     private void HideMoveEffect()
     {
@@ -1408,6 +1416,21 @@ public sealed class FighterMoveController : MonoBehaviour
 
         currentMoveEffect = null;
     }
+
+    /// <summary>
+    /// 前必殺アニメーションのAnimation Eventから呼ぶ
+    /// </summary>
+    public void EndMoveEffect()
+    {
+        if (currentMoveEffect == null)
+        {
+            return;
+        }
+
+        Destroy(currentMoveEffect);
+        currentMoveEffect = null;
+    }
+
 
 
 }
