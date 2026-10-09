@@ -21,11 +21,24 @@ MonoBehaviour:
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
-  hitboxOffset: {x: 1.1, y: 0}
+  hitboxes:
+  - enabled: 0
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 1}
+  - enabled: 0
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 1}
+  - enabled: 0
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 1}
   animationIndex: 41
   spCost: 0
+  effectPrefab: {fileID: 0}
+  effectOffset: {x: 0, y: 0}
+  useLaunch: 0
+  launchVelocityY: 8
+  launchFrame: 3
   useMove: 0
   moveSpeed: 15
   moveStartFrame: 0
   moveEndFrame: 0
-  hitboxSize: {x: 4, y: 1}

@@ -21,7 +21,16 @@ MonoBehaviour:
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
-  hitboxOffset: {x: 1.8, y: 1.3}
+  hitboxes:
+  - enabled: 0
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 1}
+  - enabled: 0
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 1}
+  - enabled: 0
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 1}
   animationIndex: 31
   spCost: 0
   effectPrefab: {fileID: 5664462387379577307, guid: 5a46d19a7dde06f4e82d7677a9c2f226, type: 3}
@@ -33,4 +42,3 @@ MonoBehaviour:
   moveSpeed: 15
   moveStartFrame: 0
   moveEndFrame: 0
-  hitboxSize: {x: 4.4, y: 1}

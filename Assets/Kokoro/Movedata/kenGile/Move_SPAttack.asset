@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b59ad2c635d79c94db287e898f47b1cd, type: 3}
   m_Name: Move_SPAttack
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
+  hitboxOffset: {x: 1, y: 0}
+  hitboxSize: {x: 1.2, y: 1}
   moveName: "SP\u653B\u6483 "
   startupFrames: 5
   activeFrames: 4
@@ -21,7 +23,10 @@ MonoBehaviour:
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
-  hitboxOffset: {x: 1, y: 0}
+  hitboxes:
+  - enabled: 0
+    offset: {x: 0, y: 0}
+    size: {x: 1, y: 1}
   animationIndex: 51
   spCost: 1
   effectPrefab: {fileID: 6209891425211023825, guid: 094db840605b30d4486e3029cdeed222, type: 3}
@@ -33,4 +38,3 @@ MonoBehaviour:
   moveSpeed: 30
   moveStartFrame: 4
   moveEndFrame: 20
-  hitboxSize: {x: 1.2, y: 1}
