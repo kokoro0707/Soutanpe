@@ -2322,7 +2322,7 @@ GameObject:
   - component: {fileID: 715131511}
   - component: {fileID: 715131510}
   m_Layer: 0
-  m_Name: GameObject (1)
+  m_Name: BGM_Character
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2340,15 +2340,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79de044e8af202844bc4ce66456f9947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneBGM
-  bgm: {fileID: 8300000, guid: 8a83415fed1922949a4e6c838a91b1dd, type: 3}
+  bgm: {fileID: 8300000, guid: 5e818782e75bf1e4ca3bac194c8c0c3a, type: 3}
   randomBgms: []
-  volume: 1
+  volume: 0.5
   loop: 1
   fadeTime: 0.5
   startDelay: 0
   restartIfSame: 0
   stopIfEmpty: 1
-  stopOnDestroy: 0
+  restartOnNewRound: 0
+  matchScoreManager: {fileID: 0}
+  roundRestartFade: 0.3
+  pickNewRandomEachRound: 0
+  stopOnMatchEnd: 0
+  matchEndBgm: {fileID: 0}
+  matchEndBgmLoop: 0
+  matchEndFade: 1
+  stopOnDestroy: 1
 --- !u!4 &715131511
 Transform:
   m_ObjectHideFlags: 0
@@ -2519,7 +2527,7 @@ GameObject:
   - component: {fileID: 967507096}
   - component: {fileID: 967507095}
   m_Layer: 0
-  m_Name: AudioManager
+  m_Name: AudioManager aaaa
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2732,7 +2740,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
   bgmSource: {fileID: 967507096}
-  sfxSource: {fileID: 967507095}
+  sfxSource: {fileID: 967507096}
   defaultMasterVolume: 0.5
   defaultBgmVolume: 0.5
   defaultSfxVolume: 0.5

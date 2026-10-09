@@ -39,13 +39,90 @@ public class SceneBGM : MonoBehaviour
     [Tooltip("BGMが未設定の時、前のシーンの曲を止める(OFFならそのまま流し続ける)")]
     [SerializeField] private bool stopIfEmpty = true;
 
+    [Header("ラウンド連動(バトルシーン用)")]
+    [Tooltip("ONにすると、次のラウンドに進んだ時にBGMを頭から流し直す")]
+    [SerializeField] private bool restartOnNewRound = false;
+    [Tooltip("未設定ならシーン内から自動で探す")]
+    [SerializeField] private MatchScoreManager matchScoreManager;
+    [Tooltip("ラウンド切り替え時のフェード時間(秒)。0で即頭出し")]
+    [SerializeField] private float roundRestartFade = 0.3f;
+    [Tooltip("Random Bgms を使っている時、ラウンドごとに曲を選び直す")]
+    [SerializeField] private bool pickNewRandomEachRound = false;
+
+    [Header("試合終了時(ラウンド連動ONの時のみ)")]
+    [Tooltip("試合が決着したらBGMを止める")]
+    [SerializeField] private bool stopOnMatchEnd = false;
+    [Tooltip("試合が決着したら流す曲(勝利ジングル等)。未設定なら何もしない")]
+    [SerializeField] private AudioClip matchEndBgm;
+    [SerializeField] private bool matchEndBgmLoop = false;
+    [SerializeField] private float matchEndFade = 1f;
+
     [Header("シーン終了時")]
     [Tooltip("このシーンから出る時に曲を止める(次のシーンのSceneBGMに任せるなら OFF のままでOK)")]
     [SerializeField] private bool stopOnDestroy = false;
 
+    private AudioClip currentClip;
+    private int lastRound = -1;
+    private bool matchEndHandled;
+
     private void Start()
     {
+        if (restartOnNewRound && matchScoreManager == null)
+            matchScoreManager = FindFirstObjectByType<MatchScoreManager>();
+        if (matchScoreManager != null)
+            lastRound = matchScoreManager.CurrentRound;
+
         StartCoroutine(PlayRoutine());
+    }
+
+    private void Update()
+    {
+        if (!restartOnNewRound || matchScoreManager == null) return;
+
+        // 試合決着
+        if (matchScoreManager.MatchIsOver)
+        {
+            if (!matchEndHandled)
+            {
+                matchEndHandled = true;
+                HandleMatchEnd();
+            }
+            return;
+        }
+        matchEndHandled = false;
+
+        // ラウンドが進んだ(または再戦でラウンド1に戻った)
+        int round = matchScoreManager.CurrentRound;
+        if (round != lastRound)
+        {
+            lastRound = round;
+            RestartForNewRound();
+        }
+    }
+
+    /// <summary>BGMを頭から流し直す(外部から呼んでもOK)</summary>
+    public void RestartForNewRound()
+    {
+        AudioManager am = GetOrCreateAudioManager();
+        if (am == null) return;
+
+        if (pickNewRandomEachRound || currentClip == null)
+            currentClip = PickClip();
+        if (currentClip == null) return;
+
+        am.PlayBGM(currentClip, volume, roundRestartFade, loop, true);
+        Debug.Log($"[SceneBGM] ラウンド{lastRound} 開始 → BGMを頭から再生", this);
+    }
+
+    private void HandleMatchEnd()
+    {
+        AudioManager am = GetOrCreateAudioManager();
+        if (am == null) return;
+
+        if (matchEndBgm != null)
+            am.PlayBGM(matchEndBgm, volume, matchEndFade, matchEndBgmLoop, true);
+        else if (stopOnMatchEnd)
+            am.StopBGM(matchEndFade);
     }
 
     private IEnumerator PlayRoutine()
@@ -57,6 +134,7 @@ public class SceneBGM : MonoBehaviour
         if (am == null) yield break;
 
         AudioClip clip = PickClip();
+        currentClip = clip;
         if (clip != null)
         {
             am.PlayBGM(clip, volume, fadeTime, loop, restartIfSame);
