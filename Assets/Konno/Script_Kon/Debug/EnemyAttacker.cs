@@ -45,7 +45,6 @@ public class EnemyAttacker : MonoBehaviour
         {
             target.Damage(attackDamage);
             cooldownTimer = attackCooldown;
-            Debug.Log($"[EnemyAttacker] {gameObject.name} が {target.gameObject.name} に {attackDamage} ダメージ。残りHP: {target.currentHP}/{target.maxHP}");
         }
     }
 

@@ -30,7 +30,6 @@ public sealed class BattleModeSetup : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("【BattleModeSetup】Start");
 
         SetupCharacters();
         SetupBattleMode();
@@ -39,7 +38,6 @@ public sealed class BattleModeSetup : MonoBehaviour
 
     private void SetupCharacters()
     {
-        Debug.Log("【BattleModeSetup】キャラ反映開始");
 
         // 選択データがバトルシーンまで残っているか
         if (CharacterSelectionData.Instance == null)
@@ -57,14 +55,6 @@ public sealed class BattleModeSetup : MonoBehaviour
         FighterCharacterData p2Data =
             CharacterSelectionData.Instance.Player2Character;
 
-
-        Debug.Log(
-            $"【選択結果】P1 = {(p1Data != null ? p1Data.name : "NULL")}"
-        );
-
-        Debug.Log(
-            $"【選択結果】P2 = {(p2Data != null ? p2Data.name : "NULL")}"
-        );
 
 
         // =========================
@@ -85,9 +75,6 @@ public sealed class BattleModeSetup : MonoBehaviour
         }
         else
         {
-            Debug.Log(
-                $"【P1適用】{p1Data.name}"
-            );
 
             player1CharacterSetup.SetCharacterData(
                 p1Data
@@ -113,9 +100,6 @@ public sealed class BattleModeSetup : MonoBehaviour
         }
         else
         {
-            Debug.Log(
-                $"【P2適用】{p2Data.name}"
-            );
 
             player2CharacterSetup.SetCharacterData(
                 p2Data
@@ -171,9 +155,6 @@ public sealed class BattleModeSetup : MonoBehaviour
             player2LocalInput
         );
 
-        Debug.Log(
-            "バトルモード：PLAYER VS PLAYER"
-        );
     }
 
 
@@ -197,8 +178,5 @@ public sealed class BattleModeSetup : MonoBehaviour
             player2CPUInput
         );
 
-        Debug.Log(
-            "バトルモード：PLAYER VS CPU"
-        );
     }
 }

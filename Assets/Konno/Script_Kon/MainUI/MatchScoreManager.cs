@@ -56,6 +56,14 @@ public class MatchScoreManager : MonoBehaviour
     [Tooltip("次ラウンドの「ROUND2」「ROUND3」演出を再生するために使うBattleStartController")]
     [SerializeField] private BattleStartController battleStartController;
 
+    [Header("ファイター状態リセット")]
+    [SerializeField]
+    private FighterStateMachine player1StateMachine;
+
+    [SerializeField]
+    private FighterStateMachine player2StateMachine;
+
+
     [Header("イベント")]
     [Tooltip("ラウンドの勝敗(または引き分け)が決まったが、まだ試合全体の決着はついていない時に呼ばれる。" +
              "次ラウンドのROUND演出が再生される直前のタイミング。" +
@@ -133,12 +141,33 @@ public class MatchScoreManager : MonoBehaviour
 
         // まだ決着していない → 次のラウンドへ
         CurrentRound++;
+
+        // 死亡時のKnockDown状態を解除
+        if (player1StateMachine != null)
+        {
+            player1StateMachine.TryChangeState(
+                FighterState.Idle
+            );
+        }
+
+        if (player2StateMachine != null)
+        {
+            player2StateMachine.TryChangeState(
+                FighterState.Idle
+            );
+        }
+
+        // HP・位置など既存のリセット処理
         onRoundContinue?.Invoke();
 
+        // ROUND2 / ROUND3演出
         if (battleStartController != null)
         {
-            battleStartController.PlayRound(CurrentRound);
+            battleStartController.PlayRound(
+                CurrentRound
+            );
         }
+
     }
 
     private void FinishMatch(bool player1Won, bool isDraw)

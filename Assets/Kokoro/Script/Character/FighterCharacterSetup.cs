@@ -36,11 +36,6 @@ public sealed class FighterCharacterSetup : MonoBehaviour
 
         characterData = data;
 
-        Debug.Log(
-            $"ÅyFighterCharacterSetupÅz" +
-            $"{name} Ç… {data.name} Çê›íË"
-        );
-
         ApplyCharacterData();
     }
 
@@ -90,11 +85,6 @@ public sealed class FighterCharacterSetup : MonoBehaviour
 
         if (animator != null)
         {
-            Debug.Log(
-                $"ÅyAnimatorïœçXÅz" +
-                $"{name} Å® " +
-                $"{characterData.AnimatorController?.name}"
-            );
 
             animator.runtimeAnimatorController =
                 characterData.AnimatorController;
@@ -109,11 +99,5 @@ public sealed class FighterCharacterSetup : MonoBehaviour
             );
         }
 
-
-        Debug.Log(
-            $"{name} Ç… " +
-            $"{characterData.name} ÇìKópÇµÇ‹ÇµÇΩ",
-            this
-        );
     }
 }

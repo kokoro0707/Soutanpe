@@ -65,12 +65,10 @@ public class HealthSystem : MonoBehaviour
         OnHealthChanged?.Invoke(currentHP, maxHP);
 
         string guardText = wasGuarded ? "(ガード削り)" : "";
-        Debug.Log($"[HealthSystem] {gameObject.name} が {finalDamage} ダメージ{guardText}。残りHP: {currentHP}/{maxHP}");
 
         if (currentHP <= 0)
         {
             OnDeath?.Invoke();
-            Debug.Log($"[HealthSystem] {gameObject.name} は死亡しました。");
         }
     }
 

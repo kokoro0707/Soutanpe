@@ -193,13 +193,6 @@ public sealed class LocalFighterInputSource :
             comboresetAction!=null &&
             spAttackAction !=null;
 
-        if (isInitialized)
-        {
-            Debug.Log(
-                $"{name}ÇÃInput Actionì«Ç›çûÇ›ê¨å˜",
-                this
-            );
-        }
     }
 
     private InputAction FindAction(
@@ -245,10 +238,7 @@ public sealed class LocalFighterInputSource :
 
         bool jumpButtonPressed =
             jumpAction.WasPressedThisFrame();
-        if (grabAction.WasPressedThisFrame())
-        {
-            Debug.Log("Åõ Ç¬Ç©Ç›ì¸óÕÅI");
-        }
+
 
 
         FighterInputData inputData =

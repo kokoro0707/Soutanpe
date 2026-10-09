@@ -48,11 +48,6 @@ public sealed class FighterHealth : MonoBehaviour
         CurrentHP =
             Mathf.Max(CurrentHP - damage, 0);
 
-        Debug.Log(
-            $"{name}が{damage}ダメージを受けました。" +
-            $" 残りHP：{CurrentHP}/{maxHP}",
-            this
-        );
 
         OnHealthChanged?.Invoke(
             CurrentHP,
@@ -67,11 +62,9 @@ public sealed class FighterHealth : MonoBehaviour
         if (stateMachine != null)
         {
             stateMachine.ForceChangeState(
-                FighterState.KO
+                FighterState.KnockDown
             );
         }
-
-        Debug.Log($"{name} KO", this);
 
         OnKnockedOut?.Invoke();
     }

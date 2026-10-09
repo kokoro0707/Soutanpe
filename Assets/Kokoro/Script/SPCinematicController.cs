@@ -36,7 +36,6 @@ public sealed class SPCinematicController : MonoBehaviour
     /// </summary>
     public IEnumerator PlaySPFreeze()
     {
-        Debug.Log("SP演出：アニメーション開始待ち");
 
         // ==================================
         // ★ここが重要
@@ -51,7 +50,6 @@ public sealed class SPCinematicController : MonoBehaviour
         // ==================================
         SetOverlayAlpha(maxAlpha);
 
-        Debug.Log("SP演出：暗転＆停止");
 
 
         // ==================================
@@ -73,7 +71,6 @@ public sealed class SPCinematicController : MonoBehaviour
         // ==================================
         Time.timeScale = previousTimeScale;
 
-        Debug.Log("SP演出：時間再開");
 
 
         // ★ここでは暗転を解除しない

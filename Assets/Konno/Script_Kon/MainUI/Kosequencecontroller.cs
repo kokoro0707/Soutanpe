@@ -28,6 +28,9 @@ public class KoSequenceController : MonoBehaviour
     [SerializeField] private FighterHealth player1Health;
     [SerializeField] private FighterHealth player2Health;
 
+    [SerializeField] private FighterStateMachine player1StateMachine;
+    [SerializeField] private FighterStateMachine player2StateMachine;
+
     [Tooltip("KO演出中に操作を受け付けなくしたいキャラクターのFighterController(任意)")]
     [SerializeField] private FighterController[] controllersToLock;
 
@@ -149,14 +152,18 @@ public class KoSequenceController : MonoBehaviour
 
     private void HandlePlayer1KnockedOut()
     {
-        // Player1が倒された
-        RegisterKnockout(player1IsLoser: true);
+        RegisterKnockout(
+            player1IsLoser: true
+        );
     }
 
     private void HandlePlayer2KnockedOut()
     {
-        RegisterKnockout(player1IsLoser: false);
+        RegisterKnockout(
+            player1IsLoser: false
+        );
     }
+
 
     private void RegisterKnockout(bool player1IsLoser)
     {
@@ -255,19 +262,12 @@ public class KoSequenceController : MonoBehaviour
             bool useOverlay = fadeOverlay != null;
             bool useFadeManager = !useOverlay && FadeManager.Instance != null;
 
-            Debug.Log(
-                $"[KoSequenceController] ラウンド間フェード判定: Fade Between Rounds={fadeBetweenRounds}, " +
-                $"試合が続く={!matchScoreManager.WouldEndMatch(result)}, " +
-                $"FadeManager={(useFadeManager ? "あり" : "なし")}, " +
-                $"Fade Overlay={(fadeOverlay != null ? "あり" : "なし")}, " +
-                $"現在ラウンド={matchScoreManager.CurrentRound}", this);
-
             if (fadeAroundReset && !useFadeManager && !useOverlay)
             {
                 Debug.LogWarning(
                     "[KoSequenceController] 暗転できません。FadeManagerがシーンに存在しない" +
                     "(メインメニューから開始していない)ため、Fade Overlay(CanvasGroup)を" +
-                    "割り当てるか、メインメニューから起動してください。", this);
+                    "割り当てるか、メインメニSSューから起動してください。", this);
                 fadeAroundReset = false;
             }
 
@@ -294,10 +294,6 @@ public class KoSequenceController : MonoBehaviour
                 else
                     StartCoroutine(FadeOverlayRoutine(1f, 0f));
             }
-
-            Debug.Log(
-                $"[KoSequenceController] ラウンド結果登録後: スコア P1={matchScoreManager.Player1Score} - P2={matchScoreManager.Player2Score}, " +
-                $"試合終了={matchScoreManager.MatchIsOver}, 現在ラウンド={matchScoreManager.CurrentRound}", this);
 
             if (matchScoreManager.MatchIsOver)
             {
@@ -395,8 +391,6 @@ public class KoSequenceController : MonoBehaviour
     /// </summary>
     private IEnumerator ShowResultRoutine()
     {
-        Debug.Log(
-            $"[KoSequenceController] リザルト表示を開始: Result Panel={(resultPanel != null ? resultPanel.name : "未設定")}", this);
 
         if (resultPanel == null)
         {

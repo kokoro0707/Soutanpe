@@ -84,7 +84,6 @@ public class GameModePanel : MonoBehaviour
         changingScene = true;
         decided = true;
 
-        Debug.Log("モード選択 → MainMenu");
 
         if (FadeManager.Instance != null)
         {
@@ -125,7 +124,6 @@ public class GameModePanel : MonoBehaviour
             (player1Pad != null &&
                 player1Pad.buttonEast.wasPressedThisFrame))
         {
-            Debug.Log("GameModePanel : B");
             PlaySe(cancelSe);
             BackToMainMenu();
             return;
@@ -225,10 +223,6 @@ public class GameModePanel : MonoBehaviour
     {
         // この項目にシーン遷移が設定されていれば、そのシーンへ移動する
         ItemSceneLink link = GetSceneLink(currentIndex);
-        Debug.Log(
-            $"[GameModePanel] 決定: index={currentIndex}, " +
-            $"シーン設定={(link != null ? link.sceneName : "なし(キャラ選択へ進みます)")}, " +
-            $"Item Scene Links の要素数={(itemSceneLinks == null ? 0 : itemSceneLinks.Length)}", this);
 
         if (link != null)
         {
@@ -270,8 +264,6 @@ public class GameModePanel : MonoBehaviour
         {
             GameModeManager.Instance.CurrentMode = link.mode;
         }
-
-        Debug.Log($"モード選択 → シーン遷移: {link.sceneName}");
 
         if (FadeManager.Instance != null)
         {

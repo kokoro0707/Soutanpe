@@ -92,10 +92,6 @@ public sealed class LocalTwoPlayerDeviceSetup : MonoBehaviour
             Keyboard.current
         );
 
-        Debug.Log(
-            "Player1：ゲームパッド / Player2：キーボード",
-            this
-        );
     }
 
     /// <summary>
@@ -128,11 +124,6 @@ public sealed class LocalTwoPlayerDeviceSetup : MonoBehaviour
             player2Gamepad
         );
 
-        Debug.Log(
-            $"Player1：{player1Gamepad.displayName} / " +
-            $"Player2：{player2Gamepad.displayName}",
-            this
-        );
     }
 
     /// <summary>
@@ -164,10 +155,7 @@ public sealed class LocalTwoPlayerDeviceSetup : MonoBehaviour
             Keyboard.current
         );
 
-        Debug.Log(
-            "Player1：キーボード / Player2：キーボード",
-            this
-        );
+
     }
 
     /// <summary>
