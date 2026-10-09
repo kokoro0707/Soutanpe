@@ -72,7 +72,6 @@ public class TitleManager : MonoBehaviour
     private void StartGame()
     {
         started = true;
-        Debug.Log("ƒQ[ƒ€ŠJn");
         FadeManager.Instance.FadeToScene(nextScene);
     }
 }

@@ -61,10 +61,5 @@ public sealed class FighterSPGaugeUI : MonoBehaviour
         fillImage.fillAmount =
             current / max;
 
-        Debug.Log(
-            $"SP UI : {current:F2} / {max:F2} " +
-            $"Fill={fillImage.fillAmount:F2}",
-            this
-        );
     }
 }

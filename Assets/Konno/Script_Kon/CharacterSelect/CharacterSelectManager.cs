@@ -189,7 +189,6 @@ Color.green
                 selectState == SelectState.Player1 &&
                 !player1Decided))
         {
-            Debug.Log("CharacterSelectManager : B");
             PlaySe(cancelSe);
             BackToGameMode();
             return;
@@ -211,7 +210,6 @@ Color.green
 
         UpdateGamepads();
 
-        //Debug.Log(player1Pad);
         switch (selectState)
         {
             case SelectState.Player1:
@@ -341,7 +339,6 @@ Color.green
                     PlaySe(cancelSe);
                     UpdateSelectionColor();
 
-                    Debug.Log("P1 決定取消");
                 }
             }
             return;
@@ -367,7 +364,6 @@ Color.green
 
         if (IsDecidePressed(player1Pad))
         {
-            Debug.Log("Aボタン");
 
             player1Decided = true;
             PlaySe(decideSe);
@@ -381,18 +377,15 @@ Color.green
                 );
             }
             // 仮:Prefab保存なし
-            Debug.Log("Player1 キャラクター決定 Index = " + player1Index);
 
             if (cpuMode)
                 selectState = SelectState.CPU;
             else if (player2Active)
                 selectState = SelectState.Player2;
 
-            Debug.Log("UpdateSelectionColor前");
 
             UpdateSelectionColor();
 
-            Debug.Log("UpdateSelectionColor後");
             // 両方決定したか確認
             CheckBothPlayersDecided();
         }
@@ -410,7 +403,6 @@ Color.green
                 PlaySe(cancelSe);
                 UpdateSelectionColor();
 
-                Debug.Log("P2 決定取消");
             }
             return;
         }
@@ -448,7 +440,6 @@ Color.green
             }
 
             // 仮:Prefab保存なし
-            Debug.Log("Player2 キャラクター決定 Index = " + player2Index);
             UpdateSelectionColor();
             // 両方決定したか確認
             CheckBothPlayersDecided();
@@ -462,7 +453,6 @@ Color.green
             PlaySe(cancelSe);
             UpdateSelectionColor();
 
-            Debug.Log("P1選択へ戻る");
         }
     }
     private void CPUInput()
@@ -510,8 +500,6 @@ Color.green
                 );
             }
             // 仮:Prefab保存なし
-            Debug.Log("CPU キャラクター決定 Index = " + player2Index);
-            Debug.Log("CPUキャラクター決定");
 
             UpdateSelectionColor();
             // 両方決定したか確認
@@ -528,7 +516,6 @@ Color.green
                 PlaySe(cancelSe);
                 UpdateSelectionColor();
 
-                Debug.Log("CPU決定取消");
             }
             else if (selectState == SelectState.CPU)
             {
@@ -538,8 +525,6 @@ Color.green
                 selectState = SelectState.Player1;
                 PlaySe(cancelSe);
                 UpdateSelectionColor();
-
-                Debug.Log("P1選択へ戻る");
             }
         }
     }
@@ -812,7 +797,6 @@ Color.green
         // Player1とPlayer2の両方が決定した時だけ表示
         if (player1Decided && player2Decided)
         {
-            Debug.Log("両方決定 → 確認パネルを開く");
 
             ShowConfirmPanel();
         }
@@ -911,8 +895,6 @@ Color.green
         }
 
 
-        Debug.Log("決定 → バトル開始");
-
 
         isChangingScene = true;
         isConfirming = false;
@@ -952,7 +934,6 @@ Color.green
 
         UpdateConfirmSelection();
 
-        Debug.Log("確認パネル表示");
     }
     private void OpenConfirmPanel()
     {
@@ -986,7 +967,6 @@ Color.green
 
         UpdateSelectionColor();
 
-        Debug.Log("確認キャンセル → Player2/CPUを選び直し");
     }
     private void UpdateConfirmSelection()
     {
@@ -1062,11 +1042,6 @@ Color.green
         // バトルシーンのHP横の顔(FighterPortrait)用に、選ばれた顔画像も渡す
         SelectedFaceData.Set(GetFaceSprite(player1Index), GetFaceSprite(player2Index));
 
-        Debug.Log(
-            $"【キャラ決定】" +
-            $"P1={p1.name} / " +
-            $"P2={p2.name}"
-        );
 
         return true;
     }

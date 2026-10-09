@@ -343,10 +343,6 @@ public sealed class FighterController : MonoBehaviour
     {
         if (newInputSource == null)
         {
-            Debug.LogError(
-                $"{name}：InputSourceにnullが渡されました。",
-                this
-            );
 
             return;
         }
@@ -375,10 +371,5 @@ public sealed class FighterController : MonoBehaviour
         // trueのときだけReadInput()を呼ぶためONにする
         useLocalInput = true;
 
-        Debug.Log(
-            $"{name}：InputSource変更 → " +
-            $"{newInputSource.GetType().Name}",
-            this
-        );
     }
 } 

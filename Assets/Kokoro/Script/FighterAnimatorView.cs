@@ -184,6 +184,10 @@ public sealed class FighterAnimatorView : MonoBehaviour
                 actionState = 8;
                 break;
 
+            case FighterState.KnockDown:
+                actionState = 9;
+                break;
+
             case FighterState.Attack:
                 // çUåÇÇÕAttackIndexë§Ç≈ä«óùÇ∑ÇÈ
                 actionState = 0;

@@ -194,14 +194,6 @@ public sealed class AttackHitbox : MonoBehaviour
             ownerHealth != null
                 ? ownerHealth.name
                 : name;
-
-        Debug.Log(
-            $"{attackerName}‚Ì" +
-            $"{currentMove.MoveName}‚ª" +
-            $"{targetHealth.name}‚ÉÚG " +
-            $"•â³={currentDamageMultiplier:P0}",
-            this
-        );
     }
 
 

@@ -323,11 +323,9 @@ public class GameResultManager : MonoBehaviour
 
         Time.timeScale = 1f;
 
-        Debug.Log("Result ¨ MainMenu");
 
         if (FadeManager.Instance != null)
         {
-            Debug.Log("FadeManager‚ ‚è ¨ FadeŠJn");
 
             FadeManager.Instance.FadeToScene("MainMenu");
         }
@@ -335,7 +333,6 @@ public class GameResultManager : MonoBehaviour
         {
             Debug.LogError("FadeManager‚ªŒ©‚Â‚©‚ç‚È‚¢(‹C‚É‚µ‚È‚¢‚Å‚Ë)");
 
-            SceneManager.LoadScene("MainMenu");
         }
     }
 }

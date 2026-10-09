@@ -113,8 +113,6 @@ public class PlayerAttack : MonoBehaviour
             {
                 enemyRb.AddForce(new Vector2(facingDir * move.knockback, 1f), ForceMode2D.Impulse);
             }
-
-            Debug.Log($"[PlayerAttack] {move.moveName} ヒット! ダメージ:{move.damage}");
         }
 
         if (move.recovery > 0f)

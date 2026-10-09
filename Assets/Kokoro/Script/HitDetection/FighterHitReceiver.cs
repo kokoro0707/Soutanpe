@@ -236,11 +236,6 @@ public sealed class FighterHitReceiver : MonoBehaviour
         stateMachine.ForceChangeState(
             FighterState.HitStun
         );
-
-        Debug.Log(
-            $"{name}が投げを受けました。",
-            this
-        );
     }
 
 
@@ -323,12 +318,6 @@ public sealed class FighterHitReceiver : MonoBehaviour
             move.BlockKnockback,
             attackDirection
         );
-
-        Debug.Log(
-            $"{name}が{move.MoveName}をガード " +
-            $"ガード硬直：{reactionFramesRemaining}",
-            this
-        );
     }
 
     private void ReceiveHit(
@@ -396,15 +385,6 @@ public sealed class FighterHitReceiver : MonoBehaviour
             FighterState.HitStun
         );
 
-
-        Debug.Log(
-            $"{name}が{move.MoveName}を受けた " +
-            $"Damage={finalDamage} " +
-            $"補正={damageMultiplier:P0} " +
-            $"HitStun={reactionFramesRemaining} " +
-            $"Combo={ComboCount}",
-            this
-        );
     }
 
     /// <summary>

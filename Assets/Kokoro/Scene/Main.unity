@@ -631,6 +631,7 @@ MonoBehaviour:
   moveController: {fileID: 0}
   hitReceiver: {fileID: 0}
   facingController: {fileID: 0}
+  grabController: {fileID: 0}
   stateMachine: {fileID: 1973390478}
 --- !u!114 &1973390477
 MonoBehaviour:
@@ -689,8 +690,13 @@ MonoBehaviour:
   jumpActionName: Jump
   lightAttackActionName: LightAttack
   heavyAttackActionName: HeavyAttack
+  assistComboActionName: AssistCombo
+  comboResetActionName: ComboReset
+  SpAttackActionName: SPAttack
   directionPressThreshold: 0.55
   directionReleaseThreshold: 0.25
+  specialAttackActionName: SpecialAttack
+  grabActionName: Grab
 --- !u!50 &1973390480
 Rigidbody2D:
   serializedVersion: 5
@@ -1245,6 +1251,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &174315765360376992
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6132761878253289296, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.65145
+      objectReference: {fileID: 0}
+    - target: {fileID: 6132761878253289296, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -4.04
+      objectReference: {fileID: 0}
+    - target: {fileID: 6132761878253289296, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6132761878253289296, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6132761878253289296, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6132761878253289296, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6132761878253289296, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6132761878253289296, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6132761878253289296, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6132761878253289296, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6209891425211023825, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+      propertyPath: m_Name
+      value: SP_IssenEffect
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 094db840605b30d4486e3029cdeed222, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1257,3 +1320,4 @@ SceneRoots:
   - {fileID: 1973390483}
   - {fileID: 97203860}
   - {fileID: 2111052097}
+  - {fileID: 174315765360376992}

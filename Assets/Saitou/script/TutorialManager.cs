@@ -219,23 +219,19 @@ public class TutorialManager02 : MonoBehaviour
 
                 if (leftInput && !rightInput)
                 {
-                    Debug.Log("左入力");
                     backwardTime += Time.deltaTime;
                     if (backwardTime >= backwardRequiredTime)
                     {
                         backwardCompleted = true;
-                        Debug.Log("左OK");
                     }
                 }
 
                 if (rightInput && !leftInput)
                 {
-                    Debug.Log("右入力");
                     forwardTime += Time.deltaTime;
                     if (forwardTime >= forwardRequiredTime)
                     {
                         forwardCompleted = true;
-                        Debug.Log("右OK");
                     }
                 }
 
@@ -259,10 +255,8 @@ public class TutorialManager02 : MonoBehaviour
                 {
                     jumpCount++;
 
-                    Debug.Log("ジャンプを検知しました！ 回数: " + jumpCount);
                     if (jumpCount >= RequiredJumpCount)
                     {
-                        Debug.Log("ジャンプOK！");
                         lightSecondStarted = false;
                         player02HPBeforeSecondLight = 0;
 
@@ -300,18 +294,12 @@ public class TutorialManager02 : MonoBehaviour
                     player02HPBeforeSecondLight = player02Health.CurrentHP;
 
 
-
-                    Debug.Log(
-                        "弱攻撃2段目開始！ 開始時HP: "
-                        + player02HPBeforeSecondLight
-                    );
                 }
 
                 if (lightSecondStarted)
                 {
                     if (player02Health.CurrentHP < player02HPBeforeSecondLight)
                     {
-                        Debug.Log("弱攻撃2段目ヒット！ OK！");
 
                         lightAttackCount += 1;
                         player02Health.ResetHealth();
@@ -321,7 +309,6 @@ public class TutorialManager02 : MonoBehaviour
 
                 if (lightAttackCount >= RequiredlightAttackCount)
                 {
-                    Debug.Log("弱攻撃チュートリアルOK！");
 
                     Debug.Log("saiso0");
                     minitext.text = "  強攻撃\n  3段まで";
@@ -421,7 +408,6 @@ public class TutorialManager02 : MonoBehaviour
 
                 if (strongAttackCount >= RequiredStrongAttackCount)
                 {
-                    Debug.Log("強攻撃チュートリアルOK！");
 
                     ybuttonimage.SetActive(false);
                     ybuttonimage2.SetActive(false);
@@ -452,10 +438,6 @@ public class TutorialManager02 : MonoBehaviour
                 {
                     guardCount++;
 
-                    Debug.Log(
-                        $"P2の攻撃をガード成功！ " +
-                        $"{guardCount} / {RequiredGuardCount}"
-                    );
 
                     minitext.text =
                         $"  ガード {guardCount} / {RequiredGuardCount}";
@@ -465,7 +447,6 @@ public class TutorialManager02 : MonoBehaviour
 
                 if (guardCount >= RequiredGuardCount)
                 {
-                    Debug.Log("ガードチュートリアルOK！");
 
                     player02.SetUseLocalInput(false);
 
@@ -505,8 +486,6 @@ public class TutorialManager02 : MonoBehaviour
 
                         player02HPBeforeSpecial =
                             player02Health.CurrentHP;
-
-                        Debug.Log("横必殺技開始！");
                     }
 
                     // 下必殺技
@@ -518,8 +497,6 @@ public class TutorialManager02 : MonoBehaviour
 
                         player02HPBeforeSpecial =
                             player02Health.CurrentHP;
-
-                        Debug.Log("下必殺技開始！");
                     }
                 }
 
@@ -536,24 +513,11 @@ public class TutorialManager02 : MonoBehaviour
                         {
                             forwardSpecialCount++;
 
-                            Debug.Log(
-                                "横必殺技ヒット！ "
-                                + forwardSpecialCount
-                                + " / "
-                                + RequiredForwardSpecialCount
-                            );
                         }
                         else if (currentSpecialMove ==
                                  player01MoveSet.DownSpecial)
                         {
                             downSpecialCount++;
-
-                            Debug.Log(
-                                "下必殺技ヒット！ "
-                                + downSpecialCount
-                                + " / "
-                                + RequiredDownSpecialCount
-                            );
                         }
 
                         // 次の攻撃を判定できるようにHPを戻す

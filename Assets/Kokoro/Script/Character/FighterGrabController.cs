@@ -144,10 +144,6 @@ public sealed class FighterGrabController :
             FighterState.Grab
         );
 
-        Debug.Log(
-            $"{name}：つかみ開始",
-            this
-        );
     }
     private void UpdateAttempt()
     {
@@ -215,10 +211,6 @@ public sealed class FighterGrabController :
 
         UpdateTargetPosition();
 
-        Debug.Log(
-            $"{name}：つかみ成功",
-            this
-        );
     }
 
     private void UpdateHolding()
@@ -288,10 +280,6 @@ public sealed class FighterGrabController :
 
         currentFrame = 0;
 
-        Debug.Log(
-            $"{name}：投げ",
-            this
-        );
     }
 
 

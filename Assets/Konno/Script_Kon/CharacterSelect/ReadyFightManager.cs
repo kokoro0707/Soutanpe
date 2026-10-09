@@ -15,7 +15,6 @@ public class ReadyFightManager : MonoBehaviour
 
     private IEnumerator Start()
     {
-        Debug.Log("ReadyFightManager Start");
 
         // BattleScene開始時はゲーム停止
         Time.timeScale = 0f;
@@ -39,7 +38,6 @@ public class ReadyFightManager : MonoBehaviour
         yield return null;
 
         // READY表示
-        Debug.Log("READY 表示");
         readyText.gameObject.SetActive(true);
 
         // 5秒待つ
@@ -49,7 +47,6 @@ public class ReadyFightManager : MonoBehaviour
         readyText.gameObject.SetActive(false);
 
         // FIGHT表示
-        Debug.Log("FIGHT 表示");
         fightText.gameObject.SetActive(true);
 
         // 1秒待つ
@@ -61,6 +58,5 @@ public class ReadyFightManager : MonoBehaviour
         // バトル開始
         Time.timeScale = 1f;
 
-        Debug.Log("Battle Start!");
     }
 }

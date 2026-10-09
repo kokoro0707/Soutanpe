@@ -56,12 +56,10 @@ public class FadeManager : MonoBehaviour
     {
         isFading = true;
 
-        Debug.Log("FadeScene Start");
 
         // フェードアウト
         yield return StartCoroutine(FadeOut(sceneFadeOutTime));
 
-        Debug.Log("FadeOut Complete");
 
         // 完全な黒を維持
         SetFadeAlpha(1f);
@@ -74,12 +72,10 @@ public class FadeManager : MonoBehaviour
         yield return null;
         yield return null;
 
-        Debug.Log("FadeIn Start");
 
         // Time.timeScale = 0でも動く
         yield return StartCoroutine(FadeIn(sceneFadeInTime));
 
-        Debug.Log("FadeIn Complete");
 
         isFading = false;
     }

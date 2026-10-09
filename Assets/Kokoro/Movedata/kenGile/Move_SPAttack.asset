@@ -24,6 +24,11 @@ MonoBehaviour:
   hitboxOffset: {x: 1, y: 0}
   animationIndex: 51
   spCost: 1
+  effectPrefab: {fileID: 6209891425211023825, guid: 094db840605b30d4486e3029cdeed222, type: 3}
+  effectOffset: {x: -2, y: 0.5}
+  useLaunch: 0
+  launchVelocityY: 8
+  launchFrame: 3
   useMove: 1
   moveSpeed: 30
   moveStartFrame: 4

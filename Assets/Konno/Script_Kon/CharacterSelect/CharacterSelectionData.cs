@@ -20,14 +20,10 @@ public sealed class CharacterSelectionData : MonoBehaviour
 
     private void Awake()
     {
-        Debug.Log("yCharacterSelectionDatazAwake");
 
         if (Instance != null &&
             Instance != this)
         {
-            Debug.Log(
-                "yCharacterSelectionDatazd•¡‚µ‚½‚Ì‚Åíœ"
-            );
 
             Destroy(gameObject);
             return;
@@ -41,9 +37,6 @@ public sealed class CharacterSelectionData : MonoBehaviour
         // ƒV[ƒ“•ÏX‚µ‚Ä‚àc‚·
         DontDestroyOnLoad(gameObject);
 
-        Debug.Log(
-            "yCharacterSelectionDatazDontDestroyOnLoadİ’èŠ®—¹"
-        );
     }
 
 
@@ -53,10 +46,6 @@ public sealed class CharacterSelectionData : MonoBehaviour
     {
         player1Character = data;
 
-        Debug.Log(
-            $"y‘I‘ğ•Û‘¶zP1 = " +
-            $"{(data != null ? data.name : "NULL")}"
-        );
     }
 
 
@@ -66,9 +55,5 @@ public sealed class CharacterSelectionData : MonoBehaviour
     {
         player2Character = data;
 
-        Debug.Log(
-            $"y‘I‘ğ•Û‘¶zP2 = " +
-            $"{(data != null ? data.name : "NULL")}"
-        );
     }
 }

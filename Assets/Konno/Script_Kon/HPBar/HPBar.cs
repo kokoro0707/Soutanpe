@@ -130,7 +130,6 @@ public class HPBar : MonoBehaviour
         if (max <= 0f) max = 1f;
         float ratio = Mathf.Clamp01(current / max);
         OnRatioChanged?.Invoke(ratio);
-        Debug.Log($"[HPBar] {name} SetHealth current={current} max={max} ratio={ratio} hpSlider={(hpSlider != null ? hpSlider.name : "null")}", this);
         if (hpSlider != null)
         {
             // Slider‚ÖƒR[ƒh‚©‚ç‘ã“ü‚·‚é‚Æ OnValueChanged ‚ªŒë”­‰Î‚µ“¾‚é‚½‚ß
@@ -307,5 +306,4 @@ public class HPBar : MonoBehaviour
     {
         if (glowImage != null) Destroy(glowImage.gameObject);
     }
-    // ===== ’Ç‰Á‚±‚±‚Ü‚Å =====
 }
