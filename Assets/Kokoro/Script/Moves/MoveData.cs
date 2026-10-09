@@ -10,6 +10,23 @@ using UnityEngine;
 )]
 public sealed class MoveData : ScriptableObject
 {
+
+    [Header("UŒ‚”»’è")]
+
+    [Tooltip("‰EŒü‚«‚ðŠî€‚É‚µ‚½UŒ‚”»’èˆÊ’u")]
+    [SerializeField]
+    private Vector2 hitboxOffset =
+    new Vector2(1f, 0f);
+
+    [Tooltip("UŒ‚”»’è‚Ì‘å‚«‚³")]
+    [SerializeField]
+    private Vector2 hitboxSize =
+        new Vector2(1.2f, 1f);
+
+    public Vector2 HitboxOffset => hitboxOffset;
+    public Vector2 HitboxSize => hitboxSize;
+
+
     [Header("Šî–{î•ñ")]
     [SerializeField]
     private string moveName = "ŽãUŒ‚";
@@ -50,11 +67,29 @@ public sealed class MoveData : ScriptableObject
     private Vector2 blockKnockback =
         new Vector2(3f, 0f);
 
+    [System.Serializable]
+    public class HitboxData
+    {
+        [SerializeField]
+        private bool enabled = true;
+
+        [SerializeField]
+        private Vector2 offset = Vector2.zero;
+
+        [SerializeField]
+        private Vector2 size = Vector2.one;
+
+        public bool Enabled => enabled;
+        public Vector2 Offset => offset;
+        public Vector2 Size => size;
+    }
+
     [Header("UŒ‚”»’è")]
-    [Tooltip("‰EŒü‚«‚ðŠî€‚É‚µ‚½UŒ‚”»’èˆÊ’u")]
     [SerializeField]
-    private Vector2 hitboxOffset =
-        new Vector2(1f, 0f);
+    private HitboxData[] hitboxes = new HitboxData[3];
+
+    public HitboxData[] Hitboxes => hitboxes;
+
 
     [Header("ƒAƒjƒ[ƒVƒ‡ƒ“")]
     [Tooltip("‚±‚Ì‹Z‚É‘Î‰ž‚·‚éAnimatorã‚Ì”Ô†")]
@@ -123,10 +158,6 @@ public sealed class MoveData : ScriptableObject
     public int SPCost => spCost;
     
 
-    [SerializeField]
-    private Vector2 hitboxSize =
-        new Vector2(1.2f, 1f);
-
     public string MoveName => moveName;
 
     public int StartupFrames => startupFrames;
@@ -139,9 +170,6 @@ public sealed class MoveData : ScriptableObject
 
     public Vector2 HitKnockback => hitKnockback;
     public Vector2 BlockKnockback => blockKnockback;
-
-    public Vector2 HitboxOffset => hitboxOffset;
-    public Vector2 HitboxSize => hitboxSize;
 
     public int TotalFrames =>
         startupFrames +
@@ -205,10 +233,15 @@ public sealed class MoveData : ScriptableObject
         blockKnockback.x =
             Mathf.Abs(blockKnockback.x);
 
-        hitboxSize.x =
-            Mathf.Max(0.01f, hitboxSize.x);
-
-        hitboxSize.y =
-            Mathf.Max(0.01f, hitboxSize.y);
+        if (hitboxes != null)
+        {
+            foreach (HitboxData hitbox in hitboxes)
+            {
+                if (hitbox == null)
+                {
+                    continue;
+                }
+            }
+        }
     }
 }

@@ -1626,7 +1626,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 0.16484332, b: 0, a: 0}
   m_FlipX: 0
   m_FlipY: 0
@@ -1634,7 +1634,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &351946271
 Transform:
@@ -2756,7 +2756,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 275864c5743f86740bfa92c081aebf95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalTwoPlayerDeviceSetup
-  deviceMode: 0
+  deviceMode: 1
   player1Input: {fileID: 351946263}
   player2Input: {fileID: 1320457833}
   keyboardSchemeName: Keyboard
@@ -4129,7 +4129,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2.0736365, y: 4.6186104}
+  m_Size: {x: 2.419091, y: 4.47857}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
@@ -6038,6 +6038,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AttackHitbox
   ownerSPGauge: {fileID: 351946281}
+  previewMove: {fileID: 0}
+  showHitboxPreview: 1
+  previewFacingDirection: 1
 --- !u!61 &1457659158
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -7992,6 +7995,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AttackHitbox
   ownerSPGauge: {fileID: 1320457848}
+  previewMove: {fileID: 0}
+  showHitboxPreview: 1
+  previewFacingDirection: 1
 --- !u!61 &1901747041
 BoxCollider2D:
   m_ObjectHideFlags: 0
