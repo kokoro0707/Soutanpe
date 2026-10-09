@@ -154,9 +154,9 @@ Color.green
     }
     private void PollSticks()
     {
-        // 確認パネル表示中などは player1Pad が更新されないため、パッドはここで直接取得する
-        Gamepad pad1 = Gamepad.all.Count >= 1 ? Gamepad.all[0] : null;
-        Gamepad pad2 = Gamepad.all.Count >= 2 ? Gamepad.all[1] : null;
+        // P1/P2に割り当て済みのパッドのスティックを見る
+        Gamepad pad1 = player1Pad;
+        Gamepad pad2 = player2Pad;
 
         foreach (StickNavigator s in new[] { stick1, stick2 })
         {
@@ -172,8 +172,15 @@ Color.green
 
     private void Update()
     {
+        // パッドの割り当てを毎フレーム更新(確認パネル表示中も含む)
+        UpdateGamepads();
+
         // スティックの状態は毎フレーム更新しておく(確認パネル表示中も含む)
         PollSticks();
+
+        // パッドが今押されて割り当てられたフレームは、そのボタンで誤って決定等しないよう入力を捨てる
+        if (padJoinedThisFrame)
+            return;
 
         // 確認パネルが開いている間
         // 確認パネル表示中
@@ -207,8 +214,6 @@ Color.green
 
         if (!canInput)
             return;
-
-        UpdateGamepads();
 
         switch (selectState)
         {
@@ -302,16 +307,62 @@ Color.green
         // フェードイン
         FadeManager.Instance.StartFadeIn(0.2f);
     }
+    // シーンをまたいでも覚えておくパッドの割り当て
+    private static Gamepad assignedP1Pad;
+    private static Gamepad assignedP2Pad;
+    private bool padJoinedThisFrame;
+
+    /// <summary>
+    /// パッドの割り当て。
+    /// 以前は「1台目=P1、2台目=P2」で固定していたが、Steamの仮想パッド等が
+    /// 1台目に入っていると、実際に握っているパッドが反応しなくなるため、
+    /// ・パッドが1台だけ → そのパッドがP1
+    /// ・複数台ある → 最初にボタン/十字キー/スティックを操作したパッドがP1、
+    ///                その次に操作した別のパッドがP2
+    /// にしている。
+    /// </summary>
     private void UpdateGamepads()
     {
-        player1Pad = null;
-        player2Pad = null;
+        padJoinedThisFrame = false;
 
-        // P1は常に1台目
-        if (Gamepad.all.Count >= 1)
-            player1Pad = Gamepad.all[0];
-        if (Gamepad.all.Count >= 2)
-            player2Pad = Gamepad.all[1];
+        // 抜かれたパッドは割り当てを外す
+        if (assignedP1Pad != null && !assignedP1Pad.added) assignedP1Pad = null;
+        if (assignedP2Pad != null && !assignedP2Pad.added) assignedP2Pad = null;
+
+        // P1
+        if (assignedP1Pad == null)
+        {
+            if (Gamepad.all.Count == 1 && Gamepad.all[0] != assignedP2Pad)
+            {
+                assignedP1Pad = Gamepad.all[0];
+                Debug.Log($"[CharacterSelect] P1パッド = {assignedP1Pad.displayName}");
+            }
+            else
+            {
+                Gamepad used = FindPressedPad(assignedP2Pad);
+                if (used != null)
+                {
+                    assignedP1Pad = used;
+                    padJoinedThisFrame = true;
+                    Debug.Log($"[CharacterSelect] P1パッド = {assignedP1Pad.displayName}");
+                }
+            }
+        }
+
+        // P2(P1とは別のパッドで操作されたら参加)
+        if (assignedP2Pad == null && assignedP1Pad != null)
+        {
+            Gamepad used = FindPressedPad(assignedP1Pad);
+            if (used != null)
+            {
+                assignedP2Pad = used;
+                padJoinedThisFrame = true;
+                Debug.Log($"[CharacterSelect] P2パッド = {assignedP2Pad.displayName}");
+            }
+        }
+
+        player1Pad = assignedP1Pad;
+        player2Pad = assignedP2Pad;
 
         bool active = player2Pad != null;
         if (active != player2Active)
@@ -323,6 +374,30 @@ Color.green
             }
             UpdateSelectionColor();
         }
+    }
+
+    // exclude 以外で、このフレームに操作されたパッドを探す
+    private Gamepad FindPressedPad(Gamepad exclude)
+    {
+        foreach (Gamepad pad in Gamepad.all)
+        {
+            if (pad == null || pad == exclude) continue;
+
+            bool pressed =
+                pad.buttonSouth.wasPressedThisFrame ||
+                pad.buttonEast.wasPressedThisFrame ||
+                pad.buttonWest.wasPressedThisFrame ||
+                pad.buttonNorth.wasPressedThisFrame ||
+                pad.startButton.wasPressedThisFrame ||
+                pad.dpad.left.wasPressedThisFrame ||
+                pad.dpad.right.wasPressedThisFrame ||
+                pad.dpad.up.wasPressedThisFrame ||
+                pad.dpad.down.wasPressedThisFrame ||
+                pad.leftStick.ReadValue().magnitude > 0.8f;
+
+            if (pressed) return pad;
+        }
+        return null;
     }
 
     private void Player1Input()

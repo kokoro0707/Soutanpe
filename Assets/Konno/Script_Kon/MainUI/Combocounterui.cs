@@ -29,6 +29,17 @@ public class ComboCounterUI : MonoBehaviour
     [SerializeField] private TMP_Text comboText;
     [Tooltip("数字の後ろに付ける文字。数字だけでよければ空欄のままにする")]
     [SerializeField] private string suffix = "";
+    [Tooltip("後ろの文字(suffix)の大きさ。数字に対する割合(%)。100で数字と同じ大きさ")]
+    [SerializeField, Range(10f, 100f)] private float suffixSizePercent = 50f;
+    [Tooltip("ONにすると、後ろの文字の色を下の色にする(OFFなら数字と同じ色)")]
+    [SerializeField] private bool useSuffixColor = false;
+    [SerializeField] private Color suffixColor = Color.white;
+    [Tooltip("後ろの文字の上下位置(em単位)。0で数字の下端揃え、0.5くらいで数字の真ん中あたり、プラスで上へ")]
+    [SerializeField] private float suffixVerticalOffset = 0f;
+    [Tooltip("数字と後ろの文字の間のすき間(em単位)")]
+    [SerializeField] private float suffixSpacing = 0.1f;
+    [Tooltip("後ろの文字を数字の下の行に出す")]
+    [SerializeField] private bool suffixOnNewLine = false;
 
     [Header("消えるタイミング")]
     [Tooltip("コンボが途切れてから、表示をそのまま維持する時間(秒)")]
@@ -106,7 +117,8 @@ public class ComboCounterUI : MonoBehaviour
                 fadeRoutine = null;
             }
 
-            comboText.text = count + suffix;
+            lastCount = count;
+            comboText.text = count + BuildSuffix(1f);
             SetAlpha(1f);
 
             // コンボ数が増えるほどベースサイズを大きくする(1ヒット=等倍、scaleMaxAtCount=最大)
@@ -192,11 +204,42 @@ public class ComboCounterUI : MonoBehaviour
         if (comboText != null) comboText.transform.localScale = Vector3.one;
     }
 
+    /// <summary>
+    /// 後ろの文字(例: "COMBO")を、TMPのリッチテキストで数字より小さくする。
+    /// 数字の大きさ・拡大演出はそのまま。
+    /// </summary>
+    private int lastCount;
+
+    private string BuildSuffix(float alpha)
+    {
+        if (string.IsNullOrEmpty(suffix)) return "";
+
+        string body = suffix;
+        if (useSuffixColor)
+        {
+            // 色タグを使うとフェードの透明度が効かなくなるので、透明度も色に含める
+            Color c = suffixColor;
+            c.a *= alpha;
+            body = $"<color=#{ColorUtility.ToHtmlStringRGBA(c)}>{body}</color>";
+        }
+
+        string sized = $"<size={suffixSizePercent:0}%>{body}</size>";
+        if (Mathf.Abs(suffixVerticalOffset) > 0.001f)
+            sized = $"<voffset={suffixVerticalOffset:0.##}em>{sized}</voffset>";
+        if (!suffixOnNewLine && suffixSpacing > 0.001f)
+            sized = $"<space={suffixSpacing:0.##}em>{sized}";
+        return suffixOnNewLine ? "\n" + sized : sized;
+    }
+
     private void SetAlpha(float alpha)
     {
         if (comboText == null) return;
         Color c = comboText.color;
         c.a = alpha;
         comboText.color = c;
+
+        // 後ろの文字に色を付けている場合は、その透明度も合わせる
+        if (useSuffixColor && lastCount > 0 && !string.IsNullOrEmpty(suffix))
+            comboText.text = lastCount + BuildSuffix(alpha);
     }
 }

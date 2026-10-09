@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using PersonaMenuUI;
 using TMPro;
@@ -5,12 +6,43 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 public class MainMenuManager : MonoBehaviour
 {
+    public enum MenuAction
+    {
+        LoadScene,      // シーンへ移動(フェードアウト→切替)
+        OpenSettings,   // 設定パネルを開く(今までの設定画面)
+        OpenPanel,      // 指定したパネルを開く
+        ReturnToTitle,  // タイトルへ戻る
+        None            // 何もしない
+    }
+
+    [Serializable]
+    public class MenuItemAction
+    {
+        [Tooltip("決定した時の動作")]
+        public MenuAction action = MenuAction.OpenPanel;
+        [Tooltip("LoadScene用:移動先のシーン名(空なら Next Scene を使う)")]
+        public string sceneName;
+        [Tooltip("OpenPanel用:開くパネル")]
+        public GameObject panel;
+        [Tooltip("OpenPanel用:Esc / Backspace / Bボタンでパネルを閉じられるようにする")]
+        public bool closeWithCancel = true;
+    }
+
     [Header("メインメニュー")]
     [SerializeField] private TMP_Text[] menuTexts;
     [SerializeField] private GameObject settingsPanel;
     [SerializeField] private string nextScene = "CharacterSelection";
     [Tooltip("3番目の項目(旧Exit)で戻る、タイトルシーンの名前")]
     [SerializeField] private string titleScene = "Title";
+
+    [Header("項目ごとの動作(任意)")]
+    [Tooltip("Menu Texts と同じ順番で、決定した時の動作を設定する。\n" +
+             "空、または要素が足りない項目は今まで通り(0=ゲーム開始 / 1=設定 / 2=タイトルへ)")]
+    [SerializeField] private MenuItemAction[] itemActions;
+
+    [Header("パネルを閉じる操作")]
+    [SerializeField] private Key[] keyboardCancelKeys = { Key.Escape, Key.Backspace };
+    [SerializeField] private AudioClip cancelSe;
     [Header("斜めカーソル")]
     [Tooltip("SlantedRectで作った斜めカーソルを制御するコンポーネント。未設定でも動作する(その場合はカーソル演出なし)。")]
     [SerializeField] private MenuCursorSelector cursor;
@@ -35,6 +67,10 @@ public class MainMenuManager : MonoBehaviour
     private readonly StickNavigator stick = new StickNavigator();
     private int currentIndex = 0;
     private bool inputLock;
+    private MenuItemAction openedItem; // OpenPanel で開いているパネル
+
+    /// <summary>OpenPanel で開いたパネルが表示中か</summary>
+    public bool IsPanelOpen => openedItem != null;
     private void Start()
     {
         UpdateSelection();
@@ -42,6 +78,18 @@ public class MainMenuManager : MonoBehaviour
     private void Update()
     {
         Move();
+
+        // OpenPanel で開いたパネルを、キャンセル操作で閉じる
+        if (openedItem != null)
+        {
+            if (openedItem.closeWithCancel && IsCancelPressed())
+            {
+                PlaySe(cancelSe);
+                ClosePanel();
+            }
+            return;
+        }
+
         // 設定パネルが開いている間(inputLock中)は、
         // メインメニュー側の決定操作を一切受け付けない
         if (inputLock) return;
@@ -162,6 +210,14 @@ public class MainMenuManager : MonoBehaviour
     }
     private void Execute()
     {
+        // 項目ごとの動作が設定されていればそちらを使う
+        if (itemActions != null && currentIndex < itemActions.Length && itemActions[currentIndex] != null)
+        {
+            ExecuteAction(itemActions[currentIndex]);
+            return;
+        }
+
+        // 未設定の項目は今まで通り
         switch (currentIndex)
         {
             case 0:
@@ -178,6 +234,64 @@ public class MainMenuManager : MonoBehaviour
                 break;
         }
     }
+    private void ExecuteAction(MenuItemAction item)
+    {
+        switch (item.action)
+        {
+            case MenuAction.LoadScene:
+                inputLock = true;
+                string scene = string.IsNullOrEmpty(item.sceneName) ? nextScene : item.sceneName;
+                StartCoroutine(LoadSceneRoutine(scene));
+                break;
+
+            case MenuAction.OpenSettings:
+                OpenSettings();
+                break;
+
+            case MenuAction.OpenPanel:
+                OpenPanel(item);
+                break;
+
+            case MenuAction.ReturnToTitle:
+                inputLock = true;
+                ReturnToTitle();
+                break;
+        }
+    }
+
+    private void OpenPanel(MenuItemAction item)
+    {
+        if (item.panel == null)
+        {
+            Debug.LogWarning($"[MainMenuManager] {currentIndex}番目の項目に Panel が設定されていません", this);
+            return;
+        }
+        inputLock = true;
+        openedItem = item;
+        item.panel.SetActive(true);
+    }
+
+    /// <summary>
+    /// OpenPanel で開いたパネルを閉じて、メニュー操作を再開する。
+    /// パネル内の「戻る」ボタンの OnClick などから呼んでもOK。
+    /// </summary>
+    public void ClosePanel()
+    {
+        if (openedItem != null && openedItem.panel != null)
+            openedItem.panel.SetActive(false);
+        openedItem = null;
+        inputLock = false;
+        UpdateSelection();
+    }
+
+    private bool IsCancelPressed()
+    {
+        if (Keyboard.current != null)
+            foreach (var k in keyboardCancelKeys)
+                if (Keyboard.current[k].wasPressedThisFrame) return true;
+        return Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame;
+    }
+
     private IEnumerator StartGameRoutine()
     {
         yield return LoadSceneRoutine(nextScene);
