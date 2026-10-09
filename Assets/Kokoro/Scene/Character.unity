@@ -1006,7 +1006,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -670, y: -14}
-  m_SizeDelta: {x: 300, y: 100}
+  m_SizeDelta: {x: 500, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &277929990
 MonoBehaviour:
@@ -1055,8 +1055,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 300
-  m_fontSizeBase: 300
+  m_fontSize: 250
+  m_fontSizeBase: 250
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1122,7 +1122,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ComboCounterUI
   targetReceiver: {fileID: 1320457842}
   comboText: {fileID: 277929990}
-  suffix: 
+  suffix: HIT
+  suffixSizePercent: 20
+  useSuffixColor: 0
+  suffixColor: {r: 1, g: 1, b: 1, a: 1}
+  suffixVerticalOffset: 0
+  suffixSpacing: 0.1
+  suffixOnNewLine: 0
   holdDuration: 0.6
   fadeDuration: 0.4
   maxScale: 3
@@ -7049,7 +7055,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 670, y: -16}
-  m_SizeDelta: {x: 300, y: 100}
+  m_SizeDelta: {x: 500, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1613944540
 MonoBehaviour:
@@ -7098,8 +7104,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 300
-  m_fontSizeBase: 300
+  m_fontSize: 250
+  m_fontSizeBase: 250
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -7165,7 +7171,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ComboCounterUI
   targetReceiver: {fileID: 351946276}
   comboText: {fileID: 1613944540}
-  suffix: 
+  suffix: HIT
+  suffixSizePercent: 20
+  useSuffixColor: 0
+  suffixColor: {r: 1, g: 1, b: 1, a: 1}
+  suffixVerticalOffset: 0
+  suffixSpacing: 0.1
+  suffixOnNewLine: 0
   holdDuration: 0.6
   fadeDuration: 0.4
   maxScale: 3
