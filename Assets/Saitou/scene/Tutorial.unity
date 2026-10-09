@@ -836,9 +836,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleModeSetup
   player1: {fileID: 1713682350}
+  player1CharacterSetup: {fileID: 0}
   player2Controller: {fileID: 925841392}
   player2LocalInput: {fileID: 925841391}
   player2CPUInput: {fileID: 925841390}
+  player2CharacterSetup: {fileID: 0}
 --- !u!82 &339553415
 AudioSource:
   m_ObjectHideFlags: 0
@@ -975,6 +977,14 @@ MonoBehaviour:
   moveSe: {fileID: 8300000, guid: 2d4914e0838334947b21c7adabf918e1, type: 3}
   decideSe: {fileID: 8300000, guid: 2d4914e0838334947b21c7adabf918e1, type: 3}
   pauseOnResult: 1
+  matchScoreManager: {fileID: 0}
+  hideImagesOnResult: []
+  hideObjectsOnResult: []
+  useStick: 1
+  stickThreshold: 0.6
+  stickRepeat: 1
+  stickRepeatDelay: 0.4
+  stickRepeatInterval: 0.15
 --- !u!114 &339553418
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1527,6 +1537,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FighterSPGauge
   maxSP: 2
   startFull: 1
+  useAutoRecovery: 1
+  autoRecoveryPerSecond: 0.05
+  hitRecoveryAmount: 0.15
 --- !u!4 &925841384
 Transform:
   m_ObjectHideFlags: 0
@@ -1593,8 +1606,11 @@ MonoBehaviour:
   minimumDamageRate: 0.5
   spGauge: {fileID: 0}
   comboResetSPCost: 25
+  opponentRoot: {fileID: 0}
   ownerHealth: {fileID: 925841387}
   stateMachine: {fileID: 925841389}
+  motor: {fileID: 0}
+  spCinematic: {fileID: 0}
 --- !u!114 &925841387
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1742,6 +1758,7 @@ MonoBehaviour:
   rigidBody2D: {fileID: 925841385}
   horizontalDamping: 0.88
   stopVelocityThreshold: 0.05
+  maxComboCount: 50
 --- !u!114 &925841395
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2594,7 +2611,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FighterSPGaugeUI
   spGauge: {fileID: 925841383}
-  gaugeImages: []
+  fillImage: {fileID: 0}
 --- !u!114 &1298433329
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2920,6 +2937,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1419326574}
   m_CullTransparentMesh: 1
+--- !u!1 &1436227682
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1436227684}
+  - component: {fileID: 1436227683}
+  m_Layer: 0
+  m_Name: Setup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1436227683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1436227682}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a6f917cadb89c24faf635d6179ed94e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BattleDefaultCharacterSetup
+  player1Setup: {fileID: 1713682333}
+  player1Character: {fileID: 11400000, guid: 3d118f1933bac7d49a879ec1ba52c08d, type: 2}
+  player2Setup: {fileID: 925841398}
+  player2Character: {fileID: 11400000, guid: 3d118f1933bac7d49a879ec1ba52c08d, type: 2}
+--- !u!4 &1436227684
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1436227682}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 22.73181, y: 0.14594, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1442598098
 GameObject:
   m_ObjectHideFlags: 0
@@ -3025,6 +3090,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84ecabd8fd9508543945b76426b93ea4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AttackHitbox
+  ownerSPGauge: {fileID: 0}
+  previewMove: {fileID: 0}
+  showHitboxPreview: 1
+  previewFacingDirection: 1
 --- !u!61 &1519928066
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3139,7 +3208,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FighterSPGaugeUI
   spGauge: {fileID: 1713682332}
-  gaugeImages: []
+  fillImage: {fileID: 0}
 --- !u!114 &1553017316
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3467,6 +3536,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FighterSPGauge
   maxSP: 2
   startFull: 1
+  useAutoRecovery: 1
+  autoRecoveryPerSecond: 0.05
+  hitRecoveryAmount: 0.15
 --- !u!114 &1713682333
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3540,6 +3612,7 @@ MonoBehaviour:
   rigidBody2D: {fileID: 1713682347}
   horizontalDamping: 0.88
   stopVelocityThreshold: 0.05
+  maxComboCount: 50
 --- !u!114 &1713682337
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3559,8 +3632,11 @@ MonoBehaviour:
   minimumDamageRate: 0.5
   spGauge: {fileID: 0}
   comboResetSPCost: 25
+  opponentRoot: {fileID: 0}
   ownerHealth: {fileID: 1713682339}
   stateMachine: {fileID: 1713682345}
+  motor: {fileID: 0}
+  spCinematic: {fileID: 0}
 --- !u!114 &1713682338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5330,6 +5406,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84ecabd8fd9508543945b76426b93ea4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AttackHitbox
+  ownerSPGauge: {fileID: 0}
+  previewMove: {fileID: 0}
+  showHitboxPreview: 1
+  previewFacingDirection: 1
 --- !u!61 &1997458761
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -5807,6 +5887,7 @@ CanvasRenderer:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 1436227684}
   - {fileID: 1915622461}
   - {fileID: 1756052137}
   - {fileID: 2018925176}
