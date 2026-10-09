@@ -5,7 +5,7 @@ using UnityEngine;
 /// 任意のTMP_Textに、「文字が斜めの面に沿って奥へ傾き・縮みながら続いている」ように見せる
 /// 奥行き変形をつける、汎用の単体スクリプト。
 ///
-/// RoundAnnouncementController専用の TMPPerspectiveSkew とは別物で、見出し ロゴ 
+/// RoundAnnouncementController専用の TMPPerspectiveSkew とは別物で、見出し・ロゴ・
 /// 注釈など、ゲーム内のどのTMP_Textにもそのまま使い回せるように独立させてある。
 /// こちらはTMPCharacterPopInのような特別な組み込みをしなくても、単体でそのまま動く。
 ///
@@ -29,6 +29,23 @@ public class TMPPerspectiveTextEffect : MonoBehaviour
 {
     [SerializeField] private TMP_Text text;
 
+    public enum ShapeMode
+    {
+        PerCharacter, // 従来どおり:1文字ずつ縮める・持ち上げる
+        Trapezoid     // 遠近法:手前(左)が大きく、奥(右)へ向かって台形にすぼまる
+    }
+
+    public enum VerticalAnchor { Bottom, Center, Top }
+
+    [Header("形の種類")]
+    [SerializeField] private ShapeMode shapeMode = ShapeMode.PerCharacter;
+
+    [Header("Trapezoid(遠近法)用")]
+    [Tooltip("どこを基準にすぼめるか。Center で上下両方から、Top で下側だけ、Bottom で上側だけすぼまる")]
+    [SerializeField] private VerticalAnchor trapezoidAnchor = VerticalAnchor.Center;
+    [Tooltip("ONで奥の文字ほど幅も狭くなり、文字間も詰まる(より自然な遠近感)")]
+    [SerializeField] private bool squeezeWidth = true;
+
     [Header("変形の強さ")]
     [Tooltip("右端の文字の高さを、左端に対してどれだけ縮めるか(1=縮めない, 0.6=60%の高さ)")]
     [SerializeField, Range(0.1f, 1f)] private float heightScaleAtEnd = 0.6f;
@@ -45,7 +62,7 @@ public class TMPPerspectiveTextEffect : MonoBehaviour
     [Tooltip("右端の文字ほど、文字そのものをどれだけ回転させるか(度)")]
     [SerializeField] private float rotationDegreesAtEnd = 0f;
 
-    [Tooltip("ONにすると、変形の向きを逆にする(右端が基準の「左端ほど小さく,傾く」になる)。" +
+    [Tooltip("ONにすると、変形の向きを逆にする(右端が基準の「左端ほど小さく・傾く」になる)。" +
              "OFF(デフォルト)は今まで通り右端ほど変形が強くなる")]
     [SerializeField] private bool reverseDirection = false;
 
@@ -62,9 +79,84 @@ public class TMPPerspectiveTextEffect : MonoBehaviour
              "Apply()を手動で一度呼ぶ運用でも構わない")]
     [SerializeField] private bool autoApplyEveryFrame = true;
 
+    /// <summary>
+    /// 外部(TitleSlideIn など)から、テキスト全体に追加でかける傾き(度)。
+    /// 奥行き変形の上に重ねて適用されるので、両方の効果が同時に出る。
+    /// </summary>
+    public float ExtraLeanDegrees { get; set; }
+
+    /// <summary>対象のテキストを差し替える(残像のコピーなどで使用)</summary>
+    public void SetTarget(TMP_Text target)
+    {
+        text = target;
+        Apply();
+    }
+
     private void OnEnable()
     {
+        if (text == null) text = GetComponent<TMP_Text>();
         Apply();
+    }
+
+    // 遠近法:テキスト全体を1枚の台形として、頂点ごとに連続的にすぼめる
+    private void ApplyTrapezoid(TMP_TextInfo info, int count)
+    {
+        float x0 = float.MaxValue, x1 = float.MinValue, y0 = float.MaxValue, y1 = float.MinValue;
+        for (int i = 0; i < count; i++)
+        {
+            var c = info.characterInfo[i];
+            if (!c.isVisible || c.materialReferenceIndex >= info.meshInfo.Length) continue;
+            Vector3[] v = info.meshInfo[c.materialReferenceIndex].vertices;
+            for (int k = 0; k < 4; k++)
+            {
+                Vector3 p = v[c.vertexIndex + k];
+                x0 = Mathf.Min(x0, p.x); x1 = Mathf.Max(x1, p.x);
+                y0 = Mathf.Min(y0, p.y); y1 = Mathf.Max(y1, p.y);
+            }
+        }
+        float w = x1 - x0;
+        if (w <= 0.0001f) return;
+
+        float anchorY = trapezoidAnchor == VerticalAnchor.Bottom ? y0
+                      : trapezoidAnchor == VerticalAnchor.Top ? y1
+                      : (y0 + y1) * 0.5f;
+        float e = heightScaleAtEnd;
+
+        for (int i = 0; i < count; i++)
+        {
+            var c = info.characterInfo[i];
+            if (!c.isVisible || c.materialReferenceIndex >= info.meshInfo.Length) continue;
+            Vector3[] v = info.meshInfo[c.materialReferenceIndex].vertices;
+
+            for (int k = 0; k < 4; k++)
+            {
+                Vector3 p = v[c.vertexIndex + k];
+
+                // 手前側からの距離 d(0~w)と割合 u(0~1)
+                float d = reverseDirection ? (x1 - p.x) : (p.x - x0);
+                float u = Mathf.Clamp01(d / w);
+                float s = Mathf.Lerp(1f, e, u);
+
+                // 縦:基準線に向かってすぼめる
+                float ny = anchorY + (p.y - anchorY) * s;
+
+                // 横:奥ほど詰める(縮み率を積分した位置)
+                float nx = p.x;
+                if (squeezeWidth)
+                {
+                    float nd = d + (e - 1f) * d * d / (2f * w);
+                    nx = reverseDirection ? (x1 - nd) : (x0 + nd);
+                }
+
+                // 傾き・持ち上げ・横ずらし(奥ほど強く)
+                float shear = Mathf.Tan(shearDegreesAtEnd * u * Mathf.Deg2Rad);
+                nx += shear * (ny - y0);
+                ny += riseAmount * u;
+                nx += horizontalShiftAtEnd * u;
+
+                v[c.vertexIndex + k] = new Vector3(nx, ny, p.z);
+            }
+        }
     }
 
     private void LateUpdate()
@@ -90,66 +182,93 @@ public class TMPPerspectiveTextEffect : MonoBehaviour
         int count = info.characterCount;
         if (count == 0) return;
 
-        for (int i = 0; i < count; i++)
+        if (shapeMode == ShapeMode.Trapezoid)
         {
-            TMP_CharacterInfo cInfo = info.characterInfo[i];
-            if (!cInfo.isVisible) continue;
-
-            // t=0(変形なし側の端) ~ t=1(変形が最大になる側の端)。
-            // 文字が1文字だけの場合は左端/右端の基準が無いので、
-            // singleCharacterStrengthをそのままtとして使う。
-            float t;
-            if (count <= 1)
+            ApplyTrapezoid(info, count);
+        }
+        else
+            for (int i = 0; i < count; i++)
             {
-                t = singleCharacterStrength;
+                TMP_CharacterInfo cInfo = info.characterInfo[i];
+                if (!cInfo.isVisible) continue;
+
+                // t=0(変形なし側の端) ~ t=1(変形が最大になる側の端)。
+                // 文字が1文字だけの場合は左端/右端の基準が無いので、
+                // singleCharacterStrengthをそのままtとして使う。
+                float t;
+                if (count <= 1)
+                {
+                    t = singleCharacterStrength;
+                }
+                else
+                {
+                    float rawT = (float)i / (count - 1);
+                    t = reverseDirection ? 1f - rawT : rawT;
+                }
+
+                float scale = Mathf.Lerp(1f, heightScaleAtEnd, t);
+                float rise = Mathf.Lerp(0f, riseAmount, t);
+                float shiftX = Mathf.Lerp(0f, horizontalShiftAtEnd, t);
+                float shearFactor = Mathf.Tan(Mathf.Lerp(0f, shearDegreesAtEnd, t) * Mathf.Deg2Rad);
+                float rotationRad = Mathf.Lerp(0f, rotationDegreesAtEnd, t) * Mathf.Deg2Rad;
+
+                int materialIndex = cInfo.materialReferenceIndex;
+                int vertexIndex = cInfo.vertexIndex;
+                if (materialIndex >= info.meshInfo.Length) continue;
+
+                Vector3[] verts = info.meshInfo[materialIndex].vertices;
+
+                // この文字の下端(ベースライン側)を基準にして高さだけ縮める
+                float baseY = Mathf.Min(
+                    verts[vertexIndex + 0].y,
+                    verts[vertexIndex + 1].y
+                );
+
+                // 回転の中心(文字の中心点)
+                Vector3 charCenter = Vector3.zero;
+                for (int v = 0; v < 4; v++) charCenter += verts[vertexIndex + v];
+                charCenter /= 4f;
+
+                float cosR = Mathf.Cos(rotationRad);
+                float sinR = Mathf.Sin(rotationRad);
+
+                for (int v = 0; v < 4; v++)
+                {
+                    Vector3 p = verts[vertexIndex + v];
+                    p.y = baseY + (p.y - baseY) * scale; // 高さを縮める
+                    p.x += shearFactor * (p.y - baseY);  // イタリックのようにシェア変形
+
+                    // 文字の中心を軸にして回転(倒れ込むような見た目)
+                    float dx = p.x - charCenter.x;
+                    float dy = p.y - charCenter.y;
+                    p.x = charCenter.x + dx * cosR - dy * sinR;
+                    p.y = charCenter.y + dx * sinR + dy * cosR;
+
+                    p.y += rise;    // 持ち上げる
+                    p.x += shiftX;  // 横方向の詰め
+                    verts[vertexIndex + v] = p;
+                }
             }
-            else
+
+        // 外部からの追加の傾き(テキスト全体を下端基準で傾ける)
+        if (Mathf.Abs(ExtraLeanDegrees) > 0.01f)
+        {
+            float minY = float.MaxValue;
+            for (int m = 0; m < info.meshInfo.Length; m++)
             {
-                float rawT = (float)i / (count - 1);
-                t = reverseDirection ? 1f - rawT : rawT;
+                Vector3[] v = info.meshInfo[m].vertices;
+                int n = info.meshInfo[m].vertexCount;
+                for (int k = 0; k < n; k++) if (v[k].y < minY) minY = v[k].y;
             }
-
-            float scale = Mathf.Lerp(1f, heightScaleAtEnd, t);
-            float rise = Mathf.Lerp(0f, riseAmount, t);
-            float shiftX = Mathf.Lerp(0f, horizontalShiftAtEnd, t);
-            float shearFactor = Mathf.Tan(Mathf.Lerp(0f, shearDegreesAtEnd, t) * Mathf.Deg2Rad);
-            float rotationRad = Mathf.Lerp(0f, rotationDegreesAtEnd, t) * Mathf.Deg2Rad;
-
-            int materialIndex = cInfo.materialReferenceIndex;
-            int vertexIndex = cInfo.vertexIndex;
-            if (materialIndex >= info.meshInfo.Length) continue;
-
-            Vector3[] verts = info.meshInfo[materialIndex].vertices;
-
-            // この文字の下端(ベースライン側)を基準にして高さだけ縮める
-            float baseY = Mathf.Min(
-                verts[vertexIndex + 0].y,
-                verts[vertexIndex + 1].y
-            );
-
-            // 回転の中心(文字の中心点)
-            Vector3 charCenter = Vector3.zero;
-            for (int v = 0; v < 4; v++) charCenter += verts[vertexIndex + v];
-            charCenter /= 4f;
-
-            float cosR = Mathf.Cos(rotationRad);
-            float sinR = Mathf.Sin(rotationRad);
-
-            for (int v = 0; v < 4; v++)
+            if (minY != float.MaxValue)
             {
-                Vector3 p = verts[vertexIndex + v];
-                p.y = baseY + (p.y - baseY) * scale; // 高さを縮める
-                p.x += shearFactor * (p.y - baseY);  // イタリックのようにシェア変形
-
-                // 文字の中心を軸にして回転(倒れ込むような見た目)
-                float dx = p.x - charCenter.x;
-                float dy = p.y - charCenter.y;
-                p.x = charCenter.x + dx * cosR - dy * sinR;
-                p.y = charCenter.y + dx * sinR + dy * cosR;
-
-                p.y += rise;    // 持ち上げる
-                p.x += shiftX;  // 横方向の詰め
-                verts[vertexIndex + v] = p;
+                float tan = Mathf.Tan(ExtraLeanDegrees * Mathf.Deg2Rad);
+                for (int m = 0; m < info.meshInfo.Length; m++)
+                {
+                    Vector3[] v = info.meshInfo[m].vertices;
+                    int n = info.meshInfo[m].vertexCount;
+                    for (int k = 0; k < n; k++) v[k].x += (v[k].y - minY) * tan;
+                }
             }
         }
 
