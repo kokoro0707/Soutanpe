@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -26,6 +27,18 @@ public class AudioManager : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float defaultMasterVolume = 0.5f;
     [SerializeField, Range(0f, 1f)] private float defaultBgmVolume = 0.5f;
     [SerializeField, Range(0f, 1f)] private float defaultSfxVolume = 0.5f;
+
+    [Header("BGM切り替え")]
+    [Tooltip("BGMを切り替える時のフェード時間(秒)。PlayBGM(clip)だけで呼んだ時に使う")]
+    [SerializeField] private float defaultBgmFadeTime = 0.5f;
+
+    // 曲ごとの音量倍率(SceneBGMのVolume)と、フェード用の倍率
+    private float bgmClipVolume = 1f;
+    private float bgmFadeMultiplier = 1f;
+    private Coroutine bgmRoutine;
+
+    /// <summary>今再生中のBGM(無ければnull)</summary>
+    public AudioClip CurrentBgm => bgmSource != null && bgmSource.isPlaying ? bgmSource.clip : null;
 
     private const string MasterVolumeKey = "MasterVolume";
     private const string BgmVolumeKey = "BGMVolume";
@@ -133,25 +146,102 @@ public class AudioManager : MonoBehaviour
     private void ApplyBgmVolume()
     {
         if (bgmSource == null) return;
-        bgmSource.volume = BgmMuted ? 0f : BgmVolume * GetEffectiveMasterVolume();
+        bgmSource.volume = BgmMuted ? 0f : BgmVolume * GetEffectiveMasterVolume() * bgmClipVolume * bgmFadeMultiplier;
     }
 
     /// <summary>
     /// BGMを再生する。同じクリップが再生中なら何もしない(頭出しされない)。
+    /// 別の曲が流れている場合はフェードで切り替える。
     /// </summary>
     public void PlayBGM(AudioClip clip)
     {
-        if (clip == null || bgmSource == null) return;
-        if (bgmSource.clip == clip && bgmSource.isPlaying) return;
-
-        bgmSource.clip = clip;
-        bgmSource.volume = BgmMuted ? 0f : BgmVolume * GetEffectiveMasterVolume();
-        bgmSource.Play();
+        PlayBGM(clip, 1f, defaultBgmFadeTime, true, false);
     }
 
+    /// <summary>
+    /// BGMを再生する(詳細版)。
+    /// volume: 曲ごとの音量倍率(0~1、設定画面のBGM音量に掛け算される)
+    /// fadeTime: 前の曲のフェードアウト/新しい曲のフェードインの時間(0で即切り替え)
+    /// loop: ループ再生するか
+    /// restartIfSame: 同じ曲が流れている時に頭から流し直すか
+    /// </summary>
+    public void PlayBGM(AudioClip clip, float volume, float fadeTime, bool loop = true, bool restartIfSame = false)
+    {
+        if (clip == null || bgmSource == null) return;
+
+        // 同じ曲が流れているなら、音量倍率だけ合わせて続けて流す
+        if (bgmSource.clip == clip && bgmSource.isPlaying && !restartIfSame)
+        {
+            bgmClipVolume = Mathf.Clamp01(volume);
+            bgmSource.loop = loop;
+            ApplyBgmVolume();
+            return;
+        }
+
+        if (bgmRoutine != null) StopCoroutine(bgmRoutine);
+        bgmRoutine = StartCoroutine(SwitchBgmRoutine(clip, Mathf.Clamp01(volume), Mathf.Max(0f, fadeTime), loop));
+    }
+
+    /// <summary>BGMを止める(すぐ止める)</summary>
     public void StopBGM()
     {
-        if (bgmSource != null) bgmSource.Stop();
+        StopBGM(0f);
+    }
+
+    /// <summary>BGMをフェードアウトして止める</summary>
+    public void StopBGM(float fadeTime)
+    {
+        if (bgmSource == null) return;
+        if (bgmRoutine != null) StopCoroutine(bgmRoutine);
+        bgmRoutine = StartCoroutine(StopBgmRoutine(Mathf.Max(0f, fadeTime)));
+    }
+
+    private IEnumerator SwitchBgmRoutine(AudioClip clip, float volume, float fadeTime, bool loop)
+    {
+        // 前の曲をフェードアウト
+        if (bgmSource.isPlaying && fadeTime > 0f)
+            yield return FadeBgm(bgmFadeMultiplier, 0f, fadeTime);
+
+        bgmSource.Stop();
+        bgmSource.clip = clip;
+        bgmSource.loop = loop;
+        bgmClipVolume = volume;
+
+        // 新しい曲をフェードイン
+        bgmFadeMultiplier = fadeTime > 0f ? 0f : 1f;
+        ApplyBgmVolume();
+        bgmSource.Play();
+
+        if (fadeTime > 0f)
+            yield return FadeBgm(0f, 1f, fadeTime);
+
+        bgmRoutine = null;
+    }
+
+    private IEnumerator StopBgmRoutine(float fadeTime)
+    {
+        if (bgmSource.isPlaying && fadeTime > 0f)
+            yield return FadeBgm(bgmFadeMultiplier, 0f, fadeTime);
+
+        bgmSource.Stop();
+        bgmSource.clip = null;
+        bgmFadeMultiplier = 1f;
+        ApplyBgmVolume();
+        bgmRoutine = null;
+    }
+
+    private IEnumerator FadeBgm(float from, float to, float time)
+    {
+        float t = 0f;
+        while (t < time)
+        {
+            t += Time.unscaledDeltaTime; // ポーズ中(timeScale=0)でも動く
+            bgmFadeMultiplier = Mathf.Lerp(from, to, t / time);
+            ApplyBgmVolume();
+            yield return null;
+        }
+        bgmFadeMultiplier = to;
+        ApplyBgmVolume();
     }
 
     /// <summary>

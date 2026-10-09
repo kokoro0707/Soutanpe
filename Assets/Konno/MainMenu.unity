@@ -486,6 +486,7 @@ MonoBehaviour:
   - {fileID: 1107111126}
   settingsPanel: {fileID: 1127984665}
   nextScene: CharacterSelection
+  titleScene: Title
   cursor: {fileID: 94632225}
   keyboardDecideKeys: 02000000
   moveSe: {fileID: 8300000, guid: 2d4914e0838334947b21c7adabf918e1, type: 3}
@@ -1248,7 +1249,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PersonaMenuUI.SlantedRect
   m_Material: {fileID: 0}
-  m_Color: {r: 0.7783019, g: 0.034855977, b: 0, a: 1}
+  m_Color: {r: 0, g: 0.6334033, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5684,7 +5685,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 38d99e76fe56e664c8b0163e33cca578, type: 3}
+  m_Resource: {fileID: 8300000, guid: 8a83415fed1922949a4e6c838a91b1dd, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -5976,6 +5977,7 @@ MonoBehaviour:
   sceneFadeInTime: 0.5
   fadeOutTime: 1
   fadeInTime: 2
+  sortingOrder: 5000
 --- !u!224 &1306070832
 RectTransform:
   m_ObjectHideFlags: 0
