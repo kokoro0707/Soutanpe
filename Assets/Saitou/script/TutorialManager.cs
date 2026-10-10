@@ -1,6 +1,8 @@
+using NUnit.Framework.Internal;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class TutorialManager02 : MonoBehaviour
@@ -85,6 +87,7 @@ public class TutorialManager02 : MonoBehaviour
     public GameObject minipanel;
     public TMP_Text text;
     public TMP_Text minitext;
+    public TMP_Text text2;
     public GameObject upimage;
     public GameObject downimage;
     public GameObject rightimage;
@@ -101,6 +104,8 @@ public class TutorialManager02 : MonoBehaviour
     private float backwardTime = 0.0f;
     private bool forwardCompleted = false;
     private bool backwardCompleted = false;
+    private int cooltime = 60;
+    private int cooltimecount = 0;
 
     public void HidePanel()
     {
@@ -164,6 +169,22 @@ public class TutorialManager02 : MonoBehaviour
 
             case TutorialStep.start:
 
+
+                // コントローラーのBボタン
+                bool controllerB2 =
+                    Gamepad.current != null &&
+                    Gamepad.current.buttonEast.wasPressedThisFrame;
+
+                // キーボードのBキー
+                bool keyboardB2 =
+                    Keyboard.current != null &&
+                    Keyboard.current.bKey.wasPressedThisFrame;
+
+                // どちらかを押したら指定したシーンに戻る
+                if (controllerB2 || keyboardB2)
+                {
+                    SceneManager.LoadScene("CharacterSelection");
+                }
 
                 bool controllerInput = Gamepad.current != null
                     && Gamepad.current.buttonSouth.wasPressedThisFrame;
@@ -427,7 +448,7 @@ public class TutorialManager02 : MonoBehaviour
 
             case TutorialStep.guard:
 
-                player01Health.ResetHealth();
+                //
 
                 bool isBlockStun =
                     stateMachine.CurrentState == FighterState.BlockStun;
@@ -437,7 +458,7 @@ public class TutorialManager02 : MonoBehaviour
                 if (isBlockStun && !wasBlockStun)
                 {
                     guardCount++;
-
+                    player01Health.ResetHealth();
 
                     minitext.text =
                         $"  ガード {guardCount} / {RequiredGuardCount}";
@@ -576,7 +597,8 @@ public class TutorialManager02 : MonoBehaviour
                     if (player01Health.CurrentHP <= 0 || player02Health.CurrentHP <= 0)
                     {
                         tutorialstep = TutorialStep.result;
-                        text.text = "再戦";
+                        text2.text = "再戦\nモード選択";
+                        text.text = "";
                         Debug.Log("どちらかのHPが0になりました。RESULTへ移行します。");
                         HideMiniPanel();
                         InPanel();
@@ -588,6 +610,8 @@ public class TutorialManager02 : MonoBehaviour
 
             case TutorialStep.result:
 
+                cooltimecount += 1;
+
                 // コントローラーのAボタン
                 bool controllerRetry =
                     Gamepad.current != null &&
@@ -598,47 +622,70 @@ public class TutorialManager02 : MonoBehaviour
                     Keyboard.current != null &&
                     Keyboard.current.aKey.wasPressedThisFrame;
 
-                // Aボタン / Aキーが押されたら再戦
-                if (controllerRetry || keyboardRetry)
+
+                if (cooltimecount > cooltime)
                 {
 
-                    Time.timeScale = 1f;
+                    // コントローラーのBボタン
+                    bool controllerB =
+                        Gamepad.current != null &&
+                        Gamepad.current.buttonEast.wasPressedThisFrame;
 
-                    Debug.Log("A入力を検知しました。再戦します！");
+                    // キーボードのBキー
+                    bool keyboardB =
+                        Keyboard.current != null &&
+                        Keyboard.current.bKey.wasPressedThisFrame;
 
-                    // P1のHPを全回復
-                    if (player01Health != null)
+                    // どちらかを押したら指定したシーンに戻る
+                    if (controllerB || keyboardB)
                     {
-                        player01Health.ResetHealth();
+                        SceneManager.LoadScene("CharacterSelection");
                     }
 
-                    // P2のHPを全回復
-                    if (player02Health != null)
+                    // Aボタン / Aキーが押されたら再戦
+                    if (controllerRetry || keyboardRetry)
                     {
-                        player02Health.ResetHealth();
+                        cooltimecount = 0;
+
+                        Time.timeScale = 1f;
+
+                        Debug.Log("A入力を検知しました。再戦します！");
+
+                        // P1のHPを全回復
+                        if (player01Health != null)
+                        {
+                            player01Health.ResetHealth();
+                        }
+
+                        // P2のHPを全回復
+                        if (player02Health != null)
+                        {
+                            player02Health.ResetHealth();
+                        }
+
+                        // P2を表示
+                        if (player02 != null)
+                        {
+                            player02.gameObject.SetActive(true);
+                        }
+
+                        // P2をCPU操作に戻す
+                        if (player02CPU != null)
+                        {
+                            player02CPU.SetOpponent(player01.transform);
+                            player02.SetInputSource(player02CPU);
+                        }
+
+                        // バトルへ戻る
+                        tutorialstep = TutorialStep.battle;
+
+                        // RESULTパネルを消す
+                        HidePanel();
+
+                        Debug.Log("再戦開始！");
                     }
-
-                    // P2を表示
-                    if (player02 != null)
-                    {
-                        player02.gameObject.SetActive(true);
-                    }
-
-                    // P2をCPU操作に戻す
-                    if (player02CPU != null)
-                    {
-                        player02CPU.SetOpponent(player01.transform);
-                        player02.SetInputSource(player02CPU);
-                    }
-
-                    // バトルへ戻る
-                    tutorialstep = TutorialStep.battle;
-
-                    // RESULTパネルを消す
-                    HidePanel();
-
-                    Debug.Log("再戦開始！");
                 }
+                
 
 
                 break;

@@ -997,7 +997,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 275864c5743f86740bfa92c081aebf95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalTwoPlayerDeviceSetup
-  deviceMode: 2
+  deviceMode: 0
   player1Input: {fileID: 1713682342}
   player2Input: {fileID: 925841397}
   keyboardSchemeName: Keyboard
@@ -1216,7 +1216,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1840032672}
   m_Father: {fileID: 1390226099}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -2219,8 +2220,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 197.25}
-  m_SizeDelta: {x: -732.686, y: -874.4961}
+  m_AnchoredPosition: {x: 0, y: 178.17645}
+  m_SizeDelta: {x: -732.686, y: -836.3491}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1045747507
 MonoBehaviour:
@@ -2309,8 +2310,12 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2916761203577045022, guid: 748303f81f8d2784681245709e785d4f, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 1542
+      objectReference: {fileID: 0}
+    - target: {fileID: 2916761203577045022, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 434
+      value: -70
       objectReference: {fileID: 0}
     - target: {fileID: 3181047687841104302, guid: 748303f81f8d2784681245709e785d4f, type: 3}
       propertyPath: hpFillImage
@@ -4191,6 +4196,81 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1788765955}
   m_CullTransparentMesh: 1
+--- !u!1 &1840032671
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1840032672}
+  - component: {fileID: 1840032674}
+  - component: {fileID: 1840032673}
+  m_Layer: 5
+  m_Name: Image (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1840032672
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840032671}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 585862256}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -133.98999}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1840032673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840032671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 7136676373845613195, guid: 825458cfdd2f0944093000b8db46918a, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1840032674
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840032671}
+  m_CullTransparentMesh: 1
 --- !u!1 &1849594919
 GameObject:
   m_ObjectHideFlags: 0
@@ -5186,6 +5266,7 @@ MonoBehaviour:
   minipanel: {fileID: 1045747505}
   text: {fileID: 2094297871}
   minitext: {fileID: 1901143758}
+  text2: {fileID: 1982255821}
   upimage: {fileID: 2111590628}
   downimage: {fileID: 1860650367}
   rightimage: {fileID: 1576209272}
@@ -5281,7 +5362,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u6C7A\u5B9A"
+  m_text: "\u6C7A\u5B9A\n\u30E2\u30FC\u30C9\u9078\u629E"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 95820e35825672c4888db484df8dfb58, type: 2}
   m_sharedMaterial: {fileID: -2605754525340680293, guid: 95820e35825672c4888db484df8dfb58, type: 2}
