@@ -119,6 +119,81 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &69007517
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 69007518}
+  - component: {fileID: 69007520}
+  - component: {fileID: 69007519}
+  m_Layer: 5
+  m_Name: BalackImage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &69007518
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 69007517}
+  m_LocalRotation: {x: -0, y: -0, z: 0.13385662, w: 0.9910008}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.2859, y: 0.6756253, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1489386018}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 15.385}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -54, y: -171}
+  m_SizeDelta: {x: 2000, y: 500}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &69007519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 69007517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &69007520
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 69007517}
+  m_CullTransparentMesh: 1
 --- !u!1 &75423865
 GameObject:
   m_ObjectHideFlags: 0
@@ -136,7 +211,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &75423866
 RectTransform:
   m_ObjectHideFlags: 0
@@ -422,6 +497,86 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!1 &302353974
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 302353977}
+  - component: {fileID: 302353976}
+  - component: {fileID: 302353975}
+  m_Layer: 0
+  m_Name: Wave_02
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &302353975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302353974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1bc218f202f24042a81659a81523e7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WavyBandGraphic
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  waveTop: 0
+  waveBottom: 1
+  segments: 200
+  amplitude1: 14
+  wavelength1: 300
+  speed1: 0.4
+  amplitude2: 6
+  wavelength2: 110
+  speed2: -0.5
+  amplitude3: 20
+  wavelength3: 45
+  speed3: 0.5
+  bottomPhaseOffset: 0.37
+  animate: 1
+  useUnscaledTime: 1
+--- !u!222 &302353976
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302353974}
+  m_CullTransparentMesh: 1
+--- !u!224 &302353977
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302353974}
+  m_LocalRotation: {x: -0, y: -0, z: 0.13914013, w: 0.9902727}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 30, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1489386018}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 15.996}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -201, y: -387}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &476604570
 GameObject:
   m_ObjectHideFlags: 0
@@ -901,134 +1056,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 626211594}
   m_CullTransparentMesh: 1
---- !u!1 &762195125
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 762195129}
-  - component: {fileID: 762195128}
-  - component: {fileID: 762195127}
-  - component: {fileID: 762195126}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &762195126
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 762195125}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e795be9de9f3f124c8a2d566cc3f4a63, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WavyBandSprite
-  source: {fileID: 904742702}
-  hideSourceInPlay: 1
-  useSourceColor: 1
-  color: {r: 0, g: 0, b: 0, a: 1}
-  manualSize: {x: 20, y: 3}
-  waveTop: 0
-  waveBottom: 1
-  segments: 200
-  amplitude1: 0.06
-  wavelength1: 0.22
-  speed1: 0.35
-  amplitude2: 0.03
-  wavelength2: 0.08
-  speed2: -0.8
-  amplitude3: 0.015
-  wavelength3: 0.035
-  speed3: 1.4
-  bottomPhaseOffset: 0.37
-  material: {fileID: 0}
-  sortingOrderOffset: -110
-  useUnscaledTime: 1
---- !u!23 &762195127
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 762195125}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: -210
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &762195128
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 762195125}
-  m_Mesh: {fileID: 0}
---- !u!224 &762195129
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 762195125}
-  m_LocalRotation: {x: 0, y: 0, z: 0.12748002, w: 0.99184114}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 0.12978, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 14.648}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.26, y: -2.93}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &904742699
 GameObject:
   m_ObjectHideFlags: 0
@@ -1042,12 +1069,12 @@ GameObject:
   - component: {fileID: 904742701}
   - component: {fileID: 904742700}
   m_Layer: 0
-  m_Name: Title_Back2
+  m_Name: Title_Back_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &904742700
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1068,9 +1095,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  fillSide: 0
-  leftEdge: 0.12
-  rightEdge: 0.92
+  waveTop: 1
+  waveBottom: 1
   segments: 180
   amplitude1: 14
   wavelength1: 260
@@ -1081,11 +1107,7 @@ MonoBehaviour:
   amplitude3: 3
   wavelength3: 41
   speed3: 2.1
-  perpendicular: 1
-  edgeFade: 0
-  drawEdgeLine: 1
-  edgeLineColor: {r: 0.55, g: 0.85, b: 1, a: 0.8}
-  edgeLineWidth: 2
+  bottomPhaseOffset: 0.37
   animate: 1
   useUnscaledTime: 1
 --- !u!222 &904742701
@@ -1173,6 +1195,86 @@ RectTransform:
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0.6, y: -10.4}
   m_SizeDelta: {x: 20.48, y: 7.68}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &908675906
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 908675909}
+  - component: {fileID: 908675908}
+  - component: {fileID: 908675907}
+  m_Layer: 0
+  m_Name: Wave_01
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &908675907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 908675906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1bc218f202f24042a81659a81523e7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WavyBandGraphic
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  waveTop: 1
+  waveBottom: 0
+  segments: 200
+  amplitude1: 14
+  wavelength1: 300
+  speed1: 0.4
+  amplitude2: 6
+  wavelength2: 110
+  speed2: -0.5
+  amplitude3: 20
+  wavelength3: 45
+  speed3: 0.5
+  bottomPhaseOffset: 0.37
+  animate: 1
+  useUnscaledTime: 1
+--- !u!222 &908675908
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 908675906}
+  m_CullTransparentMesh: 1
+--- !u!224 &908675909
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 908675906}
+  m_LocalRotation: {x: -0, y: -0, z: 0.1436059, w: 0.989635}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 21.208, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1489386018}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 16.513}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 39, y: -0}
+  m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &921598441
 GameObject:
@@ -1381,7 +1483,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &963143763
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1529,14 +1631,13 @@ GameObject:
   - component: {fileID: 1238374688}
   - component: {fileID: 1238374687}
   - component: {fileID: 1238374690}
-  - component: {fileID: 1238374689}
   m_Layer: 0
   m_Name: Title_Back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!212 &1238374687
 SpriteRenderer:
   serializedVersion: 2
@@ -1584,14 +1685,14 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: -100
+  m_SortingOrder: -103
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: c577b99ad058519459ed157a61bd3347, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 20.75, y: 10.841064}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -1612,49 +1713,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 15.569}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -4.16, y: 6.55}
+  m_AnchoredPosition: {x: -4.2, y: 6.4}
   m_SizeDelta: {x: 20.48, y: 7.68}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1238374689
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1238374686}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1bc218f202f24042a81659a81523e7d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WavyEdgeGraphic
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  fillSide: 0
-  leftEdge: 0.12
-  rightEdge: 0.92
-  segments: 180
-  amplitude1: 14
-  wavelength1: 260
-  speed1: 0.6
-  amplitude2: 6
-  wavelength2: 95
-  speed2: -1.3
-  amplitude3: 3
-  wavelength3: 41
-  speed3: 2.1
-  perpendicular: 1
-  edgeFade: 0
-  drawEdgeLine: 1
-  edgeLineColor: {r: 0.55, g: 0.85, b: 1, a: 0.8}
-  edgeLineWidth: 2
-  animate: 1
-  useUnscaledTime: 1
 --- !u!222 &1238374690
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1663,219 +1724,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1238374686}
   m_CullTransparentMesh: 1
---- !u!1 &1411857883
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1411857884}
-  - component: {fileID: 1411857886}
-  - component: {fileID: 1411857885}
-  m_Layer: 5
-  m_Name: WaveEdge_Top
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!224 &1411857884
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1411857883}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1489386018}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -1920, y: -1080}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1411857885
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1411857883}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1bc218f202f24042a81659a81523e7d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WavyEdgeGraphic
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 0
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  fillSide: 0
-  leftEdge: 0.275
-  rightEdge: 0.75
-  segments: 180
-  amplitude1: 14
-  wavelength1: 260
-  speed1: 0.6
-  amplitude2: 6
-  wavelength2: 95
-  speed2: -1.3
-  amplitude3: 3
-  wavelength3: 41
-  speed3: 2.1
-  perpendicular: 1
-  edgeFade: 0
-  drawEdgeLine: 1
-  edgeLineColor: {r: 0.55, g: 0.85, b: 1, a: 0.8}
-  edgeLineWidth: 2
-  animate: 1
-  useUnscaledTime: 1
---- !u!222 &1411857886
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1411857883}
-  m_CullTransparentMesh: 1
---- !u!1 &1462323210
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1462323214}
-  - component: {fileID: 1462323213}
-  - component: {fileID: 1462323212}
-  - component: {fileID: 1462323211}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1462323211
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1462323210}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e795be9de9f3f124c8a2d566cc3f4a63, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WavyBandSprite
-  source: {fileID: 1238374687}
-  hideSourceInPlay: 1
-  useSourceColor: 1
-  color: {r: 0, g: 0, b: 0, a: 1}
-  manualSize: {x: 20, y: 3}
-  waveTop: 1
-  waveBottom: 0
-  segments: 200
-  amplitude1: 0.06
-  wavelength1: 0.22
-  speed1: 0.35
-  amplitude2: 0.03
-  wavelength2: 0.08
-  speed2: -0.8
-  amplitude3: 0.015
-  wavelength3: 0.035
-  speed3: 1.4
-  bottomPhaseOffset: 0.37
-  material: {fileID: 0}
-  sortingOrderOffset: -110
-  useUnscaledTime: 1
---- !u!23 &1462323212
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1462323210}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: -210
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &1462323213
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1462323210}
-  m_Mesh: {fileID: 0}
---- !u!224 &1462323214
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1462323210}
-  m_LocalRotation: {x: 0, y: 0, z: 0.12748002, w: 0.99184114}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 0.13907, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 14.648}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.16, y: 0.07}
-  m_SizeDelta: {x: 1, y: 1}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1489386014
 GameObject:
   m_ObjectHideFlags: 0
@@ -1971,8 +1819,11 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1411857884}
-  - {fileID: 1736763441}
+  - {fileID: 1740788237}
+  - {fileID: 1493697318}
+  - {fileID: 908675909}
+  - {fileID: 302353977}
+  - {fileID: 69007518}
   - {fileID: 963143763}
   - {fileID: 75423866}
   - {fileID: 1962275992}
@@ -2018,6 +1869,81 @@ MonoBehaviour:
   edgeLineColor: {r: 1, g: 1, b: 1, a: 0.9}
   edgeLineWidth: 4
   sortingOrder: 1000
+--- !u!1 &1493697317
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1493697318}
+  - component: {fileID: 1493697320}
+  - component: {fileID: 1493697319}
+  m_Layer: 5
+  m_Name: BG_Blue
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1493697318
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1493697317}
+  m_LocalRotation: {x: -0, y: -0, z: 0.12819919, w: 0.99174845}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 27.855, y: 11.280099, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1489386018}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 14.731}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 207, y: -840}
+  m_SizeDelta: {x: -1820, y: -980}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1493697319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1493697317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0.8039216, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1493697320
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1493697317}
+  m_CullTransparentMesh: 1
 --- !u!1 &1525500867
 GameObject:
   m_ObjectHideFlags: 0
@@ -2234,7 +2160,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1736763440
+--- !u!1 &1740788236
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2242,82 +2168,72 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1736763441}
-  - component: {fileID: 1736763443}
-  - component: {fileID: 1736763442}
+  - component: {fileID: 1740788237}
+  - component: {fileID: 1740788239}
+  - component: {fileID: 1740788238}
   m_Layer: 5
-  m_Name: WaveEdge_Bottom
+  m_Name: 'BG_Blue '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!224 &1736763441
+  m_IsActive: 1
+--- !u!224 &1740788237
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1736763440}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_GameObject: {fileID: 1740788236}
+  m_LocalRotation: {x: -0, y: -0, z: 0.11132571, w: 0.993784}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 27.855, y: 11.280099, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1489386018}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 12.783}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -245}
-  m_SizeDelta: {x: -1920, y: -1080}
+  m_AnchoredPosition: {x: -106, y: 530}
+  m_SizeDelta: {x: -1820, y: -980}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1736763442
+--- !u!114 &1740788238
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1736763440}
+  m_GameObject: {fileID: 1740788236}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1bc218f202f24042a81659a81523e7d, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WavyEdgeGraphic
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0.8039216, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  fillSide: 1
-  leftEdge: -0.13
-  rightEdge: 0.37
-  segments: 180
-  amplitude1: 14
-  wavelength1: 260
-  speed1: 0.6
-  amplitude2: 6
-  wavelength2: 95
-  speed2: -1.3
-  amplitude3: 3
-  wavelength3: 41
-  speed3: 2.1
-  perpendicular: 1
-  edgeFade: 0
-  drawEdgeLine: 1
-  edgeLineColor: {r: 0.55, g: 0.85, b: 1, a: 0.8}
-  edgeLineWidth: 2
-  animate: 1
-  useUnscaledTime: 1
---- !u!222 &1736763443
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1740788239
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1736763440}
+  m_GameObject: {fileID: 1740788236}
   m_CullTransparentMesh: 1
 --- !u!1 &1906053927
 GameObject:
@@ -2330,54 +2246,13 @@ GameObject:
   - component: {fileID: 1906053931}
   - component: {fileID: 1906053930}
   - component: {fileID: 1906053929}
-  - component: {fileID: 1906053928}
   m_Layer: 0
   m_Name: Title_Back_B
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1906053928
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1906053927}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1bc218f202f24042a81659a81523e7d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WavyEdgeGraphic
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  fillSide: 1
-  leftEdge: 0.12
-  rightEdge: 0.92
-  segments: 180
-  amplitude1: 14
-  wavelength1: 260
-  speed1: 0.6
-  amplitude2: 6
-  wavelength2: 95
-  speed2: -1.3
-  amplitude3: 3
-  wavelength3: 41
-  speed3: 2.1
-  perpendicular: 1
-  edgeFade: 0
-  drawEdgeLine: 1
-  edgeLineColor: {r: 0.55, g: 0.85, b: 1, a: 0.8}
-  edgeLineWidth: 2
-  animate: 1
-  useUnscaledTime: 1
+  m_IsActive: 0
 --- !u!222 &1906053929
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2896,7 +2771,5 @@ SceneRoots:
   - {fileID: 1238374688}
   - {fileID: 904742703}
   - {fileID: 1906053931}
-  - {fileID: 1462323214}
-  - {fileID: 762195129}
   - {fileID: 205958360}
   - {fileID: 2010249557}
