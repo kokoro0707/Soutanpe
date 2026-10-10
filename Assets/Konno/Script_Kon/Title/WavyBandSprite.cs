@@ -22,6 +22,12 @@ public class WavyBandSprite : MonoBehaviour
     [Tooltip("ONなら色を元の帯からコピー。OFFなら下の Color を使う")]
     [SerializeField] private bool useSourceColor = true;
     [SerializeField] private Color color = Color.black;
+    [Tooltip("ONなら元のスプライトの画像を貼る。OFFなら Color の単色で塗る" +
+             "(黒い帯の後ろに別の色の波を出す時は OFF)")]
+    [SerializeField] private bool useSourceTexture = true;
+    [Tooltip("帯を元の太さより上下にどれだけ太くするか(元の太さに対する割合)。" +
+             "黒い帯の後ろに置いて、ふちから波をはみ出させる時に使う(例: 0.12)")]
+    [SerializeField, Min(0f)] private float extraThickness = 0f;
 
     [Tooltip("Source を使わない場合の帯の大きさ(この オブジェクト内の単位)")]
     [SerializeField] private Vector2 manualSize = new Vector2(20f, 3f);
@@ -60,6 +66,8 @@ public class WavyBandSprite : MonoBehaviour
     private float time;
     private Vector3[] verts;
     private Color32[] cols;
+    private Vector2[] uvs;
+    private MaterialPropertyBlock mpb;
     private int[] tris;
 
     private void OnEnable()
@@ -134,16 +142,31 @@ public class WavyBandSprite : MonoBehaviour
             mr.sortingOrder = source.sortingOrder + sortingOrderOffset;
         }
 
+        // スプライトの画像(青や黒の色は画像側に付いていることが多い)をそのまま貼る
+        Texture2D tex = null;
+        Rect uvRect = new Rect(0, 0, 1, 1);
+        if (useSourceTexture && source != null && source.sprite != null && source.sprite.texture != null)
+        {
+            tex = source.sprite.texture;
+            Rect tr = source.sprite.textureRect;
+            uvRect = new Rect(tr.x / tex.width, tr.y / tex.height, tr.width / tex.width, tr.height / tex.height);
+        }
+        if (mpb == null) mpb = new MaterialPropertyBlock();
+        mr.GetPropertyBlock(mpb);
+        mpb.SetTexture("_MainTex", tex != null ? (Texture)tex : Texture2D.whiteTexture);
+        mr.SetPropertyBlock(mpb);
+
         Color c = (useSourceColor && source != null) ? source.color : color;
         Color32 c32 = c;
 
         // ---- 頂点 ----
         int n = Mathf.Max(2, segments);
         int vCount = (n + 1) * 2;
-        if (verts == null || verts.Length != vCount)
+        if (verts == null || verts.Length != vCount || cols == null || cols.Length != vCount || uvs == null || uvs.Length != vCount || tris == null)
         {
             verts = new Vector3[vCount];
             cols = new Color32[vCount];
+            uvs = new Vector2[vCount];
             tris = new int[n * 6];
             for (int i = 0; i < n; i++)
             {
@@ -153,7 +176,7 @@ public class WavyBandSprite : MonoBehaviour
             }
         }
 
-        float halfW = size.x * 0.5f, halfH = size.y * 0.5f;
+        float halfW = size.x * 0.5f, halfH = size.y * (0.5f + extraThickness);
         for (int i = 0; i <= n; i++)
         {
             float u = (float)i / n;
@@ -166,11 +189,18 @@ public class WavyBandSprite : MonoBehaviour
             verts[i * 2 + 1] = new Vector3(x, bottom, 0f);
             cols[i * 2] = c32;
             cols[i * 2 + 1] = c32;
+
+            // 画像の位置(波ではみ出した分は端の色を伸ばす)
+            float vTop = Mathf.Clamp01((top - (center.y - halfH)) / (2f * halfH));
+            float vBot = Mathf.Clamp01((bottom - (center.y - halfH)) / (2f * halfH));
+            uvs[i * 2] = new Vector2(uvRect.x + u * uvRect.width, uvRect.y + vTop * uvRect.height);
+            uvs[i * 2 + 1] = new Vector2(uvRect.x + u * uvRect.width, uvRect.y + vBot * uvRect.height);
         }
 
         mesh.Clear();
         mesh.vertices = verts;
         mesh.colors32 = cols;
+        mesh.uv = uvs;
         mesh.triangles = tris;
         mesh.RecalculateBounds();
     }

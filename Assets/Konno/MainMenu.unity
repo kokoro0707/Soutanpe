@@ -482,29 +482,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuManager
   menuTexts:
   - {fileID: 1357363030}
-  - {fileID: 0}
   - {fileID: 1822631722}
   - {fileID: 1107111126}
   settingsPanel: {fileID: 1127984665}
   nextScene: CharacterSelection
   titleScene: Title
-  itemActions:
-  - action: 0
-    sceneName: CharacterSelection
-    panel: {fileID: 0}
-    closeWithCancel: 0
-  - action: 2
-    sceneName: 
-    panel: {fileID: 893024383}
-    closeWithCancel: 1
-  - action: 1
-    sceneName: 
-    panel: {fileID: 0}
-    closeWithCancel: 0
-  - action: 3
-    sceneName: Title
-    panel: {fileID: 0}
-    closeWithCancel: 0
+  itemActions: []
   keyboardCancelKeys: 3c00000041000000
   cancelSe: {fileID: 0}
   cursor: {fileID: 94632225}
