@@ -1,33 +1,15 @@
 using System.Collections.Generic;
-using System.Drawing;
 using UnityEngine;
 
 /// <summary>
 /// 攻撃する側の当たり判定を管理する。
-/// 1つのBoxCollider2Dを技ごとに位置・サイズ変更して使用する。
 /// </summary>
-/// [ExecuteAlways]
 [RequireComponent(typeof(BoxCollider2D))]
 public sealed class AttackHitbox : MonoBehaviour
-
-
 {
     [Header("SP")]
     [SerializeField]
     private FighterSPGauge ownerSPGauge;
-
-
-    [Header("Sceneビュー確認用")]
-    [Tooltip("Sceneビューで確認したいMoveData")]
-    [SerializeField]
-    private MoveData previewMove;
-
-    [SerializeField]
-    private bool showHitboxPreview = true;
-
-    [Tooltip("1 = 右向き / -1 = 左向き")]
-    [SerializeField]
-    private int previewFacingDirection = 1;
 
 
     private BoxCollider2D hitboxCollider;
@@ -47,72 +29,10 @@ public sealed class AttackHitbox : MonoBehaviour
         new HashSet<FighterHitReceiver>();
 
 
-    /// <summary>
-    /// 現在、攻撃判定が有効か。
-    /// </summary>
     public bool IsActive =>
         hitboxCollider != null &&
         hitboxCollider.enabled;
 
-
-
-    private void Update()
-    {
-        // ゲーム中は通常処理に任せる
-        if (Application.isPlaying)
-        {
-            return;
-        }
-
-        // プレビューする技が無ければ何もしない
-        if (previewMove == null)
-        {
-            return;
-        }
-
-        // Collider取得
-        if (hitboxCollider == null)
-        {
-            hitboxCollider =
-                GetComponent<BoxCollider2D>();
-        }
-
-        if (hitboxCollider == null)
-        {
-            return;
-        }
-
-
-        // =========================
-        // MoveDataのOffsetを反映
-        // =========================
-
-        Vector2 offset =
-            previewMove.HitboxOffset;
-
-        int direction =
-            previewFacingDirection >= 0
-                ? 1
-                : -1;
-
-        offset.x =
-            Mathf.Abs(offset.x) *
-            direction;
-
-        hitboxCollider.offset =
-            offset;
-
-
-        // =========================
-        // MoveDataのSizeを反映
-        // =========================
-
-        hitboxCollider.size =
-            previewMove.HitboxSize;
-
-        hitboxCollider.isTrigger =
-            true;
-    }
 
     private void Awake()
     {
@@ -132,7 +52,7 @@ public sealed class AttackHitbox : MonoBehaviour
 
 
     /// <summary>
-    /// 攻撃判定を有効にする。
+    /// 攻撃判定を有効化する。
     /// </summary>
     public void Activate(
         MoveData move,
@@ -166,20 +86,17 @@ public sealed class AttackHitbox : MonoBehaviour
                 : -1;
 
 
-        // 新しい攻撃なので
-        // ヒット済みリストをリセット
         hitTargets.Clear();
 
 
         // =========================
-        // 攻撃判定の位置
+        // 判定位置
         // =========================
 
         Vector2 offset =
             move.HitboxOffset;
 
 
-        // 左向きならXだけ反転
         offset.x =
             Mathf.Abs(offset.x) *
             currentAttackDirection;
@@ -190,7 +107,7 @@ public sealed class AttackHitbox : MonoBehaviour
 
 
         // =========================
-        // 攻撃判定の大きさ
+        // 判定サイズ
         // =========================
 
         hitboxCollider.size =
@@ -203,7 +120,7 @@ public sealed class AttackHitbox : MonoBehaviour
 
 
     /// <summary>
-    /// 攻撃判定を無効にする。
+    /// 攻撃判定を無効化する。
     /// </summary>
     public void Deactivate()
     {
@@ -226,7 +143,7 @@ public sealed class AttackHitbox : MonoBehaviour
 
 
     /// <summary>
-    /// Hurtboxに触れた時の処理。
+    /// Hurtboxに触れた時の攻撃処理。
     /// </summary>
     private void OnTriggerEnter2D(
         Collider2D other
@@ -271,8 +188,8 @@ public sealed class AttackHitbox : MonoBehaviour
         }
 
 
-        // 同じ攻撃で同じ相手に
-        // 複数回ヒットしない
+        // 同じ攻撃で同じ相手へ
+        // 複数回ヒットするのを防ぐ
         if (!hitTargets.Add(targetReceiver))
         {
             return;
@@ -286,7 +203,7 @@ public sealed class AttackHitbox : MonoBehaviour
 
 
         // =========================
-        // 相手へ攻撃
+        // 相手へ攻撃を送る
         // =========================
 
         targetReceiver.ReceiveAttack(
@@ -298,7 +215,7 @@ public sealed class AttackHitbox : MonoBehaviour
 
 
         // =========================
-        // ヒット時SP回復
+        // 攻撃が当たったのでSP回復
         // =========================
 
         if (ownerSPGauge != null)
@@ -329,84 +246,20 @@ public sealed class AttackHitbox : MonoBehaviour
 
 
     /// <summary>
-    /// Sceneビューで攻撃判定を表示する。
+    /// 攻撃中の判定をSceneビューに表示。
     /// </summary>
     private void OnDrawGizmos()
     {
-        if (!showHitboxPreview)
+        BoxCollider2D box =
+            GetComponent<BoxCollider2D>();
+
+
+        if (box == null ||
+            !Application.isPlaying ||
+            !box.enabled)
         {
             return;
         }
-
-
-        // =========================
-        // Play中
-        // 実際のColliderを表示
-        // =========================
-
-        if (Application.isPlaying)
-        {
-            BoxCollider2D box =
-                GetComponent<BoxCollider2D>();
-
-
-            if (box == null ||
-                !box.enabled)
-            {
-                return;
-            }
-
-
-            Gizmos.color =
-                UnityEngine.Color.red;
-
-
-            Matrix4x4 oldMatrix =
-                Gizmos.matrix;
-
-
-            Gizmos.matrix =
-                transform.localToWorldMatrix;
-
-
-            Gizmos.DrawWireCube(
-                box.offset,
-                box.size
-            );
-
-
-            Gizmos.matrix =
-                oldMatrix;
-
-
-            return;
-        }
-
-
-        // =========================
-        // Edit中
-        // Preview Moveを表示
-        // =========================
-
-        if (previewMove == null)
-        {
-            return;
-        }
-
-
-        Vector2 offset =
-            previewMove.HitboxOffset;
-
-
-        int direction =
-            previewFacingDirection >= 0
-                ? 1
-                : -1;
-
-
-        offset.x =
-            Mathf.Abs(offset.x) *
-            direction;
 
 
         Gizmos.color =
@@ -422,10 +275,9 @@ public sealed class AttackHitbox : MonoBehaviour
 
 
         Gizmos.DrawWireCube(
-            offset,
-            previewMove.HitboxSize
+            box.offset,
+            box.size
         );
-
 
         Gizmos.matrix =
             previousMatrix;

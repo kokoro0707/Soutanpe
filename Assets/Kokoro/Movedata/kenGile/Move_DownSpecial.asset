@@ -12,21 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b59ad2c635d79c94db287e898f47b1cd, type: 3}
   m_Name: Move_DownSpecial
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
-  hitboxOffset: {x: 1, y: 0}
-  hitboxSize: {x: 1.2, y: 1}
   moveName: "\u5F31\u653B\u6483"
   startupFrames: 18
   activeFrames: 6
   recoveryFrames: 16
-  damage: 100
+  damage: 175
   hitStunFrames: 18
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
-  hitboxes:
-  - enabled: 1
-    offset: {x: 2, y: 2}
-    size: {x: 4, y: 4}
+  hitboxOffset: {x: 1.2, y: 2.3}
+  hitboxSize: {x: 1.6, y: 4}
   animationIndex: 32
   spCost: 0
   effectPrefab: {fileID: 98550873696251552, guid: c6497c993bce5d9459111b7b6357342f, type: 3}

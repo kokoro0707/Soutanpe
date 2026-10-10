@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Character_katana
   m_EditorClassIdentifier: Assembly-CSharp::FighterCharacterData
   characterName: katanaGril
-  maxHP: 1000
+  maxHP: 1500
   forwardWalkSpeed: 5
   backwardWalkSpeed: 3.5
   jumpPower: 23

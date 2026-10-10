@@ -421,7 +421,7 @@ RectTransform:
   m_GameObject: {fileID: 67175819}
   m_LocalRotation: {x: 0.07653294, y: -0.6313542, z: 0.09052961, w: 0.7663805}
   m_LocalPosition: {x: 0, y: 0, z: -69}
-  m_LocalScale: {x: 5.47939, y: 1.454431, z: 1.5100527}
+  m_LocalScale: {x: 4.9707932, y: 1.3194308, z: 1.3698896}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1440630157}
@@ -4008,6 +4008,7 @@ MonoBehaviour:
   stickRepeat: 1
   stickRepeatDelay: 0.4
   stickRepeatInterval: 0.15
+  autoAssignWhenTwoPads: 1
   confirmPanel: {fileID: 1073903137}
   confirmText: {fileID: 356628725}
   confirmMenuTexts:
@@ -6426,10 +6427,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -6524,7 +6525,7 @@ RectTransform:
   m_GameObject: {fileID: 1846994415}
   m_LocalRotation: {x: 0.071584776, y: -0.6179295, z: 0.09575787, w: 0.7770902}
   m_LocalPosition: {x: 0, y: 0, z: 24}
-  m_LocalScale: {x: 5, y: 1.5, z: 5}
+  m_LocalScale: {x: 4.40335, y: 1.321005, z: 4.40335}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1440630157}

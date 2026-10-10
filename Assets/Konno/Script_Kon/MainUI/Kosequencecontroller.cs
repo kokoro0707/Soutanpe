@@ -54,6 +54,13 @@ public class KoSequenceController : MonoBehaviour
     [Tooltip("スローモーションを続ける時間(秒)。実時間で数える")]
     [SerializeField, Min(0f)] private float slowDuration = 2f;
 
+    [Header("TIME UP表示")]
+    [SerializeField]
+    private GameObject timeUpRoot;
+
+    [SerializeField, Min(0f)]
+    private float timeUpDisplayDuration = 2f;
+
     [Header("K.O表示")]
     [Tooltip("画面中央に表示するK.O(TextMeshProやImageの親オブジェクト)。最初は非表示にしておく")]
     [SerializeField] private GameObject koRoot;
@@ -123,6 +130,8 @@ public class KoSequenceController : MonoBehaviour
 
     private bool timeScaleChanged;
 
+    private bool isTimeUpSequence;
+
     // 相打ち(両者同時KO)判定用
     private bool? firstKnockoutIsPlayer1;
     private bool doubleKnockoutDetected;
@@ -135,6 +144,11 @@ public class KoSequenceController : MonoBehaviour
         // 演出の表示物は最初は隠しておく
         if (koRoot != null) koRoot.SetActive(false);
         if (resultPanel != null) resultPanel.SetActive(false);
+
+        if(timeUpRoot!=null)
+        {
+            timeUpRoot.SetActive(false);
+        }
     }
 
     private void OnDisable()
@@ -208,19 +222,59 @@ public class KoSequenceController : MonoBehaviour
         StartCoroutine(SequenceRoutine());
     }
 
-    private IEnumerator SequenceRoutine()
+        //LockInputs();
+
+        //// ---- スローモーション ----
+        //// 注意: Time.fixedDeltaTimeは変更しない(FixedUpdate単位のフレーム処理も一緒に遅くなるように)
+        //Time.timeScale = slowTimeScale;
+        //timeScaleChanged = true;
+
+        //yield return new WaitForSecondsRealtime(slowDuration);
+
+        //// ---- 通常速度に戻して K.O 表示 ----
+        //RestoreTimeScale();
+
+        private IEnumerator SequenceRoutine()
     {
         LockInputs();
 
-        // ---- スローモーション ----
-        // 注意: Time.fixedDeltaTimeは変更しない(FixedUpdate単位のフレーム処理も一緒に遅くなるように)
-        Time.timeScale = slowTimeScale;
-        timeScaleChanged = true;
 
-        yield return new WaitForSecondsRealtime(slowDuration);
+        // =========================
+        // KOの場合だけスロー
+        // =========================
+        if (!isTimeUpSequence)
+        {
+            Time.timeScale =
+                slowTimeScale;
 
-        // ---- 通常速度に戻して K.O 表示 ----
-        RestoreTimeScale();
+            timeScaleChanged =
+                true;
+
+            yield return
+                new WaitForSecondsRealtime(
+                    slowDuration
+                );
+
+            RestoreTimeScale();
+        }
+
+
+        // =========================
+        // TIME UP表示
+        // =========================
+        if (isTimeUpSequence)
+        {
+            if (timeUpRoot != null)
+            {
+                timeUpRoot.SetActive(true);
+            }
+
+            yield return
+                new WaitForSecondsRealtime(
+                    timeUpDisplayDuration
+                );
+        }
+
 
         // このKOで試合が決着する時だけK.O表示を出す(続く場合は非表示)
         bool hideKoThisRound = false;
@@ -233,7 +287,7 @@ public class KoSequenceController : MonoBehaviour
             hideKoThisRound = !matchScoreManager.WouldEndMatch(preResult);
         }
 
-        if (koRoot != null && !hideKoThisRound)
+        if (!isTimeUpSequence &&koRoot != null &&!hideKoThisRound)
         {
             koRoot.SetActive(true);
 
@@ -242,7 +296,13 @@ public class KoSequenceController : MonoBehaviour
             yield return PopKoRoutine();
         }
 
-        yield return new WaitForSecondsRealtime(koDisplayDuration);
+        if (!isTimeUpSequence)
+        {
+            yield return new WaitForSecondsRealtime(
+                koDisplayDuration
+            );
+        }
+
 
         // ---- ラウンドスコアを使う場合は、次ラウンドへ進むか試合終了かをここで判定 ----
         if (matchScoreManager != null)
@@ -279,6 +339,12 @@ public class KoSequenceController : MonoBehaviour
                     yield return FadeOverlayRoutine(0f, 1f);
 
                 if (koRoot != null) koRoot.SetActive(false);
+
+                if (timeUpRoot != null)
+                {
+                    timeUpRoot.SetActive(false);
+                }
+
             }
 
             matchScoreManager.RegisterRoundResult(result);
@@ -355,18 +421,33 @@ public class KoSequenceController : MonoBehaviour
     /// 通じて再生し、その演出が終わるタイミング(RoundAnnouncementControllerのOnFightStart)
     /// でUnlockInputs()を呼ぶようにInspectorで登録しておくこと。
     /// </summary>
+
     private void ContinueToNextRound()
+{
+    if (koRoot != null)
     {
-        if (koRoot != null) koRoot.SetActive(false);
-
-        IsRunning = false;
-        RoundWasDraw = false;
-        firstKnockoutIsPlayer1 = null;
-        doubleKnockoutDetected = false;
-
+        koRoot.SetActive(false);
+    }
+ 
+    if (timeUpRoot != null)
+    {
+        timeUpRoot.SetActive(false);
+    }
+ 
+    IsRunning = false;
+ 
+    isTimeUpSequence = false;
+ 
+    RoundWasDraw = false;
+ 
+    firstKnockoutIsPlayer1 = null;
+ 
+    doubleKnockoutDetected = false;
+}
+ 
         // 入力は、次ラウンドのROUND演出が終わるタイミング(OnFightStart)で
         // UnlockInputs()が呼ばれるまでロックしたままにしておく
-    }
+    
 
     /// <summary>
     /// 次ラウンドのROUND演出が終わったタイミングで呼ぶ。LockInputs()で止めていた
@@ -551,6 +632,60 @@ public class KoSequenceController : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// 制限時間が0になった時に呼ぶ。
+    /// 残りHP率を比較してラウンド結果を決定する。
+    /// </summary>
+    public void HandleTimeUp()
+    {
+        if (IsRunning)
+        {
+            return;
+        }
+
+        if (player1Health == null ||
+            player2Health == null)
+        {
+            return;
+        }
+
+        IsRunning = true;
+        isTimeUpSequence = true;
+
+        // 残りHP率で比較
+        float player1Rate =
+            (float)player1Health.CurrentHP /
+            player1Health.MaxHP;
+
+        float player2Rate =
+            (float)player2Health.CurrentHP /
+            player2Health.MaxHP;
+
+
+        if (player1Rate > player2Rate)
+        {
+            Player1Won = true;
+            RoundWasDraw = false;
+        }
+        else if (player2Rate > player1Rate)
+        {
+            Player1Won = false;
+            RoundWasDraw = false;
+        }
+        else
+        {
+            Player1Won = false;
+            RoundWasDraw = true;
+        }
+
+        HideComboCounters();
+
+        StartCoroutine(
+            SequenceRoutine()
+        );
+    }
+
 
     private void RestoreTimeScale()
     {

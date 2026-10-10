@@ -14,23 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
   moveName: "\u30B8\u30E3\u30F3\u30D7\u653B\u6483"
   startupFrames: 3
-  activeFrames: 5
+  activeFrames: 7
   recoveryFrames: 5
-  damage: 100
+  damage: 125
   hitStunFrames: 18
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
-  hitboxes:
-  - enabled: 0
-    offset: {x: 0, y: 0}
-    size: {x: 1, y: 1}
-  - enabled: 0
-    offset: {x: 0, y: 0}
-    size: {x: 1, y: 1}
-  - enabled: 0
-    offset: {x: 0, y: 0}
-    size: {x: 1, y: 1}
+  hitboxOffset: {x: 1.4, y: 2}
+  hitboxSize: {x: 1.8, y: 3}
   animationIndex: 41
   spCost: 0
   effectPrefab: {fileID: 0}
