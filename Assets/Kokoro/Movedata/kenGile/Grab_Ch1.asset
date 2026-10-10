@@ -17,9 +17,9 @@ MonoBehaviour:
   whiffRecoveryFrames: 15
   holdFrames: 12
   throwRecoveryFrames: 15
-  throwDamage: 120
+  throwDamage: 150
   throwHitStunFrames: 20
   throwKnockback: {x: 7, y: 3}
   hitboxOffset: {x: 0.8, y: 0}
-  hitboxSize: {x: 1, y: 1.5}
+  hitboxSize: {x: 2, y: 2}
   holdOffset: {x: 0.65, y: 0}

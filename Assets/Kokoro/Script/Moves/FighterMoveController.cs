@@ -1301,7 +1301,6 @@ public sealed class FighterMoveController : MonoBehaviour
                 Quaternion.identity,
                 transform
             );
-
         // =========================
         // ç∂âEîΩì]
         // =========================
@@ -1315,6 +1314,24 @@ public sealed class FighterMoveController : MonoBehaviour
 
         currentMoveEffect.transform.localScale =
             scale;
+        // ParticleÇÃå©ÇΩñ⁄Ç‡ç∂âEîΩì]
+        ParticleSystemRenderer[] particleRenderers =
+            currentMoveEffect.GetComponentsInChildren<ParticleSystemRenderer>();
+
+        foreach (ParticleSystemRenderer renderer in particleRenderers)
+        {
+            Vector3 flip =
+                renderer.flip;
+
+            flip.x =
+                attackFacingDirection < 0
+                    ? 1f
+                    : 0f;
+
+            renderer.flip =
+                flip;
+        }
+
 
         // Ç±ÇÃãZÇ≈ÇÕÇ‡Ç§ê∂ê¨ÇµÇ»Ç¢
         moveEffectSpawned = true;

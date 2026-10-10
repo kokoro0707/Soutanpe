@@ -16,21 +16,13 @@ MonoBehaviour:
   startupFrames: 5
   activeFrames: 4
   recoveryFrames: 20
-  damage: 100
+  damage: 400
   hitStunFrames: 18
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
-  hitboxes:
-  - enabled: 0
-    offset: {x: 0, y: 0}
-    size: {x: 1, y: 1}
-  - enabled: 0
-    offset: {x: 0, y: 0}
-    size: {x: 1, y: 1}
-  - enabled: 0
-    offset: {x: 0, y: 0}
-    size: {x: 1, y: 1}
+  hitboxOffset: {x: 6.4, y: 2.2}
+  hitboxSize: {x: 18, y: 2}
   animationIndex: 51
   spCost: 1
   effectPrefab: {fileID: 5664462387379577307, guid: ae5a49ec9bbbcf448a7cccfdb230ab27, type: 3}

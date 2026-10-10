@@ -87,6 +87,12 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private float stickRepeatDelay = 0.4f;
     [SerializeField] private float stickRepeatInterval = 0.15f;
 
+    [Header("パッドの割り当て")]
+    [Tooltip("ONの時、パッドがちょうど2台なら 1台目=P1 / 2台目=P2 にすぐ割り当てる。\n" +
+             "OFFの時(または3台以上の時)は、最初に操作したパッドがP1、次に操作した別のパッドがP2。\n" +
+             "Steamの仮想パッド等で、見えているパッドの数が実際より多い場合はOFFにする")]
+    [SerializeField] private bool autoAssignWhenTwoPads = true;
+
     private readonly StickNavigator stick1 = new StickNavigator();
     private readonly StickNavigator stick2 = new StickNavigator();
 
@@ -215,20 +221,27 @@ Color.green
         if (!canInput)
             return;
 
-        switch (selectState)
+        if (cpuMode)
         {
-            case SelectState.Player1:
-                Player1Input();
-                break;
+            // CPU戦:P1が選ぶ → 続けてP1の操作でCPUのキャラを選ぶ(従来どおり)
+            switch (selectState)
+            {
+                case SelectState.Player1:
+                    Player1Input();
+                    break;
 
-            case SelectState.Player2:
-                if (player2Pad != null)
-                    Player2Input();
-                break;
+                case SelectState.CPU:
+                    CPUInput();
+                    break;
+            }
+        }
+        else
+        {
+            // 対人戦:P1とP2がそれぞれのパッドで「同時に」選べる
+            Player1Input();
 
-            case SelectState.CPU:
-                CPUInput();
-                break;
+            if (player2Pad != null)
+                Player2Input();
         }
     }
 
@@ -238,6 +251,12 @@ Color.green
     }
 
     // ===== キーボード+ゲームパッド共通の入力判定(Player1 / CPU選択 / 確認パネルで使用) =====
+
+    // 確認パネル用:P1のパッドに加えて、P2のパッドでも操作できる
+    private bool ConfirmLeft() => IsLeftPressed(player1Pad) || (player2Pad != null && (player2Pad.dpad.left.wasPressedThisFrame || (useStick && stick2.LeftPressed)));
+    private bool ConfirmRight() => IsRightPressed(player1Pad) || (player2Pad != null && (player2Pad.dpad.right.wasPressedThisFrame || (useStick && stick2.RightPressed)));
+    private bool ConfirmDecide() => IsDecidePressed(player1Pad) || (player2Pad != null && player2Pad.buttonSouth.wasPressedThisFrame);
+    private bool ConfirmCancel() => IsCancelPressed(player1Pad) || (player2Pad != null && player2Pad.buttonEast.wasPressedThisFrame);
 
     private bool IsLeftPressed(Gamepad pad)
     {
@@ -312,6 +331,11 @@ Color.green
     private static Gamepad assignedP2Pad;
     private bool padJoinedThisFrame;
 
+    /// <summary>キャラ選択で決まったP1のパッド(バトルシーンの入力などで使う)</summary>
+    public static Gamepad Player1Gamepad => assignedP1Pad != null && assignedP1Pad.added ? assignedP1Pad : null;
+    /// <summary>キャラ選択で決まったP2のパッド</summary>
+    public static Gamepad Player2Gamepad => assignedP2Pad != null && assignedP2Pad.added ? assignedP2Pad : null;
+
     /// <summary>
     /// パッドの割り当て。
     /// 以前は「1台目=P1、2台目=P2」で固定していたが、Steamの仮想パッド等が
@@ -328,6 +352,14 @@ Color.green
         // 抜かれたパッドは割り当てを外す
         if (assignedP1Pad != null && !assignedP1Pad.added) assignedP1Pad = null;
         if (assignedP2Pad != null && !assignedP2Pad.added) assignedP2Pad = null;
+
+        // ちょうど2台で、まだどちらも割り当てていない → 1台目=P1、2台目=P2 で即割り当て
+        if (autoAssignWhenTwoPads && assignedP1Pad == null && assignedP2Pad == null && Gamepad.all.Count == 2)
+        {
+            assignedP1Pad = Gamepad.all[0];
+            assignedP2Pad = Gamepad.all[1];
+            Debug.Log($"[CharacterSelect] P1パッド = {assignedP1Pad.displayName} / P2パッド = {assignedP2Pad.displayName}");
+        }
 
         // P1
         if (assignedP1Pad == null)
@@ -404,9 +436,8 @@ Color.green
     {
         if (player1Decided)
         {
-            // 決定済みでも、相手不在(対人戦でP2なし、かつCPUモードでもない)なら
-            // ここで取消だけは受け付ける
-            if (!cpuMode && !player2Active)
+            // 対人戦では、決定済みでもBで自分の決定だけ取り消せる
+            if (!cpuMode)
             {
                 if (IsCancelPressed(player1Pad))
                 {
@@ -455,8 +486,6 @@ Color.green
 
             if (cpuMode)
                 selectState = SelectState.CPU;
-            else if (player2Active)
-                selectState = SelectState.Player2;
 
 
             UpdateSelectionColor();
@@ -474,7 +503,6 @@ Color.green
             if (player2Pad.buttonEast.wasPressedThisFrame)
             {
                 player2Decided = false;
-                selectState = SelectState.Player2;
                 PlaySe(cancelSe);
                 UpdateSelectionColor();
 
@@ -518,16 +546,6 @@ Color.green
             UpdateSelectionColor();
             // 両方決定したか確認
             CheckBothPlayersDecided();
-        }
-
-        // 追加: P2未決定中にBを押したらP1選択へ戻る
-        if (player2Pad.buttonEast.wasPressedThisFrame)
-        {
-            player1Decided = false;
-            selectState = SelectState.Player1;
-            PlaySe(cancelSe);
-            UpdateSelectionColor();
-
         }
     }
     private void CPUInput()
@@ -839,7 +857,8 @@ Color.green
         bool player2SelectionStarted =
             selectState == SelectState.Player2 ||
             selectState == SelectState.CPU ||
-            player2Decided;
+            player2Decided ||
+            (!cpuMode && player2Active);
 
         if (player2SelectionStarted &&
             player2Index >= 0 &&
@@ -893,7 +912,7 @@ Color.green
         // 左右で選択
         // =========================
 
-        if (IsLeftPressed(player1Pad))
+        if (ConfirmLeft())
         {
             confirmIndex--;
 
@@ -906,7 +925,7 @@ Color.green
             return;
         }
 
-        if (IsRightPressed(player1Pad))
+        if (ConfirmRight())
         {
             confirmIndex++;
 
@@ -923,7 +942,7 @@ Color.green
         // 決定
         // =========================
 
-        if (IsDecidePressed(player1Pad))
+        if (ConfirmDecide())
         {
             PlaySe(decideSe);
 
@@ -945,7 +964,7 @@ Color.green
         // 取消でも戻る
         // =========================
 
-        if (IsCancelPressed(player1Pad))
+        if (ConfirmCancel())
         {
             PlaySe(cancelSe);
             CloseConfirmPanel();
@@ -1038,7 +1057,7 @@ Color.green
 
         selectState = cpuMode
             ? SelectState.CPU
-            : SelectState.Player2;
+            : SelectState.Player1; // 対人戦はP1/P2同時選択なので状態はP1のまま
 
         UpdateSelectionColor();
 

@@ -15,22 +15,14 @@ MonoBehaviour:
   moveName: "\u4E0B\u5FC5\u6BBA"
   startupFrames: 4
   activeFrames: 6
-  recoveryFrames: 14
-  damage: 100
+  recoveryFrames: 30
+  damage: 125
   hitStunFrames: 18
   blockStunFrames: 10
   hitKnockback: {x: 3, y: 2}
   blockKnockback: {x: 3, y: 0}
-  hitboxes:
-  - enabled: 0
-    offset: {x: 0, y: 0}
-    size: {x: 1, y: 1}
-  - enabled: 0
-    offset: {x: 0, y: 0}
-    size: {x: 1, y: 1}
-  - enabled: 0
-    offset: {x: 0, y: 0}
-    size: {x: 1, y: 1}
+  hitboxOffset: {x: 0.7, y: 2}
+  hitboxSize: {x: 1.5, y: 3}
   animationIndex: 32
   spCost: 0
   effectPrefab: {fileID: 0}

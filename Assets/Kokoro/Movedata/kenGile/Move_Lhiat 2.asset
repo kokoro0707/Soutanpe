@@ -12,8 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b59ad2c635d79c94db287e898f47b1cd, type: 3}
   m_Name: Move_Lhiat 2
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
-  hitboxOffset: {x: 1, y: 0}
-  hitboxSize: {x: 1.2, y: 1}
   moveName: "\u5F31\u653B\u6483"
   startupFrames: 7
   activeFrames: 5
@@ -23,10 +21,8 @@ MonoBehaviour:
   blockStunFrames: 10
   hitKnockback: {x: 6, y: 2}
   blockKnockback: {x: 3, y: 0}
-  hitboxes:
-  - enabled: 1
-    offset: {x: 1, y: 0.8}
-    size: {x: 1.5, y: 0.7}
+  hitboxOffset: {x: 1, y: 1.6}
+  hitboxSize: {x: 6, y: 1}
   animationIndex: 2
   spCost: 0
   effectPrefab: {fileID: 0}
